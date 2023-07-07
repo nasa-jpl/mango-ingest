@@ -1,0 +1,11 @@
+*.zip
+*.mov
+*.egg-info
+*.pyc
+.idea
+ignore
+data_volume_mount
+src/masschange/build
+.run
+**/__pycache__
+logs
