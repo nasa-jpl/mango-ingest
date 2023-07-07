@@ -1,7 +1,11 @@
+import os.path
+import re
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+
+from masschange.ingest.datasets.gracefo.constants import PARQUET_TEMPORAL_PARTITION_KEY, INPUT_FILE_DEFAULT_REGEX
 
 
 def get_header_line_count(filename: str) -> int:
@@ -15,15 +19,30 @@ def get_header_line_count(filename: str) -> int:
                 return header_rows
 
 
-def load_data_from_file(filename: str):
-    raw_data = load_raw_data_from_file(filename)
+def load_data_from_file(filepath: str):
+    raw_data = load_raw_data_from_file(filepath)
     df = pd.DataFrame(raw_data)
 
-    df['timestamp'] = df.apply(populate_timestamp, axis=1)
-    df_without_extraneous_columns = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
+    satellite_id = parse_satellite_id(filepath)
+    df = df.assign(satellite_id=satellite_id)
+    df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
+    df[PARQUET_TEMPORAL_PARTITION_KEY] = df.apply(populate_temporal_partition_key, axis=1)
 
-    return df_without_extraneous_columns
+    return df
 
+
+def parse_satellite_id(filepath: str) -> int:
+    mappings = {
+        'C': 1,
+        'D': 2
+    }
+
+    filename = os.path.split(filepath)[-1]
+    satellite_id_char = re.search(INPUT_FILE_DEFAULT_REGEX, filename).group('satellite_id')
+    try:
+        return mappings[satellite_id_char]
+    except KeyError:
+        raise ValueError(f'failed to parse satellite_id from {filename} with satellite_id_char="{satellite_id_char}" (valid values are {list(mappings.keys())})')
 
 def load_raw_data_from_file(filename: str):
     header_line_count = get_header_line_count(filename)
@@ -52,6 +71,11 @@ def load_raw_data_from_file(filename: str):
     return data
 
 
-def populate_timestamp(row):
-    reference_timestamp = datetime(2000, 1, 1, 12)
+def populate_timestamp(row) -> datetime:
+
     return reference_timestamp + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+
+
+def populate_temporal_partition_key(row) -> str:
+    dt: datetime = row.rcv_timestamp
+    return dt.date().isoformat()

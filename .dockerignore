@@ -1,0 +1,11 @@
+.git
+.idea
+dataroot/*
+*.md
+**/.pytest_cache
+**/*.egg-info
+logs
+.run/*
+ignore
+data_volume_mount
+src/masschange/build
