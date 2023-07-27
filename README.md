@@ -19,3 +19,14 @@ Gravity Missions Analysis Tool data ingestion and API
 3. Activate conda env with `conda activate masschange`
 4. Install editable masschange package with `pip install -e /app/masschange`
 4. Run ingestion on GRACE-FO data location with `python ./masschange/ingest/datasets/gracefo/ingest.py path/to/input_data_root path/to/output_data_root` (add `--zipped` if data is in tarballs)
+
+## Dockerized API Deployment
+
+### bigdata.jpl.nasa.gov
+After building the image from a fresh clone of the repository with 
+
+```docker image build --tag masschange .```
+
+Run a container, exposing the API on port `5463`, with 
+
+```docker container run --name gma-data-backend-api --publish 5463:8000 --volume /data/share/datasets/gravity-missions-analysis-tool/ingested-data/:/data -e PARQUET_ROOT=/data masschange:latest conda run -n masschange /app/masschange/start_api.sh```
