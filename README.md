@@ -30,3 +30,11 @@ After building the image from a fresh clone of the repository with
 Run a container, exposing the API on port `5463`, with 
 
 ```docker container run --name gma-data-backend-api --publish 5463:8000 --volume /data/share/datasets/gravity-missions-analysis-tool/ingested-data/:/data -e PARQUET_ROOT=/data masschange:latest conda run -n masschange /app/masschange/start_api.sh```
+
+Once running, the endpoints may be tested from your local environment by opening an SSH tunnel with 
+
+```
+ssh -L 5463:localhost:5463 bigdata
+```
+
+Documentation will then be available at http://0.0.0.0:5463/docs
