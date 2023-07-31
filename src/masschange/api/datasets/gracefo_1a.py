@@ -30,5 +30,5 @@ async def get_full_resolution_data(
 async def get_available_fields():
 
     return {
-        'data': list(GraceFO1AFullResolutionDataset.get_available_fields())
+        'data': sorted(list(GraceFO1AFullResolutionDataset.get_available_fields()))
     }
