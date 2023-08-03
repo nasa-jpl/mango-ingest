@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.datasets.gracefo.constants import PARQUET_TEMPORAL_PARTITION_KEY, INPUT_FILE_DEFAULT_REGEX
+from masschange.ingest.datasets.gracefo.constants import PARQUET_TEMPORAL_PARTITION_KEY, INPUT_FILE_DEFAULT_REGEX, \
+    reference_epoch
 
 
 def get_header_line_count(filename: str) -> int:
@@ -73,7 +74,7 @@ def load_raw_data_from_file(filename: str):
 
 def populate_timestamp(row) -> datetime:
 
-    return reference_timestamp + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+    return reference_epoch + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
 
 def populate_temporal_partition_key(row) -> str:
