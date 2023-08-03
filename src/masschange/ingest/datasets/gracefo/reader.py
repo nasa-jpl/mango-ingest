@@ -78,5 +78,6 @@ def populate_timestamp(row) -> datetime:
 
 
 def populate_temporal_partition_key(row) -> str:
+    # WHEN ALTERING THIS, THE QUERY IN GraceFO1AFullResolutionDataset.select() MUST BE UPDATED OR PERFORMANCE WILL TANK
     dt: datetime = row.rcv_timestamp
     return dt.date().isoformat()
