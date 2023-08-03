@@ -5,7 +5,8 @@ from typing import Iterable, List, Dict, Set
 import pyspark
 
 from masschange.datasets.interface import get_spark_session
-from masschange.ingest.datasets.gracefo.constants import reference_epoch as timestamp_epoch
+from masschange.ingest.datasets.gracefo.constants import reference_epoch as timestamp_epoch, \
+    PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.datasets.dataset import Dataset
 
 
@@ -37,7 +38,10 @@ class GraceFO1AFullResolutionDataset(Dataset):
         query = f"""
             select {fields_str}, rcv_timestamp
             from {table_name}
-            where rcvtime_intg >= {from_rcvtime_intg}
+            where
+                {PARQUET_TEMPORAL_PARTITION_KEY} >= '{from_dt.date().isoformat()}'
+                and {PARQUET_TEMPORAL_PARTITION_KEY} <= '{to_dt.date().isoformat()}'
+                and rcvtime_intg >= {from_rcvtime_intg}
                 and rcvtime_intg <= {to_rcvtime_intg}
         """
 
