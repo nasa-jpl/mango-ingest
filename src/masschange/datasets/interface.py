@@ -3,6 +3,12 @@ from pyspark.sql import SparkSession
 
 
 def get_spark_session():
+    # TODO: Enable/test parallelism
+    #     .config('spark.dynamicAllocation.shuffleTracking.enabled', 'true') \
+    #     .config('spark.dynamicAllocation.enabled', 'true') \
+    #     .config('spark.executor.cores', 4) \
+    #     .config('spark.dynamicAllocation.minExecutors', '1') \
+    #     .config('spark.dynamicAllocation.maxExecutors', '5') \
     spark = SparkSession.builder \
         .master("local") \
         .config('spark.driver.host', 'localhost') \
