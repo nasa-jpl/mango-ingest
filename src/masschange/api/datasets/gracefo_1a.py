@@ -16,7 +16,7 @@ async def get_full_resolution_data(
         from_isotimestamp: datetime = datetime.min,
         to_isotimestamp: datetime = datetime.max):
     exclude_fields = {'rcvtime_frac', 'rcvtime_intg', 'temporal_partition_key'}
-    fields = GraceFO1AFullResolutionDataset.get_available_fields().difference(exclude_fields)
+    fields = GraceFO1AFullResolutionDataset.DEFAULT_FIELDS.difference(exclude_fields)
     rows = GraceFO1AFullResolutionDataset.select(fields, from_isotimestamp, to_isotimestamp)
     records_dicts = map(lambda row: row.asDict(), rows)
     structured_data = records_dicts  # implement mapper
