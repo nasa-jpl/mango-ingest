@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from typing import Iterable, List, Dict, Set
+from typing import List, Dict, Set
 
-import pyspark
+from pyarrow import parquet as pq
+from pyarrow import compute as pc
 
-from masschange.datasets.interface import get_spark_session
 from masschange.ingest.datasets.gracefo.constants import reference_epoch as timestamp_epoch, \
     PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.datasets.dataset import Dataset
@@ -14,39 +14,30 @@ class GraceFO1AFullResolutionDataset(Dataset):
     # TODO: The parquet_path attribute will get messy when decimation is incorporated, refactoring will be necessary
     parquet_path = os.path.join(os.environ['PARQUET_ROOT'], 'full-resolution')
 
-    DEFAULT_FIELDS = {'ang_accl_x', 'ang_accl_y', 'ang_accl_z', 'lin_accl_x', 'lin_accl_y', 'lin_accl_z',
-                      'rcv_timestamp', 'rcvtime_frac', 'rcvtime_intg', 'satellite_id', 'temporal_partition_key'}
+    INTERNAL_USE_COLUMNS = {'rcvtime_intg', 'rcvtime_frac', 'temporal_partition_key'}
 
     @classmethod
     def get_available_fields(cls) -> Set[str]:
-        spark = get_spark_session()
-        schema = spark.read.parquet(cls.parquet_path).schema
-        return set(schema.fieldNames())
+        schema = pq.ParquetDataset(cls.parquet_path).schema
+        return set(schema.names).difference(cls.INTERNAL_USE_COLUMNS)
 
     @classmethod
-    def select(cls, fields: Iterable[str], from_dt: datetime, to_dt: datetime) -> List[pyspark.Row]:
-        table_name = 'GRACEFO_1A_full_resolution'
-
-        spark = get_spark_session()
-        table_df = spark.read.parquet(cls.parquet_path)
-        table_df.createOrReplaceTempView(table_name)
-
-        fields_str = ', '.join(fields)
+    def select(cls, from_dt: datetime, to_dt: datetime) -> List[Dict]:
         from_rcvtime_intg = cls.dt_to_rcvtime_intg(max(from_dt, timestamp_epoch))
         to_rcvtime_intg = cls.dt_to_rcvtime_intg(to_dt)
 
-        query = f"""
-            select {fields_str}, rcv_timestamp
-            from {table_name}
-            where
-                {PARQUET_TEMPORAL_PARTITION_KEY} >= '{from_dt.date().isoformat()}'
-                and {PARQUET_TEMPORAL_PARTITION_KEY} <= '{to_dt.date().isoformat()}'
-                and rcvtime_intg >= {from_rcvtime_intg}
-                and rcvtime_intg <= {to_rcvtime_intg}
-        """
+        coarse_gte_expr = from_dt.date().isoformat() <= pc.field(PARQUET_TEMPORAL_PARTITION_KEY)
+        coarse_lte_expr = pc.field(PARQUET_TEMPORAL_PARTITION_KEY) <= to_dt.date().isoformat()
+        fine_gte_expr = from_rcvtime_intg <= pc.field('rcvtime_intg')
+        fine_lte_expr = pc.field('rcvtime_intg') <= to_rcvtime_intg
+        expr = coarse_gte_expr & coarse_lte_expr & fine_gte_expr & fine_lte_expr
 
-        records_df = spark.sql(query)
-        return records_df.collect()
+        # todo: play around with metadata_nthreads and other options (actually, not that one, it's not supported yet)
+        # https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetDataset.html
+        dataset = pq.ParquetDataset(cls.parquet_path, filters=expr)
+        results = dataset.read().drop_columns(list(cls.INTERNAL_USE_COLUMNS)).to_pylist()
+
+        return results
 
     @staticmethod
     def dt_to_rcvtime_intg(dt: datetime) -> int:
