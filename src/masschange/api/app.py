@@ -24,8 +24,6 @@ app.add_middleware(
 
 app.include_router(datasets.router)
 
-spark = get_spark_session()
-
 # @app.get('/last-ingest', tags=['monitoring'])
 # async def last_ingest_status():
 #     last_ingest_status_filepath = os.path.join(os.environ["VIRGO_DATA_ROOT"], 'last_ingest_status.json')
