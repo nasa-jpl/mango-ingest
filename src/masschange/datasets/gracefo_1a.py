@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -27,13 +28,20 @@ class GraceFO1AFullResolutionDataset(Dataset):
     def select(cls, from_dt: datetime, to_dt: datetime, use_preprune_optimisation: bool = True) -> List[Dict]:
         if use_preprune_optimisation:
             partition_values = cls.enumerate_temporal_partition_values(from_dt, to_dt)
-            prepruned_parquet_path = get_prepruned_parquet_path(partition_values, cls.parquet_path)
-            results = cls._select(prepruned_parquet_path, from_dt, to_dt)
-            safely_remove_temporary_index(prepruned_parquet_path)
-
-            return results
+            parquet_path = get_prepruned_parquet_path(partition_values, cls.parquet_path)
         else:
-            return cls._select(cls.parquet_path, from_dt, to_dt)
+            parquet_path = (cls.parquet_path)
+
+        if len(list(os.scandir(parquet_path))) > 0:
+            results = cls._select(parquet_path, from_dt, to_dt)
+        else:
+            logging.error(f'Failed to resolve any data between {from_dt} and {to_dt}')
+            results = []
+
+        if use_preprune_optimisation:
+            safely_remove_temporary_index(parquet_path)
+
+        return results
 
 
     @classmethod
