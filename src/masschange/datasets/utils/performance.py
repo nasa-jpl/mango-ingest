@@ -14,7 +14,8 @@ def get_prepruned_parquet_path(partition_values: Sequence[str], src_parquet_root
         subtree_name = f'{partition_key}={value}'
         src = os.path.join(src_parquet_root, subtree_name)
         dest = os.path.join(temporary_index_dir, subtree_name)
-        os.symlink(src, dest, target_is_directory=True)
+        if os.path.exists(src):
+            os.symlink(src, dest, target_is_directory=True)
 
     return temporary_index_dir
 
