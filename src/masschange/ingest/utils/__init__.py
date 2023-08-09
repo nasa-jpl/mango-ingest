@@ -4,7 +4,7 @@ import tempfile
 from datetime import datetime
 from typing import Optional
 
-from masschange.ingest.datasets.gracefo.constants import LOG_ROOT_ENV_VAR_KEY
+from masschange.ingest.datasets.constants import LOG_ROOT_ENV_VAR_KEY
 
 
 def get_configured_logger(name: Optional[str] = None, log_level: int = logging.DEBUG):
