@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.datasets.gracefo.constants import PARQUET_TEMPORAL_PARTITION_KEY, INPUT_FILE_DEFAULT_REGEX, \
+from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGEX, \
     reference_epoch
+from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 
 
 def get_header_line_count(filename: str) -> int:

@@ -15,8 +15,9 @@ from pyspark.sql import SparkSession
 from masschange.ingest.utils import get_configured_logger
 from masschange.datasets.interface import get_spark_session
 from masschange.ingest.datasets.gracefo import reader
-from masschange.ingest.datasets.gracefo.constants import PARQUET_TEMPORAL_PARTITION_KEY, INPUT_FILE_DEFAULT_REGEX, \
+from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGEX, \
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
+from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 
 log = get_configured_logger()
@@ -121,7 +122,7 @@ def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_
     spark_df: pyspark.sql.DataFrame = spark.createDataFrame(pd_df)
     spark_df.write \
         .format('parquet') \
-        .partitionBy('satellite_id', PARQUET_TEMPORAL_PARTITION_KEY) \
+        .partitionBy(PARQUET_TEMPORAL_PARTITION_KEY) \
         .bucketBy(1, 'rcvtime_intg') \
         .sortBy('rcvtime_intg', 'rcvtime_frac') \
         .option('path', dest_parquet_root) \
