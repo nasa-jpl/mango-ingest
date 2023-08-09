@@ -10,8 +10,16 @@ def get_prepruned_parquet_path(partition_values: Sequence[str], src_parquet_root
                                partition_key: str = PARQUET_TEMPORAL_PARTITION_KEY):
     """
     Given a top-level partition key and a sequence of match values, create a pseudo-index by taking all the matches
-    and symlinking to them under a temp directory.  O(n) with the number of match values, rather than the number of
-    extant files in the whole parquet dataset.
+    and symlinking to them under a temp directory.  That temp directory is then accessible as a subsetted parquet 
+    root in its own right.
+    
+    O(n) with the number of matched leaves, rather than the number of extant files in the whole parquet dataset.
+    
+    This avoids the need to scan irrelevant files, which is very slow at high file counts, especially with spark.
+    
+    This pre-pruning approach could be extended for compatibility with nested partitions - the only requirement to 
+    apply it is that the full path of all relevant leaves (whether those are files or subtrees) are enumerable prima
+    facie, either directly from a user query or via a relatively-fast intermediate calculation.
     """
     temporary_index_dir = mkdtemp(prefix='gma-index-')
     for value in partition_values:
