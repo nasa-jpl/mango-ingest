@@ -118,16 +118,19 @@ def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
+    dataset_label = 'gracefo_1a'
+    full_resolution_parquet_root = os.path.join(dest_parquet_root, dataset_label)
+
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     spark_df: pyspark.sql.DataFrame = spark.createDataFrame(pd_df)
     spark_df.write \
         .format('parquet') \
         .partitionBy(PARQUET_TEMPORAL_PARTITION_KEY) \
-        .bucketBy(1, 'rcvtime_intg') \
-        .sortBy('rcvtime_intg', 'rcvtime_frac') \
-        .option('path', dest_parquet_root) \
+        .bucketBy(1, 'rcvtime') \
+        .sortBy('rcvtime') \
+        .option('path', full_resolution_parquet_root) \
         .mode('append') \
-        .saveAsTable('gracefo_1a')
+        .saveAsTable(dataset_label)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
