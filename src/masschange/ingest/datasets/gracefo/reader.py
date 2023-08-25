@@ -8,6 +8,7 @@ import pandas as pd
 from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGEX, \
     reference_epoch
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
+from masschange.ingest.utils.decimation.partitioning import get_partition_id
 
 
 def get_header_line_count(filename: str) -> int:
@@ -25,10 +26,15 @@ def load_data_from_file(filepath: str):
     raw_data = load_raw_data_from_file(filepath)
     df = pd.DataFrame(raw_data)
 
+    # Assign derived columns
     satellite_id = parse_satellite_id(filepath)
     df = df.assign(satellite_id=satellite_id)
-    df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
+    # df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
+    df['rcvtime'] = df.apply(populate_rcvtime, axis=1)
     df[PARQUET_TEMPORAL_PARTITION_KEY] = df.apply(populate_temporal_partition_key, axis=1)
+
+    # Drop extraneous columns
+    df = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
 
     return df
 
@@ -44,7 +50,9 @@ def parse_satellite_id(filepath: str) -> int:
     try:
         return mappings[satellite_id_char]
     except KeyError:
-        raise ValueError(f'failed to parse satellite_id from {filename} with satellite_id_char="{satellite_id_char}" (valid values are {list(mappings.keys())})')
+        raise ValueError(
+            f'failed to parse satellite_id from {filename} with satellite_id_char="{satellite_id_char}" (valid values are {list(mappings.keys())})')
+
 
 def load_raw_data_from_file(filename: str):
     header_line_count = get_header_line_count(filename)
@@ -74,11 +82,20 @@ def load_raw_data_from_file(filename: str):
 
 
 def populate_timestamp(row) -> datetime:
-
     return reference_epoch + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
 
 def populate_temporal_partition_key(row) -> str:
     # WHEN ALTERING THIS, THE QUERY IN GraceFO1AFullResolutionDataset.select() MUST BE UPDATED OR PERFORMANCE WILL TANK
-    dt: datetime = row.rcv_timestamp
-    return dt.date().isoformat()
+    #TODO: UPDATE THE ABOVE
+
+    partition_id = get_partition_id(epoch_timestamp=row.rcvtime, hours_per_partition=24, epoch_offset_hours=12, epoch_unit_factor=1000000)
+    return partition_id
+
+
+def populate_rcvtime(row):
+    """
+    Convert the integer and fractional (microsecond) multipart rcvtime components into a single rcvtime integer value
+    representing the number of microseconds since the reference_epoch
+    """
+    return int(row.rcvtime_intg * 1000000 + row.rcvtime_frac)
