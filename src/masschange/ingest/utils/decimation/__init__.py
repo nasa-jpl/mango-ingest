@@ -22,22 +22,16 @@ def decimate_by_constant_factor(factor: int, agg_config: [Dict[str, List[str | C
     in_ds = (pq.ParquetDataset(input_path))
     in_table = in_ds.read()
 
-    # drop timestamp - will need to regenerate this after averaging row-group
-    df = in_table.drop_columns(['rcv_timestamp'])
-    df = df.to_pandas()
-
-    #  legacy step for data without rcvtime parts merge
-    if 'rcvtime' not in set(df.columns):
-        df['rcvtime'] = df['rcvtime_intg'] * 1000000 + df['rcvtime_frac']
-        df = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
+    df = in_table.to_pandas()
 
     decimate_f = functools.partial(decimate_rowgroup, agg_config)
-    # create row-groups every $factor rows, and apply decimation function to each row-group
+    # create row-groups every {factor} rows, and apply decimation function to each row-group
     decimated_df = df.groupby(df.index // factor).apply(decimate_f)
 
     # hack - this needs to be a partition key.  Assumes file is homogeneous wrt satellite-id, which is currently valid
     decimated_df['satellite_id'] = df['satellite_id'][0]
 
+    log.info(f'writing decimated output to {output_path}')
     out_table = pa.Table.from_pandas(decimated_df, preserve_index=False)
     pq.write_table(out_table, output_path)
 
@@ -56,22 +50,14 @@ def decimate_rowgroup(agg_config, rowgroup):
 
     agg_df = pd.DataFrame.from_dict(agg_dict)
 
-    # hack - need to incorporate this into the agg_config as a post-processing step or something
-    agg_df['rcvtime'] = agg_df['rcvtime_mean'].apply(int)
-    agg_df = agg_df.drop(['rcvtime_mean'], axis=1)
+
+
+    #hack - need to incorporate this into AggregationConfig post_aggregation_column_casts
+    agg_df['rcvtime_mean'] = agg_df['rcvtime_mean'].astype(int)
+    # hack - need to incorporate this into AggregationConfig post_aggregation_column_renames
+    agg_df.rename(columns={'rcvtime_mean': 'rcvtime'})
 
     return agg_df
-
-
-def ensure_homogeneous_values(a):
-    return a.max()
-    # return series
-    # values = set(series)
-    # if len(values) > 1:
-    #     raise ValueError(f'series failed homogeneity test (got multiple values {values})')
-    #
-    # return values.pop()
-    print('blah')
 
 
 if __name__ == '__main__':
@@ -86,20 +72,18 @@ if __name__ == '__main__':
     }
 
     decimation_step_factors = [20, 20, 20, 3]  # results in 1:20, 1:400, 1:8000, 1:24000
-    current_decimation_ratio = 1
-    for factor in decimation_step_factors[:1]:   # TODO: Remove slice
-        next_decimation_ratio = current_decimation_ratio * factor
-        input_root_path = f'/nomount/masschange/data_volume_mount/decimation_ratio={current_decimation_ratio}'
-        output_root_path = f'/nomount/masschange/data_volume_mount/decimation_ratio={next_decimation_ratio}'
+    current_decimation_factor = 1
+    for factor in decimation_step_factors[:1]:  # TODO: Remove slice
+        next_decimation_factor = current_decimation_factor * factor
+        input_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={current_decimation_factor}/temporal_partition_key=738849600000000/part-00000-ac6d05e5-3cf2-4769-89b9-b6613d1b50ec_00000.c000.snappy.parquet'
+        # output_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={next_decimation_factor}/temporal_partition_key=738849600000000/part-00000-ac6d05e5-3cf2-4769-89b9-b6613d1b50ec_00000.c000.snappy.parquet'
+        output_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={next_decimation_factor}/temporal_partition_key=738849600000000/'
+        os.makedirs(output_root_path, exist_ok=True)
+        output_filepath = os.path.join(output_root_path, 'output.parquet')
 
-        log.info(f'Decimating from 1:{current_decimation_ratio} to 1:{next_decimation_ratio}')
-        decimate_by_constant_factor(20, agg_config, input_root_path, output_root_path)
+        execution_start = datetime.now()
+        log.info(f'Decimating from 1:{current_decimation_factor} to 1:{next_decimation_factor}')
+        decimate_by_constant_factor(next_decimation_factor, agg_config, input_root_path, output_filepath)
+        log.info(f"decimation of one day's data completed in {get_human_readable_elapsed_since(execution_start)}")
 
 
-    # in_fp = '/nomount/masschange/data_volume_mount/full-resolution-temporally-sorted/temporal_partition_key=2023-06-01/part-00000-09d6f787-670c-483c-8bb2-c83813bfe4d9_00000.c000.snappy.parquet'
-    # out_fp = '/nomount/masschange/data_volume_mount/decimationtest.parquet'
-
-
-
-    execution_start = datetime.now()
-    log.info(f"decimation of one day's data completed in {get_human_readable_elapsed_since(execution_start)}")
