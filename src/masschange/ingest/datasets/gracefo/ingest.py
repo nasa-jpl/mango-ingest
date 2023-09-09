@@ -19,6 +19,7 @@ from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGE
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
+from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
 
@@ -81,23 +82,8 @@ def get_zipped_input_iterable(
 
 
 def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_FILE_DEFAULT_REGEX) -> Iterable[str]:
-    """
-
-    Parameters
-    ----------
-    root_dir
-    filename_match_regex
-
-    Returns
-    -------
-    an iterable collection of matching filenames within the directory tree rooted at root_dir
-
-    """
-
-    for path, subdirs, filenames in os.walk(root_dir):
-        for fn in filenames:
-            if re.match(filename_match_regex, fn):
-                yield os.path.join(path, fn)
+    # TODO: replace all calls to enumerate_input_filepaths() with calls to enumerate_files_in_dir_tree()
+    return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
 def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_root: str):
