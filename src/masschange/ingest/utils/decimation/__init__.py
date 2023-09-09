@@ -1,19 +1,17 @@
 import functools
 import multiprocessing
 import os
-import shutil
 from datetime import datetime
-from typing import Callable, List, Dict
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 from pyarrow import parquet as pq
-from pyarrow import compute as pc
 
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.decimation.aggregationrunconfig import AggregationRunConfig
+from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
 
@@ -85,7 +83,11 @@ def decimate_rowgroup(run_config: AggregationRunConfig, rowgroup: pd.DataFrame):
     return df
 
 
-if __name__ == '__main__':
+def get_decimation_subpartition(dataset_root_path: str, decimation_factor: int) -> str:
+    return os.path.join(dataset_root_path, f'decimation_factor={decimation_factor}')
+
+
+def get_initial_runconfig() -> AggregationRunConfig:
     aggregation_funcs = {
         'lin_accl_x': ['min', 'max'],
         'lin_accl_y': ['min', 'max'],
@@ -104,19 +106,49 @@ if __name__ == '__main__':
         'rcvtime_mean': 'rcvtime'
     }
 
-    run_config = AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
+    return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
 
-    decimation_step_factors = [20, 20, 20, 3]  # results in 1:20, 1:400, 1:8000, 1:24000
-    current_decimation_factor = 1
-    for factor in decimation_step_factors[:1]:  # TODO: Remove slice
-        next_decimation_factor = current_decimation_factor * factor
-        input_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={current_decimation_factor}/temporal_partition_key=738849600000000/part-00000-ac6d05e5-3cf2-4769-89b9-b6613d1b50ec_00000.c000.snappy.parquet'
-        # output_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={next_decimation_factor}/temporal_partition_key=738849600000000/part-00000-ac6d05e5-3cf2-4769-89b9-b6613d1b50ec_00000.c000.snappy.parquet'
-        output_root_path = f'/nomount/masschange/data_volume_mount/gracefo_1a/decimation_factor={next_decimation_factor}/temporal_partition_key=738849600000000/'
-        os.makedirs(output_root_path, exist_ok=True)
-        output_filepath = os.path.join(output_root_path, 'output.parquet')
 
-        execution_start = datetime.now()
-        log.info(f'Decimating from 1:{current_decimation_factor} to 1:{next_decimation_factor}')
-        decimate_file_by_constant_factor(next_decimation_factor, run_config, input_root_path, output_filepath)
-        log.info(f"decimation of one day's data completed in {get_human_readable_elapsed_since(execution_start)}")
+def get_subsequent_runconfig() -> AggregationRunConfig:
+    geometries = {'lin', 'ang'}
+    dimensions = {'x', 'y', 'z'}
+    measurement_field_names = {f'{geom}_accl_{dim}' for dim in dimensions for geom in geometries}
+    measurement_aggregations = {'min', 'max'}
+    aggregation_funcs = {f'{fn}_{agg}': [agg] for agg in measurement_aggregations for fn in measurement_field_names} | {
+        'rcvtime': np.mean}
+
+    type_conversion_mappings = {
+        'rcvtime_mean': 'long'
+    }
+
+    column_rename_mappings = {f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in measurement_field_names} | {
+        'rcvtime_mean': 'rcvtime'
+    }
+
+    return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
+
+
+if __name__ == '__main__':
+
+    dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
+
+    decimation_step_factors = [20, 20, 20, 3]  # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
+    input_total_ratio = 1  # input decimation level as ratio of full-resolution
+    for step_factor in decimation_step_factors:
+        input_decimation_partition_path = get_decimation_subpartition(dataset_root_path, input_total_ratio)
+
+        output_total_ratio = input_total_ratio * step_factor  # output decimation level as ratio of full-resolution
+        output_decimation_partition_path = get_decimation_subpartition(dataset_root_path, output_total_ratio)
+
+        target_files = enumerate_files_in_dir_tree(input_decimation_partition_path, '.*\.parquet$', match_filename_only=True)
+        for input_filepath in target_files[:1]:
+            output_filepath = input_filepath.replace(input_decimation_partition_path, output_decimation_partition_path)
+            output_filepath_parent_dir = os.path.split(output_filepath)[0]
+            os.makedirs(output_filepath_parent_dir, exist_ok=True)
+
+            execution_start = datetime.now()
+            log.info(f'Decimating from 1:{input_total_ratio} to 1:{output_total_ratio}')
+            run_config = get_initial_runconfig() if input_total_ratio == 1 else get_subsequent_runconfig()
+            decimate_file_by_constant_factor(step_factor, run_config, input_filepath, output_filepath)
+            input_total_ratio = output_total_ratio
+            log.info(f"decimation of one day's data completed in {get_human_readable_elapsed_since(execution_start)}")
