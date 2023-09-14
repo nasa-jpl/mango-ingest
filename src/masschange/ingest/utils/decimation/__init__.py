@@ -1,16 +1,19 @@
 import functools
 import multiprocessing
 import os
-from datetime import datetime
+import shutil
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 from pyarrow import parquet as pq
 
+from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.decimation.aggregationrunconfig import AggregationRunConfig
+from masschange.ingest.utils.decimation.partitioning import get_partition_id
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
@@ -83,7 +86,7 @@ def decimate_rowgroup(run_config: AggregationRunConfig, rowgroup: pd.DataFrame):
     return df
 
 
-def get_decimation_subpartition(dataset_root_path: str, decimation_factor: int) -> str:
+def get_decimation_subpartition_path(dataset_root_path: str, decimation_factor: int) -> str:
     return os.path.join(dataset_root_path, f'decimation_factor={decimation_factor}')
 
 
@@ -121,34 +124,103 @@ def get_subsequent_runconfig() -> AggregationRunConfig:
         'rcvtime_mean': 'long'
     }
 
-    column_rename_mappings = {f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in measurement_field_names} | {
-        'rcvtime_mean': 'rcvtime'
-    }
+    column_rename_mappings = {f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in
+                              measurement_field_names} | {
+                                 'rcvtime_mean': 'rcvtime'
+                             }
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
 
 
+def apply_decimation_stage(run_config: AggregationRunConfig, dataset_root_path: str, src_absolute_ratio: int,
+                           step_factor: int):
+    input_decimation_partition_path = get_decimation_subpartition_path(dataset_root_path, src_absolute_ratio)
+
+    output_absolute_ratio = src_absolute_ratio * step_factor  # output decimation level as ratio of full-resolution
+    output_decimation_partition_path = get_decimation_subpartition_path(dataset_root_path, output_absolute_ratio)
+
+    target_files = enumerate_files_in_dir_tree(input_decimation_partition_path, '.*\.parquet$',
+                                               match_filename_only=True)
+    for input_filepath in target_files:
+        output_filepath = input_filepath.replace(input_decimation_partition_path, output_decimation_partition_path)
+        output_filepath_parent_dir = os.path.split(output_filepath)[0]
+        os.makedirs(output_filepath_parent_dir, exist_ok=True)
+
+        decimate_file_by_constant_factor(step_factor, run_config, input_filepath, output_filepath)
+
+
+def temporally_repartition(dataset_root_path: str, output_absolute_ratio: int, output_hours_per_partition: int, partition_epoch_offset_hours: int):
+    """
+
+    Parameters
+    ----------
+    dataset_root_path -
+    output_absolute_ratio
+    output_hours_per_partition
+    partition_epoch_offset_hours
+
+    Returns
+    -------
+
+    """
+    partition_prefix_str = f'{PARQUET_TEMPORAL_PARTITION_KEY}='
+    output_subpartition_path = get_decimation_subpartition_path(dataset_root_path, output_absolute_ratio)
+    for filepath in enumerate_files_in_dir_tree(
+            output_subpartition_path):  # TODO: Solve race condition potential of lazy iterator
+        parent_dirpath, filename = os.path.split(filepath)
+        pre_temporal_path, temporal_path_chunk = os.path.split(parent_dirpath)
+
+        if not (temporal_path_chunk.startswith(partition_prefix_str)):
+            log.error(
+                f"Filepath {filepath} does not have parent dir specifying partition with key {PARQUET_TEMPORAL_PARTITION_KEY}")
+            continue
+
+        current_temporal_partition_value = int(temporal_path_chunk.replace(partition_prefix_str, ''))
+        new_temporal_partition_value = get_partition_id(current_temporal_partition_value, output_hours_per_partition,
+                                                        partition_epoch_offset_hours)
+        new_temporal_path_chunk = f'{PARQUET_TEMPORAL_PARTITION_KEY}={new_temporal_partition_value}'
+        new_filepath_parent_dir = os.path.join(pre_temporal_path, new_temporal_path_chunk)
+        new_filepath = os.path.join(new_filepath_parent_dir, filename)
+
+        os.makedirs(new_filepath_parent_dir, exist_ok=True)
+        shutil.move(filepath, new_filepath)
+
+        parent_dirpath_remaining_file_count = len(os.listdir(parent_dirpath))
+        if parent_dirpath_remaining_file_count == 0:
+            log.debug(f'Cleaning up empty dir "{parent_dirpath}"')
+            os.rmdir(parent_dirpath)
+
+        epoch_dt = datetime(2000, 1, 1, 12)
+        old_partition_dt = epoch_dt + timedelta(microseconds=current_temporal_partition_value)
+        new_partition_dt = epoch_dt + timedelta(microseconds=new_temporal_partition_value)
+        log.debug(f'repartitioning from {old_partition_dt.isoformat()} to {new_partition_dt.isoformat()}')
+
 if __name__ == '__main__':
 
+    #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
     dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
-
+    base_hours_per_partition = 24
     decimation_step_factors = [20, 20, 20, 3]  # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
-    input_total_ratio = 1  # input decimation level as ratio of full-resolution
+    partition_epoch_offset_hours = 12
+    #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
+
+    src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
     for step_factor in decimation_step_factors:
-        input_decimation_partition_path = get_decimation_subpartition(dataset_root_path, input_total_ratio)
+        run_config = get_initial_runconfig() if src_absolute_ratio == 1 else get_subsequent_runconfig()
+        output_absolute_ratio = src_absolute_ratio * step_factor
+        output_hours_per_partition = base_hours_per_partition * output_absolute_ratio
 
-        output_total_ratio = input_total_ratio * step_factor  # output decimation level as ratio of full-resolution
-        output_decimation_partition_path = get_decimation_subpartition(dataset_root_path, output_total_ratio)
+        log.info(f'Decimating from 1:{src_absolute_ratio} to 1:{output_absolute_ratio}')
+        execution_start = datetime.now()
+        apply_decimation_stage(run_config, dataset_root_path, src_absolute_ratio, step_factor)
+        log.info(
+            f"decimation stage for one week's data completed in {get_human_readable_elapsed_since(execution_start)}")
 
-        target_files = enumerate_files_in_dir_tree(input_decimation_partition_path, '.*\.parquet$', match_filename_only=True)
-        for input_filepath in target_files[:1]:
-            output_filepath = input_filepath.replace(input_decimation_partition_path, output_decimation_partition_path)
-            output_filepath_parent_dir = os.path.split(output_filepath)[0]
-            os.makedirs(output_filepath_parent_dir, exist_ok=True)
+        log.info(f'Repartitioning {dataset_root_path} to {output_hours_per_partition}hrs/partition')
+        execution_start = datetime.now()
+        temporally_repartition(dataset_root_path, output_absolute_ratio, output_hours_per_partition, partition_epoch_offset_hours)
+        log.info(
+            f"Repartitioning completed in {get_human_readable_elapsed_since(execution_start)}")
 
-            execution_start = datetime.now()
-            log.info(f'Decimating from 1:{input_total_ratio} to 1:{output_total_ratio}')
-            run_config = get_initial_runconfig() if input_total_ratio == 1 else get_subsequent_runconfig()
-            decimate_file_by_constant_factor(step_factor, run_config, input_filepath, output_filepath)
-            input_total_ratio = output_total_ratio
-            log.info(f"decimation of one day's data completed in {get_human_readable_elapsed_since(execution_start)}")
+
+        src_absolute_ratio = output_absolute_ratio
