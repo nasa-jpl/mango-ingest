@@ -9,6 +9,7 @@ import pandas as pd
 import pyarrow as pa
 from pyarrow import parquet as pq
 
+from masschange.datasets.utils.performance import get_prepruned_parquet_path, safely_remove_temporary_index
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
@@ -149,7 +150,7 @@ def apply_decimation_stage(run_config: AggregationRunConfig, dataset_root_path: 
         decimate_file_by_constant_factor(step_factor, run_config, input_filepath, output_filepath)
 
 
-def temporally_repartition(dataset_root_path: str, output_absolute_ratio: int, output_hours_per_partition: int, partition_epoch_offset_hours: int):
+def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, output_hours_per_partition: int, partition_epoch_offset_hours: int):
     """
 
     Parameters
@@ -164,9 +165,7 @@ def temporally_repartition(dataset_root_path: str, output_absolute_ratio: int, o
 
     """
     partition_prefix_str = f'{PARQUET_TEMPORAL_PARTITION_KEY}='
-    output_subpartition_path = get_decimation_subpartition_path(dataset_root_path, output_absolute_ratio)
-    for filepath in enumerate_files_in_dir_tree(
-            output_subpartition_path):  # TODO: Solve race condition potential of lazy iterator
+    for filepath in enumerate_files_in_dir_tree(subpartition_path):  # TODO: Solve race condition potential of lazy iterator
         parent_dirpath, filename = os.path.split(filepath)
         pre_temporal_path, temporal_path_chunk = os.path.split(parent_dirpath)
 
@@ -209,6 +208,7 @@ if __name__ == '__main__':
         run_config = get_initial_runconfig() if src_absolute_ratio == 1 else get_subsequent_runconfig()
         output_absolute_ratio = src_absolute_ratio * step_factor
         output_hours_per_partition = base_hours_per_partition * output_absolute_ratio
+        decimation_subpartition_path = get_decimation_subpartition_path(dataset_root_path, output_absolute_ratio)
 
         log.info(f'Decimating from 1:{src_absolute_ratio} to 1:{output_absolute_ratio}')
         execution_start = datetime.now()
@@ -218,9 +218,45 @@ if __name__ == '__main__':
 
         log.info(f'Repartitioning {dataset_root_path} to {output_hours_per_partition}hrs/partition')
         execution_start = datetime.now()
-        temporally_repartition(dataset_root_path, output_absolute_ratio, output_hours_per_partition, partition_epoch_offset_hours)
+        temporally_repartition(decimation_subpartition_path, output_absolute_ratio, output_hours_per_partition, partition_epoch_offset_hours)
         log.info(
             f"Repartitioning completed in {get_human_readable_elapsed_since(execution_start)}")
+
+
+        def extract_partition_value_from_path(partition_key: str, path: str) -> str:
+            partition_chunk_prefix = f'{partition_key}='
+            path_chunks = path.split(os.sep)
+            relevant_chunk = next(c for c in path_chunks if c.startswith(partition_chunk_prefix))
+            return relevant_chunk.replace(partition_chunk_prefix, '')
+
+        merged_output_filename = 'merged.parquet'
+        partition_values = [extract_partition_value_from_path(PARQUET_TEMPORAL_PARTITION_KEY, dirpath) for dirpath in os.listdir(decimation_subpartition_path)]
+        for partition_value in partition_values:
+            parquet_temp_path = get_prepruned_parquet_path([partition_value], decimation_subpartition_path, partition_key=PARQUET_TEMPORAL_PARTITION_KEY)
+            temporal_partition_path = os.path.join(decimation_subpartition_path, f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
+            output_final_filepath = os.path.join(temporal_partition_path, merged_output_filename)
+            # pre-cleanup filepath won't get picked up for deletion by the cleanup regex
+            output_precleanup_filepath = output_final_filepath + '.do-not-delete'
+
+            # Create merged/re-sorted table
+            src_ds = (pq.ParquetDataset(parquet_temp_path))
+            src_table = src_ds.read()
+            src_table.sort_by('rcvtime')
+            pq.write_table(src_table, output_precleanup_filepath)
+
+            # clean up source files
+            paths_to_delete = enumerate_files_in_dir_tree(decimation_subpartition_path, '.*\.parquet$',
+                                                          match_filename_only=True)
+            for filepath in paths_to_delete:
+                try:
+                    os.remove(filepath)
+                except Exception as err:
+                    raise RuntimeError(f'Failed to clean up parquet merge source file "{filepath}": {err}')
+
+            # remove temp parquet structure and rename merged file, now that cleanup is complete
+            os.rename(output_precleanup_filepath, output_final_filepath)
+            safely_remove_temporary_index(parquet_temp_path)
+            log.debug(f'Merged the contents of {decimation_subpartition_path} into {output_final_filepath}')
 
 
         src_absolute_ratio = output_absolute_ratio
