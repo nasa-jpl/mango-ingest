@@ -111,7 +111,7 @@ def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_
     spark_df: pyspark.sql.DataFrame = spark.createDataFrame(pd_df)
     spark_df.write \
         .format('parquet') \
-        .partitionBy(PARQUET_TEMPORAL_PARTITION_KEY) \
+        .partitionBy(['satellite_id', PARQUET_TEMPORAL_PARTITION_KEY]) \
         .bucketBy(1, 'rcvtime') \
         .sortBy('rcvtime') \
         .option('path', full_resolution_parquet_root) \
