@@ -88,6 +88,11 @@ def get_decimation_subpartition_path(dataset_root_path: str, decimation_factor: 
 
 
 def get_initial_runconfig() -> AggregationRunConfig:
+    # Get AggregationRunConfig for the first stage of decimation (where the schema is different from subsequent
+    # decimation stages)
+    #
+    # TODO: Alter ingest so that decimation_factor=1 schema matches downstream schema, allowing a single
+    #  AggregationRunConfig to be used for all stages
     aggregation_funcs = {
         'lin_accl_x': ['min', 'max'],
         'lin_accl_y': ['min', 'max'],
@@ -113,6 +118,11 @@ def get_initial_runconfig() -> AggregationRunConfig:
 
 
 def get_subsequent_runconfig() -> AggregationRunConfig:
+    # Get AggregationRunConfig for the second->nth stages of decimation (where the schema is different from the initial
+    # decimation stage)
+    #
+    # TODO: Alter ingest so that decimation_factor=1 schema matches downstream schema, allowing a single
+    #  AggregationRunConfig to be used for all stages
     geometries = {'lin', 'ang'}
     dimensions = {'x', 'y', 'z'}
     measurement_field_names = {f'{geom}_accl_{dim}' for dim in dimensions for geom in geometries}
