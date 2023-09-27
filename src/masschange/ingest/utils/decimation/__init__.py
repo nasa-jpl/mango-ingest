@@ -136,7 +136,7 @@ def get_subsequent_runconfig() -> AggregationRunConfig:
     }
 
     column_rename_mappings = ({f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in
-                              measurement_field_names} | {'rcvtime_mean': 'rcvtime'})
+                               measurement_field_names} | {'rcvtime_mean': 'rcvtime'})
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
 
@@ -158,7 +158,8 @@ def apply_decimation_stage(run_config: AggregationRunConfig, dataset_root_path: 
         decimate_file_by_constant_factor(step_factor, run_config, input_filepath, output_filepath)
 
 
-def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, output_hours_per_partition: int, partition_epoch_offset_hours: int):
+def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, output_hours_per_partition: int,
+                           partition_epoch_offset_hours: int):
     """
 
     Parameters
@@ -173,7 +174,8 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
 
     """
     partition_prefix_str = f'{PARQUET_TEMPORAL_PARTITION_KEY}='
-    for filepath in enumerate_files_in_dir_tree(subpartition_path):  # TODO: Solve race condition potential of lazy iterator
+    for filepath in enumerate_files_in_dir_tree(
+            subpartition_path):  # TODO: Solve race condition potential of lazy iterator
         parent_dirpath, filename = os.path.split(filepath)
         pre_temporal_path, temporal_path_chunk = os.path.split(parent_dirpath)
 
@@ -203,7 +205,8 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
         log.debug(f'repartitioning from {old_partition_dt.isoformat()} to {new_partition_dt.isoformat()}')
 
 
-def process(decimation_step_factors: List[int], base_hours_per_partition: int, partition_epoch_offset_hours: int, dataset_subset_path: str):
+def process(decimation_step_factors: List[int], base_hours_per_partition: int, partition_epoch_offset_hours: int,
+            dataset_subset_path: str):
     log.info(f'processing {dataset_subset_path}')
     src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
     for step_factor in decimation_step_factors:
@@ -265,16 +268,3 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             log.debug(f'Merged the contents of {decimation_subpartition_path} into {output_final_filepath}')
 
         src_absolute_ratio = output_absolute_ratio
-
-if __name__ == '__main__':
-
-    #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
-    dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
-    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in {1,2}]  # TODO: clarify the idea of dataset vs dataset subset - it's really murky at the moment
-    base_hours_per_partition = 24
-    decimation_step_factors = [20, 20, 20, 3]  # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
-    partition_epoch_offset_hours = 12
-    #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
-
-    for dataset_subset_path in dataset_subset_root_paths:
-        process(decimation_step_factors, base_hours_per_partition, partition_epoch_offset_hours, dataset_subset_path)
