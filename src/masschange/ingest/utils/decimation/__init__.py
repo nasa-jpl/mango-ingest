@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import shutil
 from datetime import datetime, timedelta
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -27,7 +28,8 @@ def decimate_file_by_constant_factor(factor: int, run_config: AggregationRunConf
     in_table = in_ds.read()
 
     df = in_table.to_pandas()
-    decimated_df = _decimate_df_by_constant_factor(factor, run_config, df)
+    log.info(f'decimating data from {input_path}')
+    decimated_df = decimate_df_by_constant_factor(factor, run_config, df)
 
     log.info(f'writing decimated output to {output_path}')
     out_table = pa.Table.from_pandas(decimated_df, preserve_index=False)
@@ -43,6 +45,7 @@ def decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig
     cores = 12
     chunks = np.array_split(df, cores)
     decimation_f = functools.partial(_decimate_df_by_constant_factor, factor, run_config)
+    log.info(f'distributing DF across {cores} cores for decimation')
     with multiprocessing.Pool(cores) as mp_pool:
         decimated_chunks = mp_pool.map(decimation_f, chunks)
 
@@ -101,17 +104,14 @@ def get_initial_runconfig() -> AggregationRunConfig:
         'ang_accl_y': ['min', 'max'],
         'ang_accl_z': ['min', 'max'],
         'rcvtime': np.mean,
-        'satellite_id': pd.Series.unique
     }
 
     type_conversion_mappings = {
         'rcvtime_mean': 'long',
-        'satellite_id_unique': 'long'  # convert from single-element array to single value
     }
 
     column_rename_mappings = {
         'rcvtime_mean': 'rcvtime',
-        'satellite_id_unique': 'satellite_id'
     }
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
@@ -129,20 +129,14 @@ def get_subsequent_runconfig() -> AggregationRunConfig:
     measurement_aggregations = {'min', 'max'}
     aggregation_funcs = {f'{fn}_{agg}': [agg] for agg in measurement_aggregations for fn in measurement_field_names} | {
         'rcvtime': np.mean,
-        'satellite_id': pd.Series.unique
     }
 
     type_conversion_mappings = {
         'rcvtime_mean': 'long',
-        'satellite_id_unique': 'long'  # convert from single-element array to single value
     }
 
     column_rename_mappings = ({f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in
-                              measurement_field_names} |
-                              {
-                                  'rcvtime_mean': 'rcvtime',
-                                  'satellite_id_unique': 'satellite_id'
-                              })
+                              measurement_field_names} | {'rcvtime_mean': 'rcvtime'})
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
 
@@ -208,35 +202,29 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
         new_partition_dt = epoch_dt + timedelta(microseconds=new_temporal_partition_value)
         log.debug(f'repartitioning from {old_partition_dt.isoformat()} to {new_partition_dt.isoformat()}')
 
-if __name__ == '__main__':
 
-    #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
-    dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
-    base_hours_per_partition = 24
-    decimation_step_factors = [20, 20, 20, 3]  # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
-    partition_epoch_offset_hours = 12
-    #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
-
-    # src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
-    src_absolute_ratio = 20  # dev value to skip long-runtime first level
+def process(decimation_step_factors: List[int], base_hours_per_partition: int, partition_epoch_offset_hours: int, dataset_subset_path: str):
+    log.info(f'processing {dataset_subset_path}')
+    src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
     for step_factor in decimation_step_factors:
         run_config = get_initial_runconfig() if src_absolute_ratio == 1 else get_subsequent_runconfig()
         output_absolute_ratio = src_absolute_ratio * step_factor
         output_hours_per_partition = base_hours_per_partition * output_absolute_ratio
-        decimation_subpartition_path = get_decimation_subpartition_path(dataset_root_path, output_absolute_ratio)
+
+        decimation_subpartition_path = get_decimation_subpartition_path(dataset_subset_path, output_absolute_ratio)
 
         log.info(f'Decimating from 1:{src_absolute_ratio} to 1:{output_absolute_ratio}')
         execution_start = datetime.now()
-        apply_decimation_stage(run_config, dataset_root_path, src_absolute_ratio, step_factor)
+        apply_decimation_stage(run_config, dataset_subset_path, src_absolute_ratio, step_factor)
         log.info(
             f"decimation stage for one week's data completed in {get_human_readable_elapsed_since(execution_start)}")
 
-        log.info(f'Repartitioning {dataset_root_path} to {output_hours_per_partition}hrs/partition')
+        log.info(f'Repartitioning {dataset_subset_path} to {output_hours_per_partition}hrs/partition')
         execution_start = datetime.now()
-        temporally_repartition(decimation_subpartition_path, output_absolute_ratio, output_hours_per_partition, partition_epoch_offset_hours)
+        temporally_repartition(decimation_subpartition_path, output_absolute_ratio, output_hours_per_partition,
+                               partition_epoch_offset_hours)
         log.info(
             f"Repartitioning completed in {get_human_readable_elapsed_since(execution_start)}")
-
 
         def extract_partition_value_from_path(partition_key: str, path: str) -> str:
             partition_chunk_prefix = f'{partition_key}='
@@ -245,10 +233,13 @@ if __name__ == '__main__':
             return relevant_chunk.replace(partition_chunk_prefix, '')
 
         merged_output_filename = 'merged.parquet'
-        partition_values = [extract_partition_value_from_path(PARQUET_TEMPORAL_PARTITION_KEY, dirpath) for dirpath in os.listdir(decimation_subpartition_path)]
+        partition_values = [extract_partition_value_from_path(PARQUET_TEMPORAL_PARTITION_KEY, dirpath) for dirpath in
+                            os.listdir(decimation_subpartition_path)]
         for partition_value in partition_values:
-            parquet_temp_path = get_prepruned_parquet_path([partition_value], decimation_subpartition_path, partition_key=PARQUET_TEMPORAL_PARTITION_KEY)
-            temporal_partition_path = os.path.join(decimation_subpartition_path, f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
+            parquet_temp_path = get_prepruned_parquet_path([partition_value], decimation_subpartition_path,
+                                                           partition_key=PARQUET_TEMPORAL_PARTITION_KEY)
+            temporal_partition_path = os.path.join(decimation_subpartition_path,
+                                                   f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
             output_final_filepath = os.path.join(temporal_partition_path, merged_output_filename)
             # pre-cleanup filepath won't get picked up for deletion by the cleanup regex
             output_precleanup_filepath = output_final_filepath + '.do-not-delete'
@@ -256,7 +247,7 @@ if __name__ == '__main__':
             # Create merged/re-sorted table
             src_ds = (pq.ParquetDataset(parquet_temp_path))
             src_table = src_ds.read()
-            src_table.sort_by([('satellite_id', 'ascending'), ('rcvtime', 'ascending')])
+            src_table.sort_by([('rcvtime', 'ascending')])
             pq.write_table(src_table, output_precleanup_filepath)
 
             # clean up source files
@@ -273,5 +264,17 @@ if __name__ == '__main__':
             safely_remove_temporary_index(parquet_temp_path)
             log.debug(f'Merged the contents of {decimation_subpartition_path} into {output_final_filepath}')
 
-
         src_absolute_ratio = output_absolute_ratio
+
+if __name__ == '__main__':
+
+    #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
+    dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
+    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in {1,2}]  # TODO: clarify the idea of dataset vs dataset subset - it's really murky at the moment
+    base_hours_per_partition = 24
+    decimation_step_factors = [20, 20, 20, 3]  # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
+    partition_epoch_offset_hours = 12
+    #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
+
+    for dataset_subset_path in dataset_subset_root_paths:
+        process(decimation_step_factors, base_hours_per_partition, partition_epoch_offset_hours, dataset_subset_path)
