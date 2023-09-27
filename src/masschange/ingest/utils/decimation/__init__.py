@@ -27,7 +27,7 @@ def decimate_file_by_constant_factor(factor: int, run_config: AggregationRunConf
     in_table = in_ds.read()
 
     df = in_table.to_pandas()
-    decimated_df = decimate_df_by_constant_factor(factor, run_config, df)
+    decimated_df = _decimate_df_by_constant_factor(factor, run_config, df)
 
     log.info(f'writing decimated output to {output_path}')
     out_table = pa.Table.from_pandas(decimated_df, preserve_index=False)
@@ -40,7 +40,6 @@ def decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig
     # N.B. THIS WILL RESULT IN CORES-1 ADDITIONAL AGGREGATIONS WITH INCONSISTENT INPUT ROW COUNTS.  THIS IS ACCEPTABLE FOR
     # PLOTTING BUT MAYBE NOT FOR EXACT DATA ANALYSIS.  KEEP AN EYE ON THIS.
 
-    # TODO: IMPLEMENT SORTING ON TIMESTAMP TO ENSURE FAST TEMPORAL QUERYING - TEST HOW IMPORTANT THAT IS
     cores = 12
     chunks = np.array_split(df, cores)
     decimation_f = functools.partial(_decimate_df_by_constant_factor, factor, run_config)
@@ -52,13 +51,10 @@ def decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig
 
 
 def _decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig, df: pd.DataFrame):
-    # TODO: CONVERT df TO np.DataFrame, reinstate satellite_id
     decimate_f = functools.partial(decimate_rowgroup, run_config)
     # create row-groups every {factor} rows, and apply decimation function to each row-group
     decimated_df = df.groupby(df.index // factor).apply(decimate_f)
 
-    # hack - this needs to be a partition key.  Assumes file is homogeneous wrt satellite-id, which is currently valid
-    # decimated_df['satellite_id'] = df['satellite_id'][0]
     return decimated_df
 
 
@@ -99,15 +95,18 @@ def get_initial_runconfig() -> AggregationRunConfig:
         'ang_accl_x': ['min', 'max'],
         'ang_accl_y': ['min', 'max'],
         'ang_accl_z': ['min', 'max'],
-        'rcvtime': np.mean
+        'rcvtime': np.mean,
+        'satellite_id': pd.Series.unique
     }
 
     type_conversion_mappings = {
-        'rcvtime_mean': 'long'
+        'rcvtime_mean': 'long',
+        'satellite_id_unique': 'long'  # convert from single-element array to single value
     }
 
     column_rename_mappings = {
-        'rcvtime_mean': 'rcvtime'
+        'rcvtime_mean': 'rcvtime',
+        'satellite_id_unique': 'satellite_id'
     }
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
@@ -119,16 +118,21 @@ def get_subsequent_runconfig() -> AggregationRunConfig:
     measurement_field_names = {f'{geom}_accl_{dim}' for dim in dimensions for geom in geometries}
     measurement_aggregations = {'min', 'max'}
     aggregation_funcs = {f'{fn}_{agg}': [agg] for agg in measurement_aggregations for fn in measurement_field_names} | {
-        'rcvtime': np.mean}
-
-    type_conversion_mappings = {
-        'rcvtime_mean': 'long'
+        'rcvtime': np.mean,
+        'satellite_id': pd.Series.unique
     }
 
-    column_rename_mappings = {f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in
-                              measurement_field_names} | {
-                                 'rcvtime_mean': 'rcvtime'
-                             }
+    type_conversion_mappings = {
+        'rcvtime_mean': 'long',
+        'satellite_id_unique': 'long'  # convert from single-element array to single value
+    }
+
+    column_rename_mappings = ({f'{fn}_{agg}_{agg}': f'{fn}_{agg}' for agg in measurement_aggregations for fn in
+                              measurement_field_names} |
+                              {
+                                  'rcvtime_mean': 'rcvtime',
+                                  'satellite_id_unique': 'satellite_id'
+                              })
 
     return AggregationRunConfig(aggregation_funcs, type_conversion_mappings, column_rename_mappings)
 
@@ -203,7 +207,8 @@ if __name__ == '__main__':
     partition_epoch_offset_hours = 12
     #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
 
-    src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
+    # src_absolute_ratio = 1  # input decimation level as ratio of full-resolution
+    src_absolute_ratio = 20  # dev value to skip long-runtime first level
     for step_factor in decimation_step_factors:
         run_config = get_initial_runconfig() if src_absolute_ratio == 1 else get_subsequent_runconfig()
         output_absolute_ratio = src_absolute_ratio * step_factor
@@ -241,7 +246,7 @@ if __name__ == '__main__':
             # Create merged/re-sorted table
             src_ds = (pq.ParquetDataset(parquet_temp_path))
             src_table = src_ds.read()
-            src_table.sort_by('rcvtime')
+            src_table.sort_by([('satellite_id', 'ascending'), ('rcvtime', 'ascending')])
             pq.write_table(src_table, output_precleanup_filepath)
 
             # clean up source files
