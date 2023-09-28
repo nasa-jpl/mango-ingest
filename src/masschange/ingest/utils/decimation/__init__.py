@@ -235,14 +235,22 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             relevant_chunk = next(c for c in path_chunks if c.startswith(partition_chunk_prefix))
             return relevant_chunk.replace(partition_chunk_prefix, '')
 
-        merged_output_filename = 'merged.parquet'
         partition_values = [extract_partition_value_from_path(PARQUET_TEMPORAL_PARTITION_KEY, dirpath) for dirpath in
                             os.listdir(decimation_subpartition_path)]
         for partition_value in partition_values:
             parquet_temp_path = get_prepruned_parquet_path([partition_value], decimation_subpartition_path,
                                                            partition_key=PARQUET_TEMPORAL_PARTITION_KEY)
+
+            def subtree_is_empty(dir_path: str) -> bool:
+                return not any(len(fns) > 0 for root, dirs, fns in os.walk(dir_path))
+
+            if subtree_is_empty(parquet_temp_path):
+                log.warn(f'skipping empty parquet pseudo-index: {parquet_temp_path}')
+                continue
+
             temporal_partition_path = os.path.join(decimation_subpartition_path,
                                                    f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
+            merged_output_filename = 'merged.parquet'
             output_final_filepath = os.path.join(temporal_partition_path, merged_output_filename)
             # pre-cleanup filepath won't get picked up for deletion by the cleanup regex
             output_precleanup_filepath = output_final_filepath + '.do-not-delete'

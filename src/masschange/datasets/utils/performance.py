@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from tempfile import mkdtemp
@@ -14,11 +15,13 @@ def get_prepruned_parquet_path(partition_values: Sequence[str], src_parquet_root
     extant files in the whole parquet dataset.
     """
     temporary_index_dir = mkdtemp(prefix='gma-index-')
+    logging.debug(f'creating pseudo-index at {temporary_index_dir}')
     for value in partition_values:
         subtree_name = f'{partition_key}={value}'
         src = os.path.join(src_parquet_root, subtree_name)
         dest = os.path.join(temporary_index_dir, subtree_name)
         if os.path.exists(src):
+            logging.debug(f'adding path {src} to pseudo-index')
             os.symlink(src, dest, target_is_directory=True)
 
     return temporary_index_dir
@@ -30,8 +33,11 @@ def safely_remove_temporary_index(index_path: str):
     
     # Guard against deletion of non-temp dirs
     if not index_path.startswith(tempfile.gettempdir()):
+        logging.warning(f'failed to remove pseudo-index at {index_path} - not a temp directory')
         return
-    
+
+    logging.debug(f'removing pseudo-index at {index_path}')
+
     for fn in os.scandir(index_path):
         fp = os.path.join(index_path, fn)
         os.unlink(fp)
