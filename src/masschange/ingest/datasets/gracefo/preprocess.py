@@ -36,4 +36,8 @@ if __name__ == '__main__':
     #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
 
     for dataset_subset_path in dataset_subset_root_paths:
-        process(decimation_step_factors, base_hours_per_partition, partition_epoch_offset_hours, dataset_subset_path)
+        try:
+            process(decimation_step_factors, base_hours_per_partition, partition_epoch_offset_hours, dataset_subset_path)
+        except Exception as err:
+            log.exception(f'preprocess.py failed unexpectedly with {err}')
+            exit(1)
