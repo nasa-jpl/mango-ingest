@@ -35,7 +35,7 @@ def decimate_file_by_constant_factor(factor: int, run_config: AggregationRunConf
     out_table = pa.Table.from_pandas(decimated_df, preserve_index=False)
     pq.write_table(out_table, output_path)
 
-    log.info('decimation complete!')
+    # log.info('decimation complete!')
 
 
 def decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig, df: pd.DataFrame):
@@ -45,7 +45,7 @@ def decimate_df_by_constant_factor(factor: int, run_config: AggregationRunConfig
     cores = 12
     chunks = np.array_split(df, cores)
     decimation_f = functools.partial(_decimate_df_by_constant_factor, factor, run_config)
-    log.info(f'distributing DF across {cores} cores for decimation')
+    # log.info(f'distributing DF across {cores} cores for decimation')
     with multiprocessing.Pool(cores) as mp_pool:
         decimated_chunks = mp_pool.map(decimation_f, chunks)
 
@@ -242,7 +242,7 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
                                                            partition_key=PARQUET_TEMPORAL_PARTITION_KEY)
 
             def subtree_is_empty(dir_path: str) -> bool:
-                return not any(len(fns) > 0 for root, dirs, fns in os.walk(dir_path))
+                return not any(len(fns) > 0 for root, dirs, fns in os.walk(dir_path, followlinks=True))
 
             if subtree_is_empty(parquet_temp_path):
                 log.warn(f'skipping empty parquet pseudo-index: {parquet_temp_path}')
