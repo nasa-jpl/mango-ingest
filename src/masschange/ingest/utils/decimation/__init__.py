@@ -250,9 +250,19 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             def subtree_is_empty(dir_path: str) -> bool:
                 return not any(len(fns) > 0 for root, dirs, fns in os.walk(dir_path, followlinks=True))
 
-            if subtree_is_empty(parquet_temp_path):
+            def get_subtree_file_count(dir_path: str) -> int:
+                return sum(len(fns) for root, dirs, fns in os.walk(dir_path, followlinks=True))
+
+            pseudoindex_file_count = get_subtree_file_count(parquet_temp_path)
+            if pseudoindex_file_count > 0:
+                log.info(f'pseudo-index contains {pseudoindex_file_count} files')
+            else:
                 log.warn(f'skipping empty parquet pseudo-index: {parquet_temp_path}')
+                safely_remove_temporary_index(parquet_temp_path)
                 continue
+
+            # TODO: Consider a check to ensure that the set of files in parquet_temp_path is equal to the set of files
+            #  in temporal_partition_path
 
             temporal_partition_path = os.path.join(decimation_subpartition_path,
                                                    f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
