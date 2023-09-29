@@ -231,8 +231,7 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
         log.info(f'Decimating from 1:{src_absolute_ratio} to 1:{output_absolute_ratio}')
         execution_start = datetime.now()
         apply_decimation_stage(run_config, dataset_subset_path, src_absolute_ratio, step_factor)
-        log.info(
-            f"decimation stage for one week's data completed in {get_human_readable_elapsed_since(execution_start)}")
+        log.info(f"decimation step completed in {get_human_readable_elapsed_since(execution_start)}")
 
         log.info(f'Repartitioning {dataset_subset_path} to {output_hours_per_partition}hrs/partition')
         execution_start = datetime.now()
