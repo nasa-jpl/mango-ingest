@@ -45,14 +45,15 @@ ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 ENV MASSCHANGE_REPO_ROOT=/app/masschange
 ENV MASSCHANGE_DATA_ROOT=/data
 ENV MASSCHANGE_LOGS_ROOT=/data/logs/masschange
-RUN ln -s $MASSCHANGE_LOGS_ROOT /var/log/masschange
 
 # Create application directories
 USER 0
-RUN mkdir /data $MASSCHANGE_LOGS_ROOT \
+RUN mkdir -p /data $MASSCHANGE_LOGS_ROOT \
  && chown -R appuser /data $MASSCHANGE_LOGS_ROOT \
  && chmod -R a+w /data
 
+# Create link to persistent logs at expected log location
+RUN ln -s $MASSCHANGE_LOGS_ROOT /var/log/masschange
 
 # Copy application files
 USER 0
