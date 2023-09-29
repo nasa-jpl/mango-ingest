@@ -12,7 +12,7 @@ from pyarrow import parquet as pq
 
 from masschange.datasets.utils.performance import get_prepruned_parquet_path, safely_remove_temporary_index
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
-from masschange.ingest.utils import get_configured_logger
+from masschange.ingest.utils import get_configured_logger, get_random_hex_id
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.decimation.aggregationrunconfig import AggregationRunConfig
 from masschange.ingest.utils.decimation.partitioning import get_partition_id
@@ -192,7 +192,7 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
         new_filepath = os.path.join(new_filepath_parent_dir, filename)
 
         os.makedirs(new_filepath_parent_dir, exist_ok=True)
-        shutil.move(filepath, new_filepath)
+        shutil.move(filepath, new_filepath)  # TODO: Figure out how to ensure, in a concurrency-safe way, how to avoid collision overwrites
 
         parent_dirpath_remaining_file_count = len(os.listdir(parent_dirpath))
         if parent_dirpath_remaining_file_count == 0:
@@ -250,7 +250,7 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
 
             temporal_partition_path = os.path.join(decimation_subpartition_path,
                                                    f'{PARQUET_TEMPORAL_PARTITION_KEY}={partition_value}')
-            merged_output_filename = 'merged.parquet'
+            merged_output_filename = f'{get_random_hex_id(32)}.parquet'
             output_final_filepath = os.path.join(temporal_partition_path, merged_output_filename)
             # pre-cleanup filepath won't get picked up for deletion by the cleanup regex
             output_precleanup_filepath = output_final_filepath + '.do-not-delete'
