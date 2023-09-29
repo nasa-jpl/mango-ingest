@@ -28,7 +28,9 @@ if __name__ == '__main__':
 
     #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
     # TODO: clarify the idea of dataset vs dataset subset - it's really murky at the moment
-    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in {1,2}]
+    # satellite_ids = {1, 2}
+    satellite_ids = {1}  #  TODO: Re-enable sat 2 after ingestion bug is sorted
+    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in satellite_ids]
     base_hours_per_partition = 24
     # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
     decimation_step_factors = [20, 20, 20, 3]
