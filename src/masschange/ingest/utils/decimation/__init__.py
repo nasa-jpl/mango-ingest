@@ -278,7 +278,7 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             pq.write_table(src_table, output_precleanup_filepath)
 
             # clean up source files
-            paths_to_delete = enumerate_files_in_dir_tree(decimation_subpartition_path, '.*\.parquet$',
+            paths_to_delete = enumerate_files_in_dir_tree(temporal_partition_path, '.*\.parquet$',
                                                           match_filename_only=True)
             for filepath in paths_to_delete:
                 try:
