@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import shutil
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Iterable
 
 import numpy as np
 import pandas as pd
@@ -162,6 +162,9 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
                            partition_epoch_offset_hours: int):
     """
 
+    Given a temporal subpartition and a new wider temporal partitioning span, move all files within that subpartition to
+    its new temporal subpartition (i.e. one aligning with the coarser-spaced values)
+
     Parameters
     ----------
     dataset_root_path -
@@ -191,18 +194,21 @@ def temporally_repartition(subpartition_path: str, output_absolute_ratio: int, o
         new_filepath_parent_dir = os.path.join(pre_temporal_path, new_temporal_path_chunk)
         new_filepath = os.path.join(new_filepath_parent_dir, filename)
 
+        # BEGIN TEMPORARY DEBUG INFO
+        epoch_dt = datetime(2000, 1, 1, 12)
+        old_partition_dt = epoch_dt + timedelta(microseconds=current_temporal_partition_value)
+        new_partition_dt = epoch_dt + timedelta(microseconds=new_temporal_partition_value)
+        log.debug(f'repartitioning from {current_temporal_partition_value} ({old_partition_dt.date().isoformat()}) to {new_temporal_partition_value} ({new_partition_dt.date().isoformat()})')
+        # END TEMPORARY DEBUG INFO
+
+        log.debug(f'moving .../{filepath.replace(pre_temporal_path, "", 1)} to .../{new_filepath.replace(pre_temporal_path, "", 1)}')
         os.makedirs(new_filepath_parent_dir, exist_ok=True)
         shutil.move(filepath, new_filepath)  # TODO: Figure out how to ensure, in a concurrency-safe way, how to avoid collision overwrites
 
         parent_dirpath_remaining_file_count = len(os.listdir(parent_dirpath))
         if parent_dirpath_remaining_file_count == 0:
-            log.debug(f'Cleaning up empty dir "{parent_dirpath}"')
+            log.debug(f'Cleaning up empty dir .../{parent_dirpath.replace(pre_temporal_path, "", 1)}')
             os.rmdir(parent_dirpath)
-
-        epoch_dt = datetime(2000, 1, 1, 12)
-        old_partition_dt = epoch_dt + timedelta(microseconds=current_temporal_partition_value)
-        new_partition_dt = epoch_dt + timedelta(microseconds=new_temporal_partition_value)
-        log.debug(f'repartitioning from {old_partition_dt.isoformat()} to {new_partition_dt.isoformat()}')
 
 
 def process(decimation_step_factors: List[int], base_hours_per_partition: int, partition_epoch_offset_hours: int,
@@ -250,12 +256,18 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             def subtree_is_empty(dir_path: str) -> bool:
                 return not any(len(fns) > 0 for root, dirs, fns in os.walk(dir_path, followlinks=True))
 
+            def get_filenames_in_subtree(dir_path: str) -> Iterable[str]:
+                for root, dirs, fns in os.walk(dir_path, followlinks=True):
+                    for fn in fns:
+                        yield fn
+
             def get_subtree_file_count(dir_path: str) -> int:
                 return sum(len(fns) for root, dirs, fns in os.walk(dir_path, followlinks=True))
 
             pseudoindex_file_count = get_subtree_file_count(parquet_temp_path)
             if pseudoindex_file_count > 0:
-                log.info(f'pseudo-index contains {pseudoindex_file_count} files')
+                filenames_formatted = "\n    ".join(get_filenames_in_subtree(parquet_temp_path))
+                log.info(f'pseudo-index contains {pseudoindex_file_count} files:\n    {filenames_formatted}')
             else:
                 log.warn(f'skipping empty parquet pseudo-index: {parquet_temp_path}')
                 safely_remove_temporary_index(parquet_temp_path)
@@ -282,13 +294,14 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
                                                           match_filename_only=True)
             for filepath in paths_to_delete:
                 try:
+                    # log.debug(f'removing file: {filepath}')
                     os.remove(filepath)
                 except Exception as err:
                     raise RuntimeError(f'Failed to clean up parquet merge source file "{filepath}": {err}')
 
             # remove temp parquet structure and rename merged file, now that cleanup is complete
             os.rename(output_precleanup_filepath, output_final_filepath)
+            log.debug(f'merged the contents of the pseudo-index into {output_final_filepath}')
             safely_remove_temporary_index(parquet_temp_path)
-            log.debug(f'Merged the contents of {decimation_subpartition_path} into {output_final_filepath}')
 
         src_absolute_ratio = output_absolute_ratio
