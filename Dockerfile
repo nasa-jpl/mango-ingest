@@ -43,8 +43,9 @@ ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 
 # Set application env vars
 ENV MASSCHANGE_REPO_ROOT=/app/masschange
-ENV MASSCHANGE_LOGS_ROOT=/var/log/masschange
 ENV MASSCHANGE_DATA_ROOT=/data
+ENV MASSCHANGE_LOGS_ROOT=/data/logs/masschange
+RUN ln -s $MASSCHANGE_LOGS_ROOT /var/log/masschange
 
 # Create application directories
 USER 0
