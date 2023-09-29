@@ -215,6 +215,12 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
         output_hours_per_partition = base_hours_per_partition * output_absolute_ratio
 
         decimation_subpartition_path = get_decimation_subpartition_path(dataset_subset_path, output_absolute_ratio)
+        # remove all existing data to prevent duplication during repeated runs
+        # TODO: implement earmarking/retention of merged files to allow avoidance of redundant processing, per issue #17
+        log.info(f'deleting existing data at {decimation_subpartition_path}')
+        if os.path.exists(decimation_subpartition_path):
+            shutil.rmtree(decimation_subpartition_path, ignore_errors=False)
+        os.makedirs(decimation_subpartition_path)
 
         log.info(f'Decimating from 1:{src_absolute_ratio} to 1:{output_absolute_ratio}')
         execution_start = datetime.now()
