@@ -54,12 +54,14 @@ class GraceFO1AFullResolutionDataset(TimeSeriesDataset):
 
     @classmethod
     def enumerate_temporal_partition_values(cls, from_dt: datetime, to_dt: datetime):
+        # TODO: Check performance, and optimize this to generate only keys which can be expected to exist given the
+        #  relevant decimation ratio.  Currently it generates values for every day, as this is trivial to implement.
         keys = []
-        date_iter = from_dt.date()
+        iter = datetime.combine(from_dt.date(), timestamp_epoch.time())
         one_day = timedelta(days=1)
-        end_date = to_dt.date()
-        while (date_iter <= end_date):
-            keys.append(date_iter.isoformat())
-            date_iter += one_day
+        iter_end = datetime.combine(to_dt, timestamp_epoch.time())
+        while iter <= iter_end:
+            keys.append(cls.dt_to_rcvtime(iter))
+            iter += one_day
 
         return keys
