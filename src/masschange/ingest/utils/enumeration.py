@@ -3,7 +3,7 @@ import re
 from typing import Iterable
 
 
-def enumerate_files_in_dir_tree(root_dir: str, match_regex: str | None = None, match_filename_only: bool = False) -> Iterable[str]:
+def enumerate_files_in_dir_tree(root_dir: str, match_regex: str | None = None, match_filename_only: bool = False, followlinks: bool = True) -> Iterable[str]:
     """
     Given a directory root and a regex match pattern, return all matching filepaths under it.
 
@@ -19,7 +19,7 @@ def enumerate_files_in_dir_tree(root_dir: str, match_regex: str | None = None, m
 
     """
 
-    for path, subdirs, filenames in os.walk(root_dir):
+    for path, subdirs, filenames in os.walk(root_dir, followlinks=followlinks):
         for filename in filenames:
             filepath = os.path.join(path, filename)
             match_target = filename if match_filename_only else filepath
