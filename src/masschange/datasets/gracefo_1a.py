@@ -56,6 +56,12 @@ class GraceFO1AFullResolutionDataset(TimeSeriesDataset):
     def enumerate_temporal_partition_values(cls, from_dt: datetime, to_dt: datetime):
         # TODO: Check performance, and optimize this to generate only keys which can be expected to exist given the
         #  relevant decimation ratio.  Currently it generates values for every day, as this is trivial to implement.
+        #  WAIT NO ACTUALLY THIS WON'T WORK - you need to include the partition value to the left and right of the
+        #  requested span - just doing the date will be insufficient.  At an absolute minimum you need to generate dates
+        #  from (from_dt - decimation factor) AND ensure that the generated values line up with the index steps
+        #  (see: 12hr epoch offset).  Really this needs to be done properly through a utility.
+        #  The simplest interim approach would be to generate all dates including one date left/right, then map those to
+        #  partition values with the utility and throw them into a set to deduplicate.
         keys = []
         iter = datetime.combine(from_dt.date(), timestamp_epoch.time())
         one_day = timedelta(days=1)
