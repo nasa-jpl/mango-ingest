@@ -29,6 +29,8 @@ def load_data_from_file(filepath: str):
     # Assign derived columns
     satellite_id = parse_satellite_id(filepath)
     df = df.assign(satellite_id=satellite_id)
+    # TODO: This was initially disabled to speed up ingestion - currently it appears that runtime resolution of this column is
+    #  fine from a performance perspective.
     # df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
     df['rcvtime'] = df.apply(populate_rcvtime, axis=1)
     df[PARQUET_TEMPORAL_PARTITION_KEY] = df.apply(populate_temporal_partition_key, axis=1)
