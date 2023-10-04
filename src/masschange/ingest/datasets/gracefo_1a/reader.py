@@ -86,7 +86,7 @@ def populate_timestamp(row) -> datetime:
 
 
 def populate_temporal_partition_key(row) -> str:
-    # WHEN ALTERING THIS, THE QUERY IN GraceFO1AFullResolutionDataset.select() MUST BE UPDATED OR PERFORMANCE WILL TANK
+    # WHEN ALTERING THIS, THE QUERY IN GraceFO1ADataset.select() MUST BE UPDATED OR PERFORMANCE WILL TANK
     #TODO: UPDATE THE ABOVE
 
     partition_id = get_partition_id(epoch_timestamp=row.rcvtime, hours_per_partition=24, epoch_offset_hours=12, epoch_unit_factor=1000000)
