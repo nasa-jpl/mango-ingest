@@ -1,3 +1,6 @@
+from masschange.datasets.timeseriesdatasetconfig import TimeSeriesDatasetConfig
+
+
 def get_partition_id(epoch_timestamp: int, hours_per_partition: int, epoch_offset_hours: int = 0, epoch_unit_factor: int = 1000000) -> int:
     """
     Given an integer epoch-based timestamp and a desired partition temporal span in hours, return the id for the
