@@ -10,7 +10,7 @@ from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
 
-class GraceFO1AFullResolutionDataset(TimeSeriesDataset):
+class GraceFO1ADataset(TimeSeriesDataset):
     # TODO: The root_parquet_path attribute will get messy when decimation is incorporated, refactoring will be necessary
     root_parquet_path = os.path.join(os.environ['PARQUET_ROOT'], 'gracefo_1a')
 

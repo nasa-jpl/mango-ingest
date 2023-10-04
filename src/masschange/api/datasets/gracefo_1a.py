@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
 
-from masschange.datasets.gracefo_1a import GraceFO1AFullResolutionDataset
+from masschange.datasets.gracefo_1a import GraceFO1ADataset
 from masschange.datasets.timeseriesdataset import TooMuchDataRequestedError
 
 router = APIRouter(prefix='/GRACEFO-1A')
@@ -13,7 +13,7 @@ async def get_full_resolution_data(
         from_isotimestamp: datetime = datetime.min,
         to_isotimestamp: datetime = datetime.max):
     try:
-        results = GraceFO1AFullResolutionDataset.select(from_isotimestamp, to_isotimestamp)
+        results = GraceFO1ADataset.select(from_isotimestamp, to_isotimestamp)
     except TooMuchDataRequestedError as err:
         raise HTTPException(status_code=400, detail=str(err))
 
@@ -27,5 +27,5 @@ async def get_full_resolution_data(
 @router.get('/fields', tags=['GRACEFO-1A', 'metadata'])
 async def get_available_fields():
     return {
-        'data': sorted(list(GraceFO1AFullResolutionDataset.get_available_fields()))
+        'data': sorted(list(GraceFO1ADataset.get_available_fields()))
     }
