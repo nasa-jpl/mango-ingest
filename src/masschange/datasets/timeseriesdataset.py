@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import List, Dict
 
+from masschange.datasets.timeseriesdatasetconfig import TimeSeriesDatasetConfig
 from masschange.datasets.utils.performance import get_prepruned_parquet_path_multilevel, safely_remove_multilevel_temporary_index
 
 
@@ -19,12 +20,19 @@ class TimeSeriesDataset(ABC):
         - root_parquet_path: a local-filesystem parquet src_filepath (or basepath, if partitioned)
     """
 
+    # TODO: Move these to TimeSeriesDataSetConfig, as well as other values like partition_key_hierarchy and the like
     root_parquet_path: str
     max_safe_select_temporal_span_at_full_resolution = timedelta(days=1)  # safety guard to prevent server crash
     max_select_results_count = 100000  # equivalent to a bit over one hour of full-resolution data
+    # END MOVE
 
     def __init__(self, root_parquet_path: str):
         self.root_parquet_path = root_parquet_path
+
+    @classmethod
+    @abstractmethod
+    def get_config(cls) -> TimeSeriesDatasetConfig:
+        pass
 
     @classmethod
     def select(cls, stream_id: str | int, from_dt: datetime, to_dt: datetime, requested_decimation_factor: int = 1, use_preprune_optimisation: bool = True) -> List[Dict]:
@@ -35,7 +43,7 @@ class TimeSeriesDataset(ABC):
                 f'Requested temporal span exceeds maximum allowed by server ({max_safe_select_temporal_span})')
 
         if use_preprune_optimisation:
-            temporal_partition_values = cls.enumerate_temporal_partition_values(from_dt, to_dt)
+            temporal_partition_values = cls.enumerate_temporal_partition_values(requested_decimation_factor, from_dt, to_dt)
 
             # TODO: Split this hardcoded structure out to subclass methods, as not all datasets will use these structures
             partition_key_hierarchy = ['satellite_id', 'decimation_factor', 'temporal_partition_key']
@@ -83,7 +91,7 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     @abstractmethod
-    def enumerate_temporal_partition_values(cls, from_dt: datetime, to_dt: datetime):
+    def enumerate_temporal_partition_values(cls, decimation_factor: int, from_dt: datetime, to_dt: datetime):
         pass
 
 

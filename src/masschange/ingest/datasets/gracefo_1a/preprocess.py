@@ -2,6 +2,7 @@
 import argparse
 import os
 
+from masschange.datasets.gracefo_1a import GraceFO1ADataset
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.utils.decimation import process
 
@@ -25,20 +26,12 @@ if __name__ == '__main__':
     dataset_root_path = args.data_root
     # dataset_root_path = '/nomount/masschange/data_volume_mount/gracefo_1a/'
     log.info(f'preprocessing GRACE-FO_1A data under {dataset_root_path}')
-
-    #### EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
-    # TODO: clarify the idea of dataset vs dataset subset - it's really murky at the moment
-    satellite_ids = {1, 2}
-    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in satellite_ids]
-    base_hours_per_partition = 24
-    # factor to decimate by in each step. yields results in 1:20, 1:400, 1:8000, 1:24000
-    decimation_step_factors = [20, 20, 20, 3]
-    partition_epoch_offset_hours = 12
-    #### END EXTRACT TO DATASET-SPECIFIC CLASS/OBJECT ####
+    config = GraceFO1ADataset.get_config()
+    dataset_subset_root_paths = [os.path.join(dataset_root_path, f'satellite_id={id}') for id in config.stream_ids]
 
     for dataset_subset_path in dataset_subset_root_paths:
         try:
-            process(decimation_step_factors, base_hours_per_partition, partition_epoch_offset_hours, dataset_subset_path)
+            process(config.decimation_step_factors, config.base_hours_per_partition, config.partition_epoch_offset_hours, dataset_subset_path)
         except Exception as err:
             log.exception(f'preprocess.py failed unexpectedly with {err}')
             exit(1)
