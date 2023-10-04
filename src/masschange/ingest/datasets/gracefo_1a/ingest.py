@@ -14,8 +14,8 @@ from pyspark.sql import SparkSession
 
 from masschange.ingest.utils import get_configured_logger
 from masschange.datasets.interface import get_spark_session
-from masschange.ingest.datasets.gracefo import reader
-from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGEX, \
+from masschange.ingest.datasets.gracefo_1a import reader
+from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since

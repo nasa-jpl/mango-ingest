@@ -5,7 +5,7 @@ from typing import List, Dict, Set
 from pyarrow import parquet as pq
 from pyarrow import compute as pc
 
-from masschange.ingest.datasets.gracefo.constants import reference_epoch as timestamp_epoch
+from masschange.ingest.datasets.gracefo_1a.constants import reference_epoch as timestamp_epoch
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
