@@ -40,7 +40,7 @@ class TimeSeriesDataset(ABC):
         requested_data_temporal_span = to_dt - from_dt
         if requested_data_temporal_span > max_safe_select_temporal_span:
             raise TooMuchDataRequestedError(
-                f'Requested temporal span exceeds maximum allowed by server ({max_safe_select_temporal_span})')
+                f'Requested temporal span {requested_data_temporal_span} exceeds maximum allowed by server ({max_safe_select_temporal_span}) at 1:{requested_decimation_factor} decimation')
 
         if use_preprune_optimisation:
             temporal_partition_values = cls.enumerate_temporal_partition_values(requested_decimation_factor, from_dt, to_dt)
