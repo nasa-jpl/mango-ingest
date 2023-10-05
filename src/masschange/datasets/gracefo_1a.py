@@ -29,7 +29,7 @@ class GraceFO1ADataset(TimeSeriesDataset):
     @classmethod
     def get_available_fields(cls) -> Set[str]:
         schema = pq.ParquetDataset(cls.root_parquet_path).schema
-        return set(schema.names).difference(cls.INTERNAL_USE_COLUMNS)
+        return set(schema.names).difference(cls.INTERNAL_USE_COLUMNS) | {'timestamp'}  # bandaid for runtime-generated timestamp field
 
     @classmethod
     def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime) -> List[Dict]:
@@ -77,14 +77,6 @@ class GraceFO1ADataset(TimeSeriesDataset):
 
     @classmethod
     def enumerate_temporal_partition_values(cls, decimation_factor: int, from_dt: datetime, to_dt: datetime):
-        # TODO: Check performance, and optimize this to generate only keys which can be expected to exist given the
-        #  relevant decimation ratio.  Currently it generates values for every day, as this is trivial to implement.
-        #  WAIT NO ACTUALLY THIS WON'T WORK - you need to include the partition value to the left and right of the
-        #  requested span - just doing the date will be insufficient.  At an absolute minimum you need to generate dates
-        #  from (from_dt - decimation factor) AND ensure that the generated values line up with the index steps
-        #  (see: 12hr epoch offset).  Really this needs to be done properly through a utility.
-        #  The simplest interim approach would be to generate all dates including one date left/right, then map those to
-        #  partition values with the utility and throw them into a set to deduplicate.
         config = cls.get_config()
         hours_per_partition = config.get_hours_per_partition(decimation_factor)
         values = set()
