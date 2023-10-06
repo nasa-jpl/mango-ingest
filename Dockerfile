@@ -44,16 +44,19 @@ ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 # Set application env vars
 ENV MASSCHANGE_REPO_ROOT=/app/masschange
 ENV MASSCHANGE_DATA_ROOT=/data
-ENV MASSCHANGE_LOGS_ROOT=/data/logs/masschange
+ENV MASSCHANGE_INGEST_LOGS_ROOT=/data/logs
+ENV MASSCHANGE_INGEST_LOGS_ALIAS=/var/log/masschange-ingest
+ENV MASSCHANGE_API_LOGS_ROOT=/var/log/masschange-api
 
 # Create application directories
 USER 0
-RUN mkdir -p /data $MASSCHANGE_LOGS_ROOT \
- && chown -R appuser /data $MASSCHANGE_LOGS_ROOT \
+RUN mkdir -p /data $MASSCHANGE_API_LOGS_ROOT \
+ && chown -R appuser /data $MASSCHANGE_API_LOGS_ROOT \
  && chmod -R a+w /data
 
-# Create link to persistent logs at expected log location
-RUN ln -s $MASSCHANGE_LOGS_ROOT /var/log/masschange
+
+# Create link to persistent ingest logs at expected log location
+RUN ln -s $MASSCHANGE_INGEST_LOGS_ROOT $MASSCHANGE_INGEST_LOGS_ALIAS
 
 # Copy application files
 USER 0
