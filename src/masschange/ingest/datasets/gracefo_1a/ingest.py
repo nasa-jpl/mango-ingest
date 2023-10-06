@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import re
 import shutil
 import tarfile
 import tempfile
@@ -14,11 +13,12 @@ from pyspark.sql import SparkSession
 
 from masschange.ingest.utils import get_configured_logger
 from masschange.datasets.interface import get_spark_session
-from masschange.ingest.datasets.gracefo import reader
-from masschange.ingest.datasets.gracefo.constants import INPUT_FILE_DEFAULT_REGEX, \
+from masschange.ingest.datasets.gracefo_1a import reader
+from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
+from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
 
@@ -81,23 +81,8 @@ def get_zipped_input_iterable(
 
 
 def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_FILE_DEFAULT_REGEX) -> Iterable[str]:
-    """
-
-    Parameters
-    ----------
-    root_dir
-    filename_match_regex
-
-    Returns
-    -------
-    an iterable collection of matching filenames within the directory tree rooted at root_dir
-
-    """
-
-    for path, subdirs, filenames in os.walk(root_dir):
-        for fn in filenames:
-            if re.match(filename_match_regex, fn):
-                yield os.path.join(path, fn)
+    # TODO: replace all calls to enumerate_input_filepaths() with calls to enumerate_files_in_dir_tree()
+    return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
 def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_root: str):
@@ -118,16 +103,20 @@ def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
+    dataset_label = 'gracefo_1a'
+    full_resolution_parquet_root = os.path.join(dest_parquet_root, dataset_label)
+
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
+    pd_df = pd_df.assign(decimation_factor=1)
     spark_df: pyspark.sql.DataFrame = spark.createDataFrame(pd_df)
     spark_df.write \
         .format('parquet') \
-        .partitionBy(PARQUET_TEMPORAL_PARTITION_KEY) \
-        .bucketBy(1, 'rcvtime_intg') \
-        .sortBy('rcvtime_intg', 'rcvtime_frac') \
-        .option('path', dest_parquet_root) \
+        .partitionBy(['satellite_id', 'decimation_factor', PARQUET_TEMPORAL_PARTITION_KEY]) \
+        .bucketBy(1, 'rcvtime') \
+        .sortBy('rcvtime') \
+        .option('path', full_resolution_parquet_root) \
         .mode('append') \
-        .saveAsTable('gracefo_1a')
+        .saveAsTable(dataset_label)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')

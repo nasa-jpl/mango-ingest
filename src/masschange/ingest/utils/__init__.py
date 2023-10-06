@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+import random
 from datetime import datetime
 from typing import Optional
 
@@ -34,3 +35,8 @@ def get_configured_logger(name: Optional[str] = None, log_level: int = logging.D
     logging.getLogger('py4j.clientserver').setLevel('WARN')
 
     return logging.getLogger(name or __name__)
+
+
+def get_random_hex_id(id_len: int = 6) -> str:
+    val = random.randint(0, 16 ** id_len)
+    return hex(val)[2:]
