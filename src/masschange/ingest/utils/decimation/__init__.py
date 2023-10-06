@@ -15,7 +15,7 @@ from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils import get_configured_logger, get_random_hex_id
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.decimation.aggregationrunconfig import AggregationRunConfig
-from masschange.ingest.utils.decimation.partitioning import get_partition_id
+from masschange.partitioning import get_partition_id
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()

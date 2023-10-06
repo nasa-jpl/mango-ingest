@@ -8,7 +8,7 @@ import pandas as pd
 from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     reference_epoch
 from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
-from masschange.ingest.utils.decimation.partitioning import get_partition_id
+from masschange.partitioning import get_partition_id
 
 
 def get_header_line_count(filename: str) -> int:

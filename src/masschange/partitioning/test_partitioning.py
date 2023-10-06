@@ -1,6 +1,6 @@
 import unittest
 
-from masschange.ingest.utils.decimation.partitioning import get_partition_id
+from masschange.partitioning import get_partition_id
 
 
 class GetPartitionIdTestCase(unittest.TestCase):

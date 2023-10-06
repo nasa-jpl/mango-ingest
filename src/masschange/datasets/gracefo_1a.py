@@ -6,14 +6,13 @@ from pyarrow import parquet as pq
 from pyarrow import compute as pc
 
 from masschange.datasets.timeseriesdatasetconfig import TimeSeriesDatasetConfig
-from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
-from masschange.ingest.utils.decimation import get_partition_id
+from masschange.partitioning import get_partition_id
 
 
 class GraceFO1ADataset(TimeSeriesDataset):
     # TODO: The root_parquet_path attribute will get messy when decimation is incorporated, refactoring will be necessary
-    root_parquet_path = os.path.join(os.environ['PARQUET_ROOT'], 'gracefo_1a')
+    root_parquet_path = os.path.join(os.environ['MASSCHANGE_DATA_ROOT'], 'gracefo_1a')
 
     INTERNAL_USE_COLUMNS = {'temporal_partition_key'}
 
