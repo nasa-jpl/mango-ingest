@@ -68,7 +68,7 @@ class TimeSeriesDataset(ABC):
 
         if len(results) > cls.max_select_results_count:
             raise TooMuchDataRequestedError(
-                f'Requested data quantity exceeds allowed maximum of {cls.max_select_results_count} records')
+                f'Requested data quantity ({len(results)}) exceeds allowed maximum of {cls.max_select_results_count} records')
 
         return results
 
