@@ -49,7 +49,9 @@ class GraceFO1ADataset(TimeSeriesDataset):
         # todo: play around with metadata_nthreads and other options (actually, not that one, it's not supported yet)
         # https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetDataset.html
         dataset = pq.ParquetDataset(parquet_path, filters=expr)
-        results = dataset.read().drop_columns(list(cls.INTERNAL_USE_COLUMNS)).to_pylist()
+
+        #TODO: extract common elements of this to TimeSeriesDataset - it may be the whole line.
+        results = dataset.read().sort_by('rcvtime').drop_columns(list(cls.INTERNAL_USE_COLUMNS)).to_pylist()
 
         # TODO: see todo in rcvtime_to_dt()
         # populate ISO timestamp
