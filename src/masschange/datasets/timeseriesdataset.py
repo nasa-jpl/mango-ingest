@@ -92,6 +92,12 @@ class TimeSeriesDataset(ABC):
     @classmethod
     @abstractmethod
     def enumerate_temporal_partition_values(cls, decimation_factor: int, from_dt: datetime, to_dt: datetime):
+        """
+        Given a temporal span and a decimation factor, return all possible/expected values for the temporal partition
+        which fall within that span.
+
+        This allows prima-facie determination of which paths may exist containing matching data for the span.
+        """
         pass
 
 
