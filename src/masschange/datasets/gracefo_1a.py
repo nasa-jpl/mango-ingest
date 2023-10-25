@@ -32,29 +32,22 @@ class GraceFO1ADataset(TimeSeriesDataset):
 
     @classmethod
     def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime) -> List[Dict]:
-        # TODO: Determine if this implementation needs to account for additional filters - probably not since this will
-        #  always be handled by the pseudo-index optimization
-
         from_rcvtime = cls.dt_to_rcvtime(max(from_dt, cls.get_config().reference_epoch))
         to_rcvtime = cls.dt_to_rcvtime(to_dt)
 
-        # TODO: Test performance after excising coarse filter, and commit if performance is satisfactory
-        # coarse_gte_expr = str(from_rcvtime) <= pc.field(PARQUET_TEMPORAL_PARTITION_KEY)
-        # coarse_lte_expr = pc.field(PARQUET_TEMPORAL_PARTITION_KEY) <= str(to_rcvtime)
-        fine_gte_expr = from_rcvtime <= pc.field('rcvtime')
-        fine_lte_expr = pc.field('rcvtime') <= to_rcvtime
-        # expr = coarse_gte_expr & coarse_lte_expr & fine_gte_expr & fine_lte_expr
-        expr = fine_gte_expr & fine_lte_expr
+        gte_filter_expr = from_rcvtime <= pc.field('rcvtime')
+        lte_filter_expr = pc.field('rcvtime') <= to_rcvtime
+        filter_expr = gte_filter_expr & lte_filter_expr
 
         # todo: play around with metadata_nthreads and other options (actually, not that one, it's not supported yet)
         # https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetDataset.html
-        dataset = pq.ParquetDataset(parquet_path, filters=expr)
+        dataset = pq.ParquetDataset(parquet_path, filters=filter_expr)
 
         #TODO: extract common elements of this to TimeSeriesDataset - it may be the whole line.
         results = dataset.read().sort_by('rcvtime').drop_columns(list(cls.INTERNAL_USE_COLUMNS)).to_pylist()
 
         # TODO: see todo in rcvtime_to_dt()
-        # populate ISO timestamp
+        # populate ISO timestamp dynamically
         for result in results:
             result['timestamp'] = cls.rcvtime_to_dt(result['rcvtime'])
 
