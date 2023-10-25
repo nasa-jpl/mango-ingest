@@ -53,11 +53,11 @@ class GraceFO1ADataset(TimeSeriesDataset):
 
         return results
 
-    @staticmethod
-    def rcvtime_to_dt(rcvtime: int) -> datetime:
+    @classmethod
+    def rcvtime_to_dt(cls, rcvtime: int) -> datetime:
         # TODO: This is a temporary bandaid due to inadvertant disable of populate_timestamp during ingest().
         #  Performance hit is ~25%, so we'll roll with it for the time being.
-        return GraceFO1ADataset.get_config().reference_epoch + timedelta(microseconds=rcvtime)
+        return cls.get_config().reference_epoch + timedelta(microseconds=rcvtime)
 
     @staticmethod
     def dt_to_rcvtime(dt: datetime) -> int:
