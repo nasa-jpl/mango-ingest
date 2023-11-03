@@ -2,11 +2,14 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Dict
 
+import lttbc
 from pyarrow import parquet as pq
 from pyarrow import compute as pc
 
 from masschange.datasets.gracefo_1a import GraceFO1ADataset
+from masschange.ingest.utils import get_configured_logger
 
+log = get_configured_logger()
 
 class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
     # TODO: The root_parquet_path attribute will get messy when decimation is incorporated, refactoring will be necessary
@@ -24,17 +27,24 @@ class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
         lte_filter_expr = pc.field('rcvtime') <= to_rcvtime
         filter_expr = gte_filter_expr & lte_filter_expr
 
+        benchmark_begin = datetime.now()
+
         # todo: play around with metadata_nthreads and other options (actually, not that one, it's not supported yet)
         # https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetDataset.html
         dataset = pq.ParquetDataset(parquet_path, filters=filter_expr)
 
         #TODO: extract common elements of this to TimeSeriesDataset - it may be the whole line.
-        results_table = dataset.read(columns=['rcvtime', 'lin_accl_x']).sort_by('rcvtime')
-        results = results_table.to_pylist()
+        results_df = dataset.read(columns=['rcvtime', 'lin_accl_x']).sort_by('rcvtime').to_pandas()
 
+        downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), 5000)
+        benchmark_query = datetime.now()
         # TODO: see todo in rcvtime_to_dt()
         # populate ISO timestamp dynamically
-        for result in results:
-            result['timestamp'] = cls.rcvtime_to_dt(result['rcvtime'])
+        results = [{'timestamp': cls.rcvtime_to_dt(rcvtime), 'lin_accl_x': val} for rcvtime, val in zip(*downsampled_results)]
+        benchmark_format = datetime.now()
+
+        query_elapsed_ms = int((benchmark_query - benchmark_begin).total_seconds() * 1000)
+
+        print(f'Completed query/lttb in {query_elapsed_ms}ms')
 
         return results
