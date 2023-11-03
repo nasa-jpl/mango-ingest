@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Dict
 
+import lttb
 import lttbc
 from pyarrow import parquet as pq
 from pyarrow import compute as pc
@@ -36,7 +37,10 @@ class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
         #TODO: extract common elements of this to TimeSeriesDataset - it may be the whole line.
         results_df = dataset.read(columns=['rcvtime', 'lin_accl_x']).sort_by('rcvtime').to_pandas()
 
+        # Comment to switch between lttb and lttbc implementations
+        # downsampled_results = lttb.downsample(results_df.to_numpy(), 5000).T
         downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), 5000)
+
         benchmark_query = datetime.now()
         # TODO: see todo in rcvtime_to_dt()
         # populate ISO timestamp dynamically
