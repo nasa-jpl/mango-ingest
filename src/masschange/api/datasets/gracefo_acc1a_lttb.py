@@ -38,8 +38,8 @@ async def get_data(
 @router.get('/', tags=['GRACEFO-1A-LTTB', 'metadata'])
 async def get_dataset_details():
     return {
-        'available_decimation_ratios': list(GraceFO1ADataset.get_config().available_decimation_ratios),
-        'available_fields': sorted(list(GraceFO1ADataset.get_available_fields())),
+        'available_decimation_ratios': list(GraceFOACC1ALTTBDataset.get_config().available_decimation_ratios),
+        'available_fields': sorted(list(GraceFOACC1ALTTBDataset.get_available_fields())),
         'available_streams': [
             {
                 'id': 1,
