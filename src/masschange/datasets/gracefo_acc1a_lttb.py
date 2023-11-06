@@ -38,8 +38,8 @@ class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
         results_df = dataset.read(columns=['rcvtime', 'lin_accl_x']).sort_by('rcvtime').to_pandas()
 
         # Comment to switch between lttb and lttbc implementations
-        # downsampled_results = lttb.downsample(results_df.to_numpy(), 5000).T
-        downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), 5000)
+        downsampled_results = lttb.downsample(results_df.to_numpy(), 5000).T
+        # downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), 5000)
 
         benchmark_query = datetime.now()
         # TODO: see todo in rcvtime_to_dt()
