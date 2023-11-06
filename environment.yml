@@ -29,7 +29,7 @@ dependencies:
   - pip:
 #    - ./src
     - lttb==0.3.1
-    - lttbc==0.2.4
+#    - lttbc==0.2.4
     - pyarrow==12.0.1
     - pyspark==3.4.1
     - fastapi[all]==0.100.0
