@@ -15,6 +15,7 @@ async def get_data(
         stream_id: str,
         from_isotimestamp: datetime = datetime.min,
         to_isotimestamp: datetime = datetime.max,
+        downsample_to_count: int = 5000,
         decimation_ratio: int = 1):
     try:
         config.validate_decimation_ratio(decimation_ratio)
@@ -24,7 +25,8 @@ async def get_data(
 
     try:
         results = GraceFOACC1ALTTBDataset.select(stream_id, from_isotimestamp, to_isotimestamp,
-                                          requested_decimation_factor=decimation_ratio)
+                                                 downsample_to_count=downsample_to_count,
+                                                 requested_decimation_factor=decimation_ratio)
     except TooMuchDataRequestedError as err:
         raise HTTPException(status_code=400, detail=str(err))
 
