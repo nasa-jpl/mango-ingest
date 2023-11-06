@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 
 import lttb
-import lttbc
+# import lttbc
 from pyarrow import parquet as pq
 from pyarrow import compute as pc
 
