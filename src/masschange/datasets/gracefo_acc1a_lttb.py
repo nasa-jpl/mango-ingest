@@ -19,7 +19,7 @@ class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
     max_safe_select_temporal_span_at_full_resolution = timedelta(days=366)  # remove the guard-rail for benchmarking
 
     @classmethod
-    def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime) -> List[Dict]:
+    def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime, **kwargs) -> List[Dict]:
         # IMPLEMENTATION OVERRIDDEN TO AVOID OVERHEAD OF DYNAMIC TIMESTAMP COMPUTATION
         from_rcvtime = cls.dt_to_rcvtime(max(from_dt, cls.get_config().reference_epoch))
         to_rcvtime = cls.dt_to_rcvtime(to_dt)
@@ -38,8 +38,9 @@ class GraceFOACC1ALTTBDataset(GraceFO1ADataset):
         results_df = dataset.read(columns=['rcvtime', 'lin_accl_x']).sort_by('rcvtime').to_pandas()
 
         # Comment to switch between lttb and lttbc implementations
-        downsampled_results = lttb.downsample(results_df.to_numpy(), 5000).T
-        # downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), 5000)
+        downsample_to_count = min(int(kwargs.get('downsample_to_count', 5000)), len(results_df))
+        downsampled_results = lttb.downsample(results_df.to_numpy(), downsample_to_count).T
+        # downsampled_results = lttbc.downsample(results_df['rcvtime'].to_numpy(), results_df['lin_accl_x'].to_numpy(), downsample_to_count)
 
         benchmark_query = datetime.now()
         # TODO: see todo in rcvtime_to_dt()

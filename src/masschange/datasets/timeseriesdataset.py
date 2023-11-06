@@ -35,7 +35,7 @@ class TimeSeriesDataset(ABC):
         pass
 
     @classmethod
-    def select(cls, stream_id: str | int, from_dt: datetime, to_dt: datetime, requested_decimation_factor: int = 1, use_preprune_optimisation: bool = True) -> List[Dict]:
+    def select(cls, stream_id: str | int, from_dt: datetime, to_dt: datetime, requested_decimation_factor: int = 1, use_preprune_optimisation: bool = True, **kwargs) -> List[Dict]:
         max_safe_select_temporal_span = cls.max_safe_select_temporal_span_at_full_resolution * requested_decimation_factor
         requested_data_temporal_span = to_dt - from_dt
         if requested_data_temporal_span > max_safe_select_temporal_span:
@@ -58,7 +58,7 @@ class TimeSeriesDataset(ABC):
             parquet_path = (cls.root_parquet_path)
 
         if len(list(os.scandir(parquet_path))) > 0:
-            results = cls._select(parquet_path, from_dt, to_dt)
+            results = cls._select(parquet_path, from_dt, to_dt, **kwargs)
         else:
             logging.error(f'Failed to resolve any data between {from_dt} and {to_dt}')
             results = []
@@ -74,7 +74,7 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     @abstractmethod
-    def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime) -> List[Dict]:
+    def _select(cls, parquet_path: str, from_dt: datetime, to_dt: datetime, **kwargs) -> List[Dict]:
         """
         Subclass-specific implementation for cls.select()
         Parameters
