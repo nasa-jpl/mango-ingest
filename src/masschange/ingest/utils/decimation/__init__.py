@@ -282,7 +282,7 @@ def process(decimation_step_factors: List[int], base_hours_per_partition: int, p
             # pre-cleanup filepath won't get picked up for deletion by the cleanup regex
             output_precleanup_filepath = output_final_filepath + '.do-not-delete'
 
-            # Create merged/re-sorted table
+            # Create merged/re-sorted table_name
             src_ds = (pq.ParquetDataset(parquet_temp_path))
             src_table = src_ds.read()
             src_table.sort_by([('rcvtime', 'ascending')])
