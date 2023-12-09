@@ -7,8 +7,6 @@ import pandas as pd
 
 from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     reference_epoch
-from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
-from masschange.partitioning import get_partition_id
 
 
 def get_header_line_count(filename: str) -> int:
@@ -26,14 +24,15 @@ def load_data_from_file(filepath: str):
     raw_data = load_raw_data_from_file(filepath)
     df = pd.DataFrame(raw_data)
 
-    # Assign derived columns
-    satellite_id = parse_satellite_id(filepath)
-    df = df.assign(satellite_id=satellite_id)
+    # not used in current prototype implementation
+    # # Assign derived columns
+    # satellite_id = parse_satellite_id(filepath)
+    # df = df.assign(satellite_id=satellite_id)
+
     # TODO: This was initially disabled to speed up ingestion - currently it appears that runtime resolution of this column is
     #  fine from a performance perspective.
     # df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
     df['rcvtime'] = df.apply(populate_rcvtime, axis=1)
-    df[PARQUET_TEMPORAL_PARTITION_KEY] = df.apply(populate_temporal_partition_key, axis=1)
 
     # Drop extraneous columns
     df = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
@@ -48,13 +47,17 @@ def parse_satellite_id(filepath: str) -> int:
     }
 
     filename = os.path.split(filepath)[-1]
-    satellite_id_char = re.search(INPUT_FILE_DEFAULT_REGEX, filename).group('satellite_id')
     try:
+        satellite_id_char = extract_satellite_id_char(filename)
         return mappings[satellite_id_char]
     except KeyError:
         raise ValueError(
             f'failed to parse satellite_id from {filename} with satellite_id_char="{satellite_id_char}" (valid values are {list(mappings.keys())})')
 
+def extract_satellite_id_char(filepath: str) -> str:
+    filename = os.path.split(filepath)[-1]
+    satellite_id_char = re.search(INPUT_FILE_DEFAULT_REGEX, filename).group('satellite_id')
+    return satellite_id_char
 
 def load_raw_data_from_file(filename: str):
     header_line_count = get_header_line_count(filename)
@@ -85,14 +88,6 @@ def load_raw_data_from_file(filename: str):
 
 def populate_timestamp(row) -> datetime:
     return reference_epoch + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
-
-
-def populate_temporal_partition_key(row) -> str:
-    # WHEN ALTERING THIS, THE QUERY IN GraceFO1ADataset.select() MUST BE UPDATED OR PERFORMANCE WILL TANK
-    #TODO: UPDATE THE ABOVE
-
-    partition_id = get_partition_id(epoch_timestamp=row.rcvtime, hours_per_partition=24, epoch_offset_hours=12, epoch_unit_factor=1000000)
-    return partition_id
 
 
 def populate_rcvtime(row):

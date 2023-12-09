@@ -5,23 +5,26 @@ import shutil
 import tarfile
 import tempfile
 from datetime import datetime
+from io import StringIO
 from typing import Iterable
 
+import pandas
 import pandas as pd
-import pyspark.sql
-from pyspark.sql import SparkSession
+import psycopg2
+from psycopg2._psycopg import AsIs
 
+from masschange.ingest.datasets.gracefo_1a.reader import extract_satellite_id_char
 from masschange.ingest.utils import get_configured_logger
-from masschange.datasets.interface import get_spark_session
 from masschange.ingest.datasets.gracefo_1a import reader
 from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
-from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
 
+def get_connection():
+    return psycopg2.connect(database='masschange', user='postgres', password='password', host='localhost', port=5433)
 
 def run(src: str, dest: str, data_is_zipped: bool = True):
     """
@@ -36,14 +39,14 @@ def run(src: str, dest: str, data_is_zipped: bool = True):
 
     """
 
-    spark = get_spark_session()
+    collection_prefix = 'ACC1A'
 
     log.info(f'ingesting data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
     log.info(f'writing output to parquet root: {dest}')
     target_filepaths = get_zipped_input_iterable(src) if data_is_zipped else enumerate_input_filepaths(src)
     for fp in target_filepaths:
-        ingest_file_to_parquet(spark, fp, dest)
+        ingest_file_to_db(collection_prefix, fp)
 
 
 def get_zipped_input_iterable(
@@ -85,38 +88,65 @@ def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_F
     return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
-def ingest_file_to_parquet(spark: SparkSession, src_filepath: str, dest_parquet_root: str):
+def ensure_table_exists(table_name: str) -> None:
+    log.info(f'Ensuring table_name exists: "{table_name}"')
+
+    with get_connection() as conn:
+        try:
+            sql = """
+            create table public.%(table_name)s
+            (
+                lin_accl_x double precision not null,
+                lin_accl_y double precision not null,
+                lin_accl_z double precision not null,
+    
+                ang_accl_x double precision not null,
+                ang_accl_y double precision not null,
+                ang_accl_z double precision not null,
+    
+                rcvtime bigint not null
+            );
+            """
+            cur = conn.cursor()
+            cur.execute(sql, {'table_name': AsIs(table_name)})
+            conn.commit()
+            log.info(f'Created new table: "{table_name}"')
+        except psycopg2.errors.DuplicateTable:
+            pass
+
+
+def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
+    """
+    see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
 
-    Parameters
-    ----------
-    spark_session
-    src_filepath
-    dest_parquet_root
+    with get_connection() as conn:
+        buffer = StringIO()
+        df.to_csv(buffer, header=False, index=False, float_format='%f')  # TODO: sort out float format for correct precision - currently only 6dec
+        buffer.seek(0)
+        with conn.cursor() as cursor:
+            try:
+                cursor.copy_from(file=buffer, table=table_name, sep=",", null="")
+                conn.commit()
+            except (Exception, psycopg2.DatabaseError) as error:
+                print("Error: %s" % error)
 
-    Returns
-    -------
 
-    """
+def ingest_file_to_db(collection_prefix: str, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
-    dataset_label = 'gracefo_1a'
-    full_resolution_parquet_root = os.path.join(dest_parquet_root, dataset_label)
-
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
-    pd_df = pd_df.assign(decimation_factor=1)
-    spark_df: pyspark.sql.DataFrame = spark.createDataFrame(pd_df)
-    spark_df.write \
-        .format('parquet') \
-        .partitionBy(['satellite_id', 'decimation_factor', PARQUET_TEMPORAL_PARTITION_KEY]) \
-        .bucketBy(1, 'rcvtime') \
-        .sortBy('rcvtime') \
-        .option('path', full_resolution_parquet_root) \
-        .mode('append') \
-        .saveAsTable(dataset_label)
+
+    # TODO: Implement DB write
+    satellite_id_char = extract_satellite_id_char(src_filepath)
+    table_name = f'{collection_prefix}_{satellite_id_char}'.lower()
+
+    ensure_table_exists(table_name)
+    log.info(f'writing data to table {table_name}')
+    ingest_df(pd_df, table_name)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
