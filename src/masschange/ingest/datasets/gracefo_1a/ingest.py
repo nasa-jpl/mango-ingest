@@ -104,8 +104,11 @@ def ensure_table_exists(table_name: str) -> None:
                 ang_accl_y double precision not null,
                 ang_accl_z double precision not null,
     
-                rcvtime bigint not null
+                rcvtime bigint not null,
+                timestamp timestamptz not null
             );
+            
+            select create_hypertable('%(table_name)s', 'timestamp');
             """
             cur = conn.cursor()
             cur.execute(sql, {'table_name': AsIs(table_name)})
