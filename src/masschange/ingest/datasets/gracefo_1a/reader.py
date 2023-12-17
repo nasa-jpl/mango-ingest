@@ -33,6 +33,7 @@ def load_data_from_file(filepath: str):
     #  fine from a performance perspective.
     # df['rcv_timestamp'] = df.apply(populate_timestamp, axis=1)
     df['rcvtime'] = df.apply(populate_rcvtime, axis=1)
+    df['timestamp'] = df.apply(populate_timestamp, axis=1)
 
     # Drop extraneous columns
     df = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
