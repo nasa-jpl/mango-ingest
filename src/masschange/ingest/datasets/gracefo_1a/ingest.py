@@ -6,13 +6,15 @@ import tarfile
 import tempfile
 from datetime import datetime
 from io import StringIO
-from typing import Iterable
+from typing import Iterable, Type
 
 import pandas
 import pandas as pd
 import psycopg2
 from psycopg2._psycopg import AsIs
 
+from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.datasets.gracefo_1a.reader import extract_satellite_id_char
 from masschange.ingest.utils import get_configured_logger
@@ -24,7 +26,7 @@ from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
 
-def run(src: str, dest: str, data_is_zipped: bool = True):
+def run(src: str, data_is_zipped: bool = True):
     """
 
     Parameters
@@ -37,14 +39,13 @@ def run(src: str, dest: str, data_is_zipped: bool = True):
 
     """
 
-    collection_prefix = 'ACC1A'
+    dataset_cls = GraceFOAcc1ADataset
 
-    log.info(f'ingesting data from {src}')
+    log.info(f'ingesting {dataset_cls.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    log.info(f'writing output to parquet root: {dest}')
     target_filepaths = get_zipped_input_iterable(src) if data_is_zipped else enumerate_input_filepaths(src)
     for fp in target_filepaths:
-        ingest_file_to_db(collection_prefix, fp)
+        ingest_file_to_db(dataset_cls, fp)
 
 
 def get_zipped_input_iterable(
@@ -133,7 +134,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(collection_prefix: str, src_filepath: str):
+def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
@@ -141,9 +142,8 @@ def ingest_file_to_db(collection_prefix: str, src_filepath: str):
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
 
-    # TODO: Implement DB write
-    satellite_id_char = extract_satellite_id_char(src_filepath)
-    table_name = f'{collection_prefix}_{satellite_id_char}'.lower()
+    stream_id = extract_satellite_id_char(src_filepath)
+    table_name = dataset_cls._get_table_name(stream_id)
 
     ensure_table_exists(table_name)
     log.info(f'writing data to table {table_name}')
@@ -158,12 +158,10 @@ def ingest_file_to_db(collection_prefix: str, src_filepath: str):
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         prog='MassChange GRACE-FO Data Ingester',
-        description='Given raw GRACE-FO ASCII data in a local directory, process that data and store it at a given path'
-                    'in parquet format'
+        description='Given raw GRACE-FO ASCII data in a local directory, process that data and store it in database'
     )
 
     ap.add_argument('src', help='the root directory containing input data files')
-    ap.add_argument('dest', help='the parquet root path under which to store the ingested data')
 
     ap.add_argument('--zipped', '-z', dest='target_zipped_data', action='store_true',
                     help='look in tarballs for source data')
@@ -176,7 +174,7 @@ if __name__ == '__main__':
 
     start = datetime.now()
     log.info('ingest begin')
-    run(args.src, args.dest, data_is_zipped=args.target_zipped_data)
+    run(args.src, data_is_zipped=args.target_zipped_data)
     log.info(f'ingest completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)

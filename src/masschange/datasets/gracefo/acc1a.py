@@ -1,5 +1,5 @@
 from masschange.missions import GraceFO
-from masschange.missions.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
 
 class GraceFOAcc1ADataset(TimeSeriesDataset):
