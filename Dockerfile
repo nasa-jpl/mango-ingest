@@ -12,10 +12,8 @@ RUN useradd -r -u 1001 -g users appuser \
   && yum -y update; yum clean all \
   && yum -y install python3-pip; yum clean all \
   && pip3 install --upgrade setuptools wheel \
-  && yum -y install htop git which wget rsync procps java-1.8.0-openjdk java-1.8.0-openjdk-devel \
-  && dnf -y install hostname \
-  && wget https://www.scala-lang.org/files/archive/scala-2.13.8.rpm \
-  && rpm -ihv --nodigest --nofiledigest scala-2.13.8.rpm
+  && yum -y install htop git which wget rsync procps \
+  && dnf -y install hostname
 
 
 # Install conda
@@ -32,14 +30,6 @@ RUN chmod a+r /tmp/preliminary-environment.yml
 USER appuser
 RUN ["/bin/bash", "--login", "-c", "$HOME/miniconda/condabin/conda env create -f /tmp/preliminary-environment.yml"]
 RUN ["/bin/bash", "--login", "-c", "$HOME/miniconda/condabin/conda init"]
-
-# Install Apache Spark
-USER 0
-RUN wget https://archive.apache.org/dist/spark/spark-3.4.1/spark-3.4.1-bin-hadoop3.tgz -O /tmp/spark.tgz \
-  && tar --no-same-owner -xvf /tmp/spark.tgz \
-  && mv spark* /app/spark
-ENV SPARK_HOME=/app/spark
-ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 
 # Set application env vars
 ENV MASSCHANGE_REPO_ROOT=/app/masschange
