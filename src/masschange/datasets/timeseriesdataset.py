@@ -38,13 +38,43 @@ class TimeSeriesDataset(ABC):
         return {
             'mission': cls.mission.id,
             'id': cls.get_full_id(),
-            'stream_ids': sorted(cls.stream_ids),
+            'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in sorted(cls.stream_ids)],
             'available_fields': sorted(cls.available_fields),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME
         }
 
     @classmethod
-    def select(cls, stream_id: str | int, from_dt: datetime, to_dt: datetime,
+    def _get_data_span_stat(cls, agg: str, stream_id: str) -> datetime:
+        """"""
+        if agg not in {'min', 'max'}:
+            raise ValueError(f'"{agg}" is not a supported timespan stat')
+
+        with get_db_connection() as conn:
+            table_name = cls._get_table_name(stream_id)
+
+            try:
+                sql = f"""
+                    SELECT {agg}({cls.TIMESTAMP_COLUMN_NAME})
+                    FROM {table_name}
+                    """
+                cur = conn.cursor()
+                cur.execute(sql)
+                result = cur.fetchone()[0]
+            except Exception as err:
+                logging.info(f'query failed with {err}: {sql}')
+
+        return result
+    @classmethod
+    def get_data_begin(cls, stream_id: str) -> datetime:
+        return cls._get_data_span_stat('min', stream_id)
+
+    @classmethod
+    def get_data_end(cls, stream_id: str) -> datetime:
+        return cls._get_data_span_stat('max', stream_id)
+
+
+    @classmethod
+    def select(cls, stream_id: str, from_dt: datetime, to_dt: datetime,
                filter_to_fields: Collection[str] = None) -> List[Dict]:
         requested_fields = filter_to_fields or cls.available_fields
         cls._validate_requested_fields(requested_fields)
