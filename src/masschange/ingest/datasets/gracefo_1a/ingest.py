@@ -123,7 +123,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
 
     with get_db_connection() as conn:
         buffer = StringIO()
-        df.to_csv(buffer, header=False, index=False, float_format='%f')  # TODO: sort out float format for correct precision - currently only 6dec
+        df.to_csv(buffer, header=False, index=False)
         buffer.seek(0)
         with conn.cursor() as cursor:
             try:
