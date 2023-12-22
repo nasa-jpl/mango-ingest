@@ -2,7 +2,7 @@ import logging
 from abc import ABC
 from collections.abc import Collection
 from datetime import datetime
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Type
 
 import psycopg2
 from psycopg2 import extras
@@ -15,7 +15,7 @@ log = get_configured_logger()
 
 
 class TimeSeriesDataset(ABC):
-    mission: Mission
+    mission: Type[Mission]
     id_suffix: str
     stream_ids: Set[str]
     available_fields: Set[str]
