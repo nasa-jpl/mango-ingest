@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
 
-from masschange.datasets.gracefo import GraceFOAcc1ADataset
+from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 
 # TODO: Break this out into a factory which can generate endpoints/labels/etc when given a specific TimeSeriesDataSet subclass
 datasetCls = GraceFOAcc1ADataset
