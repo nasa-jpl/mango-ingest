@@ -13,6 +13,7 @@ import pandas as pd
 import psycopg2
 from psycopg2._psycopg import AsIs
 
+from masschange.db import get_db_connection
 from masschange.ingest.datasets.gracefo_1a.reader import extract_satellite_id_char
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.datasets.gracefo_1a import reader
@@ -22,9 +23,6 @@ from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_sinc
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = get_configured_logger()
-
-def get_connection():
-    return psycopg2.connect(database='masschange', user='postgres', password='password', host='localhost', port=5433)
 
 def run(src: str, dest: str, data_is_zipped: bool = True):
     """
@@ -91,7 +89,7 @@ def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_F
 def ensure_table_exists(table_name: str) -> None:
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
-    with get_connection() as conn:
+    with get_db_connection() as conn:
         try:
             sql = """
             create table public.%(table_name)s
@@ -123,7 +121,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
 
-    with get_connection() as conn:
+    with get_db_connection() as conn:
         buffer = StringIO()
         df.to_csv(buffer, header=False, index=False, float_format='%f')  # TODO: sort out float format for correct precision - currently only 6dec
         buffer.seek(0)

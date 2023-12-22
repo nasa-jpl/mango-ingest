@@ -2,7 +2,7 @@
 import argparse
 import os
 
-from masschange.datasets.gracefo_1a import GraceFO1ADataset
+from masschange.missions.datasets import GraceFO1ADataset
 from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.utils.decimation import process
 
