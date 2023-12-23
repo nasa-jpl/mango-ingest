@@ -16,15 +16,16 @@ from psycopg2._psycopg import AsIs
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
+from masschange.ingest.datasets.constants import LOG_ROOT_ENV_VAR_KEY
 from masschange.ingest.datasets.gracefo_1a.reader import extract_satellite_id_char
-from masschange.ingest.utils import get_configured_logger
 from masschange.ingest.datasets.gracefo_1a import reader
 from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
     ZIPPED_INPUT_FILE_DEFAULT_REGEX
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
+from masschange.utils.logging import configure_root_logger
 
-log = get_configured_logger()
+log = logging.getLogger()
 
 def run(src: str, data_is_zipped: bool = True):
     """
@@ -171,6 +172,10 @@ def get_args() -> argparse.Namespace:
 
 if __name__ == '__main__':
     args = get_args()
+
+    logs_root = os.environ.get(LOG_ROOT_ENV_VAR_KEY) or tempfile.mkdtemp()
+    log_filepath = os.path.join(logs_root, f'ingest_{datetime.now().isoformat()}.log')
+    configure_root_logger(log_filepath=log_filepath)
 
     start = datetime.now()
     log.info('ingest begin')

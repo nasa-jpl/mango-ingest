@@ -8,10 +8,9 @@ import psycopg2
 from psycopg2 import extras
 
 from masschange.db import get_db_connection
-from masschange.ingest.utils import get_configured_logger
 from masschange.missions import Mission
 
-log = get_configured_logger()
+log = logging.getLogger()
 
 
 class TimeSeriesDataset(ABC):
