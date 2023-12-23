@@ -18,7 +18,8 @@ app.add_middleware(
 
 @app.get('/', include_in_schema=False)
 def view_documentation_message(request: Request):
-    documentation_url = f'{request.url}docs'
+    root_url = str(request.url)[:-1] if str(request.url).endswith('//') else str(request.url)
+    documentation_url = f'{root_url}docs'
     return HTMLResponse(
         f'Welcome to the MassChange API!  View interactive documentation <a href="{documentation_url}">HERE</a>')
 
