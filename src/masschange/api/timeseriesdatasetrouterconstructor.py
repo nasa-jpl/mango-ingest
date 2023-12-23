@@ -21,7 +21,9 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             to_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) + timedelta(minutes=1)):
 
         try:
+            query_start = datetime.now()
             results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, )
+            query_elapsed_ms = int((datetime.now() - query_start).total_seconds()*1000)
         except Exception as err:  # TODO: Make this specific
             raise HTTPException(status_code=400, detail=str(err))
 
@@ -31,6 +33,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_begin': None if len(results) < 1 else results[0][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
+            'query_elapsed_ms': query_elapsed_ms,
             'data': results
         }
 
