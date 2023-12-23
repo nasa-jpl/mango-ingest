@@ -38,6 +38,7 @@ ENV MASSCHANGE_DATA_ROOT=/data
 ENV MASSCHANGE_INGEST_LOGS_ROOT=/data/logs
 ENV MASSCHANGE_INGEST_LOGS_ALIAS=/var/log/masschange-ingest
 ENV MASSCHANGE_API_LOGS_ROOT=/var/log/masschange-api
+ENV MASSCHANGE_CONFIG_ROOT=/home/appuser/.config/masschange
 
 # Create application directories
 USER 0
@@ -53,6 +54,11 @@ RUN ln -s $MASSCHANGE_INGEST_LOGS_ROOT $MASSCHANGE_INGEST_LOGS_ALIAS
 USER 0
 COPY . $MASSCHANGE_REPO_ROOT
 RUN chown -R appuser /app
+
+# Copy configuration defaults file
+USER appuser
+RUN mkdir -p $MASSCHANGE_CONFIG_ROOT
+COPY ./defaults.conf.ini $MASSCHANGE_CONFIG_ROOT
 
 # Make scripts executable
 RUN chmod +x $MASSCHANGE_REPO_ROOT/*.sh
