@@ -11,6 +11,7 @@ dependencies:
     - fastapi[all]==0.100.0
     - uvicorn==0.23.1
 #    - fastapi-utils==0.2.1  # conflicts with pydantic>=2, which is required for latest fastapi
-    - psycopg2==2.9.9
+    - psycopg2-binary==2.9.9
+#    - psycopg2==2.9.9  # need to figure out how to get the python headers in RHEL8 so we can build from source
     - pytest
     - StrEnum==0.4.15

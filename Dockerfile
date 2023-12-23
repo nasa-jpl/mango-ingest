@@ -13,6 +13,7 @@ RUN useradd -r -u 1001 -g users appuser \
   && yum -y install python3-pip; yum clean all \
   && pip3 install --upgrade setuptools wheel \
   && yum -y install htop git which wget rsync procps \
+#  && yum -y install python310-devel libpq-devel \
   && dnf -y install hostname
 
 
