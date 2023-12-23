@@ -16,6 +16,16 @@ def get_configured_logger(name: Optional[str] = None, log_level: int = logging.D
     logfile_path = os.path.join(logs_root, f'ingest_{datetime.now().isoformat()}.log')
 
     logging.root.handlers = []
+    handlers = [logging.StreamHandler()]
+    try:
+        # only add the file handler if the path is accessible
+        with open(logfile_path, 'w'):
+            pass
+        logging.info(f'writing logs to {logfile_path}')
+        handlers.append(logging.FileHandler(logfile_path))
+    except (OSError, PermissionError):
+        logging.error(f'failed to add log handler for path due to permission error: {logfile_path}')
+
     # TODO: Enable differential format once initial implementation is complete - removing now for ease of dev
     # log_format = f'%(asctime)s [%(levelname)s] {"%(name)s:%(funcName)s " if log_level == logging.DEBUG else ""}- %(message)s'
     log_format = f'%(asctime)s [%(levelname)s] - %(message)s'
@@ -23,10 +33,7 @@ def get_configured_logger(name: Optional[str] = None, log_level: int = logging.D
     logging.basicConfig(
         level=log_level,  # TODO: get from env or CLI variable
         format=log_format,
-        handlers=[
-            logging.FileHandler(logfile_path),
-            logging.StreamHandler()
-        ]
+        handlers=handlers
     )
 
     logging.info(f'writing logs to {logfile_path}')
