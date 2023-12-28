@@ -92,14 +92,13 @@ def ensure_table_exists(dataset_cls: Type[TimeSeriesDataset], stream_id: str) ->
 
     timestamp_column_name = dataset_cls.TIMESTAMP_COLUMN_NAME
 
-    with get_db_connection() as conn:
+    with get_db_connection() as conn, conn.cursor() as cur:
         try:
             sql = f"""
             {dataset_cls._get_sql_table_create_statement(stream_id)}
             
             select create_hypertable('{table_name}','{timestamp_column_name}');
             """
-            cur = conn.cursor()
             cur.execute(sql)
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
