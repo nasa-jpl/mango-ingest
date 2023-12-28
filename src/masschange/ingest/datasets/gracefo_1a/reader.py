@@ -20,7 +20,7 @@ def get_header_line_count(filename: str) -> int:
                 return header_rows
 
 
-def load_data_from_file(filepath: str):
+def load_data_from_file(filepath: str) -> pd.DataFrame:
     raw_data = load_raw_data_from_file(filepath)
     df = pd.DataFrame(raw_data)
 
@@ -55,12 +55,14 @@ def parse_satellite_id(filepath: str) -> int:
         raise ValueError(
             f'failed to parse satellite_id from {filename} with satellite_id_char="{satellite_id_char}" (valid values are {list(mappings.keys())})')
 
+
 def extract_satellite_id_char(filepath: str) -> str:
     filename = os.path.split(filepath)[-1]
     satellite_id_char = re.search(INPUT_FILE_DEFAULT_REGEX, filename).group('satellite_id')
     return satellite_id_char
 
-def load_raw_data_from_file(filename: str):
+
+def load_raw_data_from_file(filename: str) -> np.ndarray:
     header_line_count = get_header_line_count(filename)
     # TODO: extract indices, descriptions, units dynamically from the header?
     # TODO: use prodflag and/or QC for filtering measurements?
