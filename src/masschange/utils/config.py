@@ -3,9 +3,13 @@ import logging
 import os
 
 
+def get_config_root_env_key() -> str:
+    return 'MASSCHANGE_CONFIG_ROOT'
+
+
 def __load_config():
     config = configparser.ConfigParser()
-    config_root_env_key = 'MASSCHANGE_CONFIG_ROOT'
+    config_root_env_key = get_config_root_env_key()
     if os.environ.get(config_root_env_key):
         config_root = os.environ[config_root_env_key]
         logging.info(f'using configuration root path {config_root} specified by env-var {config_root_env_key}')
