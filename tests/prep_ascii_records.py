@@ -1,7 +1,7 @@
 import os
 
-out_dir = '/nomount/masschange/test/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI-truncated/'
-in_dir = '/nomount/masschange/test/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI/'
+out_dir = '/tests/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI-truncated/'
+in_dir = '/tests/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI/'
 
 for fn in os.listdir(in_dir):
     try:
