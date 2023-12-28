@@ -1,5 +1,5 @@
 import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime
 from typing import List, Dict, Set, Type
@@ -37,7 +37,8 @@ class TimeSeriesDataset(ABC):
         return {
             'mission': cls.mission.id,
             'id': cls.get_full_id(),
-            'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in sorted(cls.stream_ids)],
+            'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
+                        sorted(cls.stream_ids)],
             'available_fields': sorted(cls.available_fields),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME
         }
@@ -49,7 +50,7 @@ class TimeSeriesDataset(ABC):
             raise ValueError(f'"{agg}" is not a supported timespan stat')
 
         with get_db_connection() as conn:
-            table_name = cls._get_table_name(stream_id)
+            table_name = cls.get_table_name(stream_id)
 
             try:
                 sql = f"""
@@ -63,6 +64,7 @@ class TimeSeriesDataset(ABC):
                 logging.info(f'query failed with {err}: {sql}')
 
         return result
+
     @classmethod
     def get_data_begin(cls, stream_id: str) -> datetime:
         return cls._get_data_span_stat('min', stream_id)
@@ -71,7 +73,6 @@ class TimeSeriesDataset(ABC):
     def get_data_end(cls, stream_id: str) -> datetime:
         return cls._get_data_span_stat('max', stream_id)
 
-
     @classmethod
     def select(cls, stream_id: str, from_dt: datetime, to_dt: datetime,
                filter_to_fields: Collection[str] = None) -> List[Dict]:
@@ -79,7 +80,7 @@ class TimeSeriesDataset(ABC):
         cls._validate_requested_fields(requested_fields)
 
         with get_db_connection() as conn:
-            table_name = cls._get_table_name(stream_id)
+            table_name = cls.get_table_name(stream_id)
             select_columns_clause = ','.join(requested_fields)
 
             try:
@@ -89,7 +90,7 @@ class TimeSeriesDataset(ABC):
                     WHERE   {cls.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                         AND {cls.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                     """
-                cur = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
+                cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
                 results = cur.fetchall()
                 results.reverse()  # timescale indexes in time-descending order, probably for a reason
@@ -103,7 +104,7 @@ class TimeSeriesDataset(ABC):
         return cls.get_full_id().lower()
 
     @classmethod
-    def _get_table_name(cls, stream_id: str) -> str:
+    def get_table_name(cls, stream_id: str) -> str:
         if stream_id not in cls.stream_ids:
             raise ValueError(f'stream id "{stream_id}" not recognized (expected one of {sorted(cls.stream_ids)})')
 
@@ -116,3 +117,27 @@ class TimeSeriesDataset(ABC):
             unavailable_fields = requested_fields.difference(cls.available_fields)
             raise ValueError(
                 f'Some requested fields {sorted(unavailable_fields)} not present in available fields ({sorted(cls.available_fields)})')
+
+    @classmethod
+    def _get_sql_table_create_statement(cls, stream_id: str) -> str:
+        # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
+        """Get an SQL statement to create a table for this dataset/stream"""
+        if stream_id not in cls.stream_ids:
+            raise ValueError(f'stream_id {stream_id} not in {cls.__name__}.stream_ids - expected one of {cls.stream_ids}')
+
+        sql = f"""
+            create table public.{cls.get_table_name(stream_id)}
+            (
+                {cls._get_sql_table_schema()}
+            );
+        """
+        return sql
+
+    @classmethod
+    @abstractmethod
+    def _get_sql_table_schema(cls) -> str:
+        """
+        Get the column definitions used in the SQL create table statement.
+        Must be defined in every subclass.
+        """
+        pass
