@@ -11,7 +11,7 @@ import pyarrow as pa
 from pyarrow import parquet as pq
 
 from masschange.datasets import get_prepruned_parquet_path, safely_remove_temporary_index
-from masschange.ingest.datasets.constants import PARQUET_TEMPORAL_PARTITION_KEY
+from masschange.ingest.datafilereaders.constants import PARQUET_TEMPORAL_PARTITION_KEY
 from masschange.ingest.utils import get_configured_logger
 from masschange.utils import get_random_hex_id
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since

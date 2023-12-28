@@ -8,6 +8,7 @@ import psycopg2
 from psycopg2 import extras
 
 from masschange.db import get_db_connection
+from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
 
 log = logging.getLogger()
@@ -138,4 +139,10 @@ class TimeSeriesDataset(ABC):
         Get the column definitions used in the SQL create table statement.
         Must be defined in every subclass.
         """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_reader(cls) -> DataFileReader:
+        """Return the DataFileReader used to ingest this dataset"""
         pass

@@ -1,8 +1,14 @@
+from masschange.ingest.datafilereaders.base import DataFileReader
+from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
 
 class GraceFOAcc1ADataset(TimeSeriesDataset):
+    @classmethod
+    def get_reader(cls) -> DataFileReader:
+        return GraceFOAcc1ADataFileReader()
+
     mission = GraceFO
     id_suffix = 'ACC1A'
     stream_ids = {'C', 'D'}

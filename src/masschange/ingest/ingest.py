@@ -15,11 +15,7 @@ import psycopg2
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
-from masschange.ingest.datasets.constants import LOG_ROOT_ENV_VAR_KEY
-from masschange.ingest.datasets.gracefo_1a.reader import extract_satellite_id_char
-from masschange.ingest.datasets.gracefo_1a import reader
-from masschange.ingest.datasets.gracefo_1a.constants import INPUT_FILE_DEFAULT_REGEX, \
-    ZIPPED_INPUT_FILE_DEFAULT_REGEX
+from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 from masschange.utils.logging import configure_root_logger
@@ -42,15 +38,18 @@ def run(dataset_cls: Type[TimeSeriesDataset], src: str, data_is_zipped: bool = T
 
     log.info(f'ingesting {dataset_cls.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    target_filepaths = get_zipped_input_iterable(src) if data_is_zipped else enumerate_input_filepaths(src)
+    reader = dataset_cls.get_reader()
+    zipped_regex = reader.get_zipped_input_file_default_regex()
+    unzipped_regex = reader.get_input_file_default_regex()
+    target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
+        else enumerate_input_filepaths(src, unzipped_regex)
     for fp in target_filepaths:
         ingest_file_to_db(dataset_cls, fp)
 
 
-def get_zipped_input_iterable(
-        root_dir: str,
-        enclosing_filename_match_regex: str = ZIPPED_INPUT_FILE_DEFAULT_REGEX,
-        filename_match_regex: str = INPUT_FILE_DEFAULT_REGEX) -> Iterable[str]:
+def get_zipped_input_iterable(root_dir: str,
+        enclosing_filename_match_regex: str,
+        filename_match_regex: str ) -> Iterable[str]:
     """
     Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
     filename_match_regex
@@ -81,7 +80,7 @@ def get_zipped_input_iterable(
         shutil.rmtree(temp_dir)
 
 
-def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_FILE_DEFAULT_REGEX) -> Iterable[str]:
+def enumerate_input_filepaths(root_dir: str, filename_match_regex: str) -> Iterable[str]:
     # TODO: replace all calls to enumerate_input_filepaths() with calls to enumerate_files_in_dir_tree()
     return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
@@ -129,9 +128,10 @@ def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
+    reader = dataset_cls.get_reader()
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
 
-    stream_id = extract_satellite_id_char(src_filepath)
+    stream_id = reader.extract_stream_id(src_filepath)
     table_name = dataset_cls.get_table_name(stream_id)
 
     ensure_table_exists(dataset_cls, stream_id)
@@ -178,7 +178,7 @@ def get_args() -> argparse.Namespace:
 if __name__ == '__main__':
     args = get_args()
 
-    logs_root = os.environ.get(LOG_ROOT_ENV_VAR_KEY) or tempfile.mkdtemp()
+    logs_root = os.environ.get('MASSCHANGE_INGEST_LOGS_ROOT') or tempfile.mkdtemp()
     log_filepath = os.path.join(logs_root, f'ingest_{datetime.now().isoformat()}.log')
     configure_root_logger(log_filepath=log_filepath)
 
