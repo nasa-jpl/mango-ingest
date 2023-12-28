@@ -49,7 +49,7 @@ class TimeSeriesDataset(ABC):
         if agg not in {'min', 'max'}:
             raise ValueError(f'"{agg}" is not a supported timespan stat')
 
-        with get_db_connection() as conn:
+        with get_db_connection() as conn, conn.cursor() as cur:
             table_name = cls.get_table_name(stream_id)
 
             try:
@@ -57,7 +57,6 @@ class TimeSeriesDataset(ABC):
                     SELECT {agg}({cls.TIMESTAMP_COLUMN_NAME})
                     FROM {table_name}
                     """
-                cur = conn.cursor()
                 cur.execute(sql)
                 result = cur.fetchone()[0]
             except Exception as err:
@@ -79,7 +78,7 @@ class TimeSeriesDataset(ABC):
         requested_fields = filter_to_fields or cls.available_fields
         cls._validate_requested_fields(requested_fields)
 
-        with get_db_connection() as conn:
+        with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = cls.get_table_name(stream_id)
             select_columns_clause = ','.join(requested_fields)
 
@@ -90,7 +89,6 @@ class TimeSeriesDataset(ABC):
                     WHERE   {cls.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                         AND {cls.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                     """
-                cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
                 results = cur.fetchall()
                 results.reverse()  # timescale indexes in time-descending order, probably for a reason
