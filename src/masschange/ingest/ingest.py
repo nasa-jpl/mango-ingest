@@ -23,7 +23,7 @@ from masschange.utils.logging import configure_root_logger
 log = logging.getLogger()
 
 
-def run(dataset_cls: Type[TimeSeriesDataset], src: str, data_is_zipped: bool = True):
+def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
     """
 
     Parameters
@@ -36,15 +36,15 @@ def run(dataset_cls: Type[TimeSeriesDataset], src: str, data_is_zipped: bool = T
 
     """
 
-    log.info(f'ingesting {dataset_cls.get_full_id()} data from {src}')
+    log.info(f'ingesting {dataset.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    reader = dataset_cls.get_reader()
+    reader = dataset.get_reader()
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
     target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
         else enumerate_input_filepaths(src, unzipped_regex)
     for fp in target_filepaths:
-        ingest_file_to_db(dataset_cls, fp)
+        ingest_file_to_db(dataset, fp)
 
 
 def get_zipped_input_iterable(root_dir: str,
@@ -85,16 +85,16 @@ def enumerate_input_filepaths(root_dir: str, filename_match_regex: str) -> Itera
     return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
-def ensure_table_exists(dataset_cls: Type[TimeSeriesDataset], stream_id: str) -> None:
-    table_name = dataset_cls.get_table_name(stream_id)
+def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
+    table_name = dataset.get_table_name(stream_id)
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
-    timestamp_column_name = dataset_cls.TIMESTAMP_COLUMN_NAME
+    timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
 
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
             sql = f"""
-            {dataset_cls._get_sql_table_create_statement(stream_id)}
+            {dataset.get_sql_table_create_statement(stream_id)}
             
             select create_hypertable('{table_name}','{timestamp_column_name}');
             """
@@ -122,19 +122,19 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
+def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
-    reader = dataset_cls.get_reader()
+    reader = dataset.get_reader()
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
 
     stream_id = reader.extract_stream_id(src_filepath)
-    table_name = dataset_cls.get_table_name(stream_id)
+    table_name = dataset.get_table_name(stream_id)
 
-    ensure_table_exists(dataset_cls, stream_id)
+    ensure_table_exists(dataset, stream_id)
     log.info(f'writing data to table {table_name}')
     ingest_df(pd_df, table_name)
 
@@ -144,13 +144,13 @@ def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
 
 
-def resolve_dataset_class(dataset_id: str) -> Type[TimeSeriesDataset]:
+def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
     #     hardcode these for now, figure out how to generate them later
     mappings = {
         'gracefo_acc1a': GraceFOAcc1ADataset
     }
 
-    cls = mappings.get(dataset_id)
+    cls = mappings.get(dataset_id)()
     if cls is not None:
         return cls
     else:
@@ -164,7 +164,7 @@ def get_args() -> argparse.Namespace:
         prog='MassChange Data Ingester',
         description='Given product data in a local directory, process that data and store it in database'
     )
-    ap.add_argument('--dataset', required=True, dest='dataset_id', type=resolve_dataset_class,
+    ap.add_argument('--dataset', required=True, dest='dataset', type=resolve_dataset,
                     help='the id of the dataset to ingest <TO-DO: print out enumerated list of available ids>')
 
     ap.add_argument('--src', required=True, dest='src', help='the root directory containing input data files')
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     start = datetime.now()
     log.info(f'starting ingest of {args.dataset_id} from {args.src} begin')
-    run(args.dataset_id, args.src, data_is_zipped=args.target_zipped_data)
+    run(args.dataset, args.src, data_is_zipped=args.target_zipped_data)
     log.info(f'ingest of {args.dataset_id} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)

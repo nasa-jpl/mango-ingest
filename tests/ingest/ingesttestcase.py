@@ -48,7 +48,7 @@ class IngestTestCase(unittest.TestCase):
                 cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
             conn.close()
 
-            ingest.run(dataset_cls=cls.dataset_cls, src=os.path.abspath('./input_data'), data_is_zipped=True)
+            ingest.run(dataset=cls.dataset_cls, src=os.path.abspath('./input_data'), data_is_zipped=True)
 
     @classmethod
     def tearDownClass(cls):

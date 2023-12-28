@@ -118,7 +118,7 @@ class TimeSeriesDataset(ABC):
                 f'Some requested fields {sorted(unavailable_fields)} not present in available fields ({sorted(cls.available_fields)})')
 
     @classmethod
-    def _get_sql_table_create_statement(cls, stream_id: str) -> str:
+    def get_sql_table_create_statement(cls, stream_id: str) -> str:
         # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
         """Get an SQL statement to create a table for this dataset/stream"""
         if stream_id not in cls.stream_ids:
