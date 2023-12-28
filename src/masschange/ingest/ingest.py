@@ -11,7 +11,6 @@ from typing import Iterable, Type
 import pandas
 import pandas as pd
 import psycopg2
-from psycopg2._psycopg import AsIs
 
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
@@ -27,7 +26,8 @@ from masschange.utils.logging import configure_root_logger
 
 log = logging.getLogger()
 
-def run(src: str, data_is_zipped: bool = True):
+
+def run(dataset_cls: Type[TimeSeriesDataset], src: str, data_is_zipped: bool = True):
     """
 
     Parameters
@@ -39,8 +39,6 @@ def run(src: str, data_is_zipped: bool = True):
     -------
 
     """
-
-    dataset_cls = GraceFOAcc1ADataset
 
     log.info(f'ingesting {dataset_cls.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
@@ -88,30 +86,21 @@ def enumerate_input_filepaths(root_dir: str, filename_match_regex: str = INPUT_F
     return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
-def ensure_table_exists(table_name: str) -> None:
+def ensure_table_exists(dataset_cls: Type[TimeSeriesDataset], stream_id: str) -> None:
+    table_name = dataset_cls.get_table_name(stream_id)
     log.info(f'Ensuring table_name exists: "{table_name}"')
+
+    timestamp_column_name = dataset_cls.TIMESTAMP_COLUMN_NAME
 
     with get_db_connection() as conn:
         try:
-            sql = """
-            create table public.%(table_name)s
-            (
-                lin_accl_x double precision not null,
-                lin_accl_y double precision not null,
-                lin_accl_z double precision not null,
-    
-                ang_accl_x double precision not null,
-                ang_accl_y double precision not null,
-                ang_accl_z double precision not null,
-    
-                rcvtime bigint not null,
-                timestamp timestamptz not null
-            );
+            sql = f"""
+            {dataset_cls._get_sql_table_create_statement(stream_id)}
             
-            select create_hypertable('%(table_name)s', 'timestamp');
+            select create_hypertable('{table_name}','{timestamp_column_name}');
             """
             cur = conn.cursor()
-            cur.execute(sql, {'table_name': AsIs(table_name)})
+            cur.execute(sql)
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
@@ -144,9 +133,9 @@ def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
 
     stream_id = extract_satellite_id_char(src_filepath)
-    table_name = dataset_cls._get_table_name(stream_id)
+    table_name = dataset_cls.get_table_name(stream_id)
 
-    ensure_table_exists(table_name)
+    ensure_table_exists(dataset_cls, stream_id)
     log.info(f'writing data to table {table_name}')
     ingest_df(pd_df, table_name)
 
@@ -156,13 +145,30 @@ def ingest_file_to_db(dataset_cls: Type[TimeSeriesDataset], src_filepath: str):
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
 
 
+def resolve_dataset_class(dataset_id: str) -> Type[TimeSeriesDataset]:
+    #     hardcode these for now, figure out how to generate them later
+    mappings = {
+        'gracefo_acc1a': GraceFOAcc1ADataset
+    }
+
+    cls = mappings.get(dataset_id)
+    if cls is not None:
+        return cls
+    else:
+        err_msg = f"Failed to resolve provided dataset_id (got '{dataset_id}', expected one of {sorted(mappings.keys())})"
+        log.error(err_msg)
+        raise ValueError(err_msg)
+
+
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
-        prog='MassChange GRACE-FO Data Ingester',
-        description='Given raw GRACE-FO ASCII data in a local directory, process that data and store it in database'
+        prog='MassChange Data Ingester',
+        description='Given product data in a local directory, process that data and store it in database'
     )
+    ap.add_argument('--dataset', required=True, dest='dataset_id', type=resolve_dataset_class,
+                    help='the id of the dataset to ingest <TO-DO: print out enumerated list of available ids>')
 
-    ap.add_argument('src', help='the root directory containing input data files')
+    ap.add_argument('--src', required=True, dest='src', help='the root directory containing input data files')
 
     ap.add_argument('--zipped', '-z', dest='target_zipped_data', action='store_true',
                     help='look in tarballs for source data')
@@ -178,8 +184,8 @@ if __name__ == '__main__':
     configure_root_logger(log_filepath=log_filepath)
 
     start = datetime.now()
-    log.info('ingest begin')
-    run(args.src, data_is_zipped=args.target_zipped_data)
-    log.info(f'ingest completed in {get_human_readable_elapsed_since(start)}')
+    log.info(f'starting ingest of {args.dataset_id} from {args.src} begin')
+    run(args.dataset_id, args.src, data_is_zipped=args.target_zipped_data)
+    log.info(f'ingest of {args.dataset_id} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)

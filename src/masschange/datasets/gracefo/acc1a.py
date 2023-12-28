@@ -16,3 +16,18 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
         'rcvtime',
         'timestamp'
     }
+
+    @classmethod
+    def _get_sql_table_schema(cls) -> str:
+        return f"""
+            lin_accl_x double precision not null,
+            lin_accl_y double precision not null,
+            lin_accl_z double precision not null,
+
+            ang_accl_x double precision not null,
+            ang_accl_y double precision not null,
+            ang_accl_z double precision not null,
+
+            rcvtime bigint not null,
+            timestamp timestamptz not null
+        """
