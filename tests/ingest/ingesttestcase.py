@@ -43,11 +43,12 @@ class IngestTestCase(unittest.TestCase):
             conn = get_db_connection(without_db=True)
             conn.autocommit = True
             with conn.cursor() as cur:
+                cur.execute(f'DROP DATABASE IF EXISTS {cls.target_database} WITH (FORCE);')
                 cur.execute(f'CREATE DATABASE {cls.target_database}')
                 cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
             conn.close()
 
-            ingest.run(dataset_cls=cls.dataset_cls, src='./input_data', data_is_zipped=True)
+            ingest.run(dataset_cls=cls.dataset_cls, src=os.path.abspath('./input_data'), data_is_zipped=True)
 
     @classmethod
     def tearDownClass(cls):
