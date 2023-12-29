@@ -48,8 +48,8 @@ def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
 
 
 def get_zipped_input_iterable(root_dir: str,
-        enclosing_filename_match_regex: str,
-        filename_match_regex: str ) -> Iterable[str]:
+                              enclosing_filename_match_regex: str,
+                              filename_match_regex: str) -> Iterable[str]:
     """
     Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
     filename_match_regex
@@ -83,6 +83,19 @@ def get_zipped_input_iterable(root_dir: str,
 def enumerate_input_filepaths(root_dir: str, filename_match_regex: str) -> Iterable[str]:
     # TODO: replace all calls to enumerate_input_filepaths() with calls to enumerate_files_in_dir_tree()
     return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
+
+
+def ensure_database_exists(db_name: str) -> None:
+    conn = get_db_connection(without_db=True)
+    conn.autocommit = True
+    with conn.cursor() as cur:
+        try:
+            cur.execute(f'CREATE DATABASE {db_name}')
+            log.info(f'Created missing database: "{db_name}"')
+        except psycopg2.errors.DuplicateDatabase:
+            pass
+        cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
+    conn.close()
 
 
 def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
@@ -147,7 +160,7 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
     #     hardcode these for now, figure out how to generate them later
     mappings = {
-        'gracefo_acc1a': GraceFOAcc1ADataset
+        'GRACEFO_ACC1A': GraceFOAcc1ADataset
     }
 
     cls = mappings.get(dataset_id)()
@@ -182,9 +195,12 @@ if __name__ == '__main__':
     log_filepath = os.path.join(logs_root, f'ingest_{datetime.now().isoformat()}.log')
     configure_root_logger(log_filepath=log_filepath)
 
+    database_name = os.environ['TSDB_DATABASE']
+    ensure_database_exists(database_name)
+
     start = datetime.now()
-    log.info(f'starting ingest of {args.dataset_id} from {args.src} begin')
+    log.info(f'starting ingest of {args.dataset.get_full_id()} from {args.src} begin')
     run(args.dataset, args.src, data_is_zipped=args.target_zipped_data)
-    log.info(f'ingest of {args.dataset_id} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
+    log.info(f'ingest of {args.dataset.get_full_id()} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)
