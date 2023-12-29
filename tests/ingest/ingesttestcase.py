@@ -3,12 +3,9 @@ import os
 import unittest
 from typing import Sequence, Type, Tuple
 
-import psycopg2.extensions
-
 from masschange.ingest import ingest
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
-from masschange.utils.config import get_config_root_env_key
 
 log = logging.getLogger()
 
@@ -20,24 +17,14 @@ class IngestTestCase(unittest.TestCase):
     expected_table_row_counts: Sequence[int]
     expected_table_first_rows: Sequence[Tuple]
 
-    target_database = os.environ.get('TSDB_DATABASE')
-
-    @classmethod
-    def perform_config_guard(cls):
-        """
-        This helps ensure that a non-test database is not inadvertently targeted by test code, which would result in
-        loss of data.
-        """
-        expected_target_database = 'masschange_functional_tests'
-        if cls.target_database != expected_target_database:
-            err_msg = f"functional tests must be run with env var TSDB_DATABASE='{expected_target_database}' (got '{cls.target_database}')"
-            log.critical(err_msg)
-            raise Exception(err_msg)
+    target_database = 'masschange_functional_tests'
 
     @classmethod
     def setUpClass(cls):
+        # Ensure test database is used
+        os.environ['TSDB_DATABASE'] = cls.target_database
+
         if cls != IngestTestCase:
-            cls.perform_config_guard()
 
             log.info(f'Instantiating test database "{cls.target_database}"')
             conn = get_db_connection(without_db=True)
@@ -48,7 +35,7 @@ class IngestTestCase(unittest.TestCase):
                 cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
             conn.close()
 
-            ingest.run(dataset=cls.dataset_cls, src=os.path.abspath('./input_data'), data_is_zipped=True)
+            ingest.run(dataset=cls.dataset_cls(), src=os.path.abspath('./tests/input_data'), data_is_zipped=True)
 
     @classmethod
     def tearDownClass(cls):
