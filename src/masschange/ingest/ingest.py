@@ -13,6 +13,7 @@ import pandas as pd
 import psycopg2
 
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import DataFileReader
@@ -160,7 +161,8 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
     #     hardcode these for now, figure out how to generate them later
     mappings = {
-        'GRACEFO_ACC1A': GraceFOAcc1ADataset
+        'GRACEFO_ACC1A': GraceFOAcc1ADataset,
+        'GRACEFO_ACT1A': GraceFOAct1ADataset
     }
 
     cls = mappings.get(dataset_id)()
