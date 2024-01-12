@@ -2,6 +2,12 @@ FROM registry.access.redhat.com/ubi8/ubi:8.1
 MAINTAINER ***REMOVED*** "***REMOVED***"
 LABEL description="Gravity Missions Analysis Tool Backend Systems"
 
+ENV TSDB_HOST='localhost'
+ENV TSDB_PORT='5433'
+ENV TSDB_USER='postgres'
+ENV TSDB_PASSWORD='password'
+ENV TSDB_DATABASE='masschange'
+
 # Install core system dependencies
 ENV HOME /home/appuser
 RUN useradd -r -u 1001 -g users appuser \
