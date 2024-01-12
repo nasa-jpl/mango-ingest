@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime
-from typing import List, Dict, Set, Type
+from typing import List, Dict, Set, Type, Union
 
 import psycopg2
 from psycopg2 import extras
@@ -45,7 +45,7 @@ class TimeSeriesDataset(ABC):
         }
 
     @classmethod
-    def _get_data_span_stat(cls, agg: str, stream_id: str) -> datetime:
+    def _get_data_span_stat(cls, agg: str, stream_id: str) -> Union[datetime, None]:
         """"""
         if agg not in {'min', 'max'}:
             raise ValueError(f'"{agg}" is not a supported timespan stat')
@@ -62,15 +62,16 @@ class TimeSeriesDataset(ABC):
                 result = cur.fetchone()[0]
             except Exception as err:
                 logging.info(f'query failed with {err}: {sql}')
+                return None
 
         return result
 
     @classmethod
-    def get_data_begin(cls, stream_id: str) -> datetime:
+    def get_data_begin(cls, stream_id: str) -> Union[datetime, None]:
         return cls._get_data_span_stat('min', stream_id)
 
     @classmethod
-    def get_data_end(cls, stream_id: str) -> datetime:
+    def get_data_end(cls, stream_id: str) -> Union[datetime, None]:
         return cls._get_data_span_stat('max', stream_id)
 
     @classmethod
