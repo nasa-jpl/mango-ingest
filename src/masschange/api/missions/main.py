@@ -29,7 +29,7 @@ for mission in missions:
 
     @mission_datasets_router.get('/', tags=['datasets', 'metadata'])
     def get_available_datasets_for_mission():
-        return {'data': sorted([ds.get_full_id() for ds in mission_datasets])}
+        return {'data': sorted([ds.id_suffix for ds in mission_datasets])}
 
     for dataset in mission_datasets:
         dataset_router = construct_router(dataset)
