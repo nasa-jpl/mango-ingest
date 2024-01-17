@@ -16,7 +16,7 @@ log = logging.getLogger()
 
 class TimeSeriesDataset(ABC):
     mission: Type[Mission]
-    id_suffix: str
+    id_suffix: str  #  TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
     available_fields: Set[str]
 
