@@ -26,6 +26,11 @@ for mission in missions:
     mission_datasets_router = APIRouter(prefix='/datasets')
 
     mission_datasets = [dataset for dataset in time_series_dataset_classes if dataset.mission == mission]
+
+    @mission_datasets_router.get('/', tags=['datasets', 'metadata'])
+    def get_available_datasets_for_mission():
+        return {'data': sorted([ds.get_full_id() for ds in mission_datasets])}
+
     for dataset in mission_datasets:
         dataset_router = construct_router(dataset)
         mission_datasets_router.include_router(dataset_router)
