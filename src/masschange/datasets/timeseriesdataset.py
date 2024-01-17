@@ -37,7 +37,8 @@ class TimeSeriesDataset(ABC):
         """
         return {
             'mission': cls.mission.id,
-            'id': cls.get_full_id(),
+            'id': cls.id_suffix,
+            'full_id': cls.get_full_id(),
             'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
                         sorted(cls.stream_ids)],
             'available_fields': sorted(cls.available_fields),
