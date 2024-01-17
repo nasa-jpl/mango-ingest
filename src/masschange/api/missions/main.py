@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
 
@@ -33,8 +34,6 @@ for mission in missions:
     missions_router.include_router(mission_router)
 
 
-
-
-
-
-
+@missions_router.get('/', tags=['missions', 'metadata'])
+def get_available_missions():
+    return {'data': sorted([mission.id for mission in missions])}
