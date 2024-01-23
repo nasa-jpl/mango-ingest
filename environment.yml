@@ -8,7 +8,7 @@ dependencies:
   - pandas=2.0.0
   - pip:
 #    - ./src
-    - fastapi[all]==0.100.0
+    - fastapi[all]==0.109.0
     - uvicorn==0.23.1
 #    - fastapi-utils==0.2.1  # conflicts with pydantic>=2, which is required for latest fastapi
     - psycopg2-binary==2.9.9
