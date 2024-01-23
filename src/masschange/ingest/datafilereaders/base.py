@@ -2,7 +2,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Sequence, Dict
+from typing import Sequence, Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -59,10 +59,19 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
-    def get_desired_column_defs(cls) -> Sequence[Dict]:
+    def get_input_column_defs(cls) -> Sequence[Dict]:
         """
         Return a sequence of columns to extract from the ASCII CSV data file, in the following format:
         {'index': $columnIndex, 'label' $columnName, 'type': $numpyType}
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_const_column_expected_values(cls) -> Dict[str, Any]:
+        """
+        Some fields are expected to have one single value for every row in an entire data product.  Return a mapping of
+        every const-valued column label to its expected value.
         """
         pass
 
@@ -88,13 +97,24 @@ class AsciiDataFileReader(DataFileReader):
         # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most datasets.
         # If this is not the case, refactoring will be necessary.
         raw_data = cls._load_raw_data_from_file(filepath)
+
+        try:
+            for column_label, expected_value in cls.get_const_column_expected_values().items():
+                cls._ensure_constant_column_value(column_label, expected_value, raw_data)
+        except ValueError as err:
+            raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
+
+        # TODO: investigate whether dropping/excluding const columns prior to pd df construction improves performance
+        #  at all
         df = pd.DataFrame(raw_data)
 
         df['rcvtime'] = df.apply(cls.populate_rcvtime, axis=1)
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
-        df = df.drop(['rcvtime_intg', 'rcvtime_frac'], axis=1)
+        const_valued_column_labels = list(cls.get_const_column_expected_values().keys())
+        cols_to_drop = ['rcvtime_intg', 'rcvtime_frac'] + const_valued_column_labels
+        df = df.drop(cols_to_drop, axis=1)
 
         return df
 
@@ -116,8 +136,7 @@ class AsciiDataFileReader(DataFileReader):
         # TODO: extract indices, descriptions, units dynamically from the header?
         # TODO: use prodflag and/or QC for filtering measurements?
 
-        column_defs = cls.get_desired_column_defs()
-
+        column_defs = cls.get_input_column_defs()
         data = np.loadtxt(
             fname=filename,
             skiprows=header_line_count,
@@ -127,6 +146,16 @@ class AsciiDataFileReader(DataFileReader):
         )
 
         return data
+
+    @classmethod
+    def _ensure_constant_column_value(cls, column_label: str, expected_value: Any, data: np.ndarray):
+        """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
+        column_data = data[column_label]
+        unexpected_data = np.where(column_data != expected_value)
+        if unexpected_data[0].size != 0:
+            first_bad = column_data[unexpected_data[0][0]]
+            raise ValueError(f'Unexpected value for const-valued field "{column_label} "'
+                             f'expected: "{expected_value}", was: "{first_bad}"')
 
     @classmethod
     def extract_stream_id(cls, filepath: str) -> str:

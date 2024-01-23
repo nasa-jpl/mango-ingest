@@ -25,7 +25,6 @@ class IngestTestCase(unittest.TestCase):
         os.environ['TSDB_DATABASE'] = cls.target_database
 
         if cls != IngestTestCase:
-
             log.info(f'Instantiating test database "{cls.target_database}"')
             conn = get_db_connection(without_db=True)
             conn.autocommit = True
