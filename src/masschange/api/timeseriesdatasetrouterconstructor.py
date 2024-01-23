@@ -4,6 +4,7 @@ from typing import Type, Union, Annotated, List
 from fastapi import APIRouter, HTTPException, Query
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
+from masschange.api.errors import TooMuchDataRequestedError
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
 
@@ -26,8 +27,10 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             query_start = datetime.now()
             results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, filter_to_fields=fields)
             query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
-        except Exception as err:  # TODO: Make this specific
+        except TooMuchDataRequestedError as err:
             raise HTTPException(status_code=400, detail=str(err))
+        except Exception as err:  # TODO: Make this specific
+            raise HTTPException(status_code=500, detail=str(err))
 
         return {
             'from_isotimestamp': from_isotimestamp.isoformat(),
