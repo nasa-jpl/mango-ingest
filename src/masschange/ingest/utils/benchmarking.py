@@ -1,7 +1,9 @@
 import functools
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Callable
+
+from masschange.utils.misc import get_human_readable_timedelta
 
 
 def log_elapsed_time(label: str = None, log_f: Callable = logging.getLogger().info):
@@ -21,8 +23,4 @@ def log_elapsed_time(label: str = None, log_f: Callable = logging.getLogger().in
 
 
 def get_human_readable_elapsed_since(begin: datetime) -> str:
-    elapsed_seconds = (datetime.now() - begin).total_seconds()
-    h = int(elapsed_seconds / 3600)
-    m = int(elapsed_seconds % 3600 / 60)
-    s = int(elapsed_seconds % 60)
-    return (f"{h}h" if h else "") + (f"{m}m" if m else "") + f"{s}s"
+    return get_human_readable_timedelta(datetime.now() - begin)

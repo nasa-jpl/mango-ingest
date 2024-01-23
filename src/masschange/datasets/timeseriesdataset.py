@@ -1,15 +1,17 @@
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Collection
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Set, Type, Union
 
 import psycopg2
 from psycopg2 import extras
 
+from masschange.api.errors import TooMuchDataRequestedError
 from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
+from masschange.utils.misc import get_human_readable_timedelta
 
 log = logging.getLogger()
 
@@ -19,6 +21,8 @@ class TimeSeriesDataset(ABC):
     id_suffix: str  #  TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
     available_fields: Set[str]
+
+    max_query_temporal_span: timedelta = timedelta(minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'
 
@@ -42,7 +46,8 @@ class TimeSeriesDataset(ABC):
             'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
                         sorted(cls.stream_ids)],
             'available_fields': sorted(cls.available_fields),
-            'timestamp_field': cls.TIMESTAMP_COLUMN_NAME
+            'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
+            'query_span_max_seconds': cls.max_query_temporal_span.total_seconds()
         }
 
     @classmethod
@@ -80,6 +85,10 @@ class TimeSeriesDataset(ABC):
                filter_to_fields: Collection[str] = None) -> List[Dict]:
         requested_fields = filter_to_fields or cls.available_fields
         cls._validate_requested_fields(requested_fields)
+
+        requested_temporal_span = to_dt - from_dt
+        if requested_temporal_span > cls.max_query_temporal_span:
+            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(cls.max_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = cls.get_table_name(stream_id)
