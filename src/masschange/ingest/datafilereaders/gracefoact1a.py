@@ -9,11 +9,6 @@ from masschange.utils.timespan import TimeSpan
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     @classmethod
-    def parse_data_span(cls, filepath: str) -> TimeSpan:
-        # TODO: implement
-        raise NotImplementedError()
-
-    @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
 
@@ -31,7 +26,8 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
             {'index': 2, 'label': 'time_ref', 'type': 'S1'},
-            {'index': 5, 'label': 'prod_flag', 'type': 'S32'},  # TODO: this should be a bit array - need to work out how to convert on load
+            {'index': 5, 'label': 'prod_flag', 'type': 'S32'},
+            # TODO: this should be a bit array - need to work out how to convert on load
             {'index': 6, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 7, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 8, 'label': 'lin_accl_z', 'type': np.double},
