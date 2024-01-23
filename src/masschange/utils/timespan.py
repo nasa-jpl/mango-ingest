@@ -51,3 +51,6 @@ class TimeSpan:
         while date_iter <= self.end.date():
             yield date_iter
             date_iter += timedelta(days=1)
+
+    def __str__(self):
+        return f'TimeSpan(begin={self.begin.isoformat()}, end={self.end.isoformat()})'
