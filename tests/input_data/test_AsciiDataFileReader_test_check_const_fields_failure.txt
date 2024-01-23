@@ -1,0 +1,6 @@
+header:
+  notes: all but the first column are defined as const-valued fields in the test, and should be given non-const values to trigger failure
+# End of YAML header
+1  1  A  ABCD  1.234 2.345e+01
+2  1  A  ABCD  1.234 2.345e+01
+3  2  a  abcd  4.321 5.432e+01
