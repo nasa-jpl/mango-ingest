@@ -20,10 +20,6 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
     def test_check_const_fields(self):
         class CheckConstFieldsStubReader(AsciiDataFileReader):
             @classmethod
-            def parse_data_span(cls, filepath: str) -> TimeSpan:
-                raise NotImplementedError
-
-            @classmethod
             def get_reference_epoch(cls) -> datetime:
                 return datetime(2000, 1, 1, 12)
 
@@ -34,6 +30,7 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
             @classmethod
             def get_zipped_input_file_default_regex(cls) -> str:
                 raise NotImplementedError
+
             @classmethod
             def get_input_column_defs(cls):
                 float_value_dtype = np.double

@@ -14,11 +14,11 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ACT1A_(?P<date_str>\d{4}-\d{2}-\d{2})_(?P<stream_id>[CD])_04\.txt$'
+        return '^ACT1A_\d{4}-\d{2}-\d{2}_(?P<stream_id>[CD])_04\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return 'gracefo_1A_(?P<date_str>\d{4}-\d{2}-\d{2})_RL04\.ascii\.noLRI\.tgz'
+        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
     def get_input_column_defs(cls) -> Sequence[Dict]:
@@ -26,8 +26,7 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
             {'index': 2, 'label': 'time_ref', 'type': 'S1'},
-            {'index': 5, 'label': 'prod_flag', 'type': 'S32'},
-            # TODO: this should be a bit array - need to work out how to convert on load
+            {'index': 5, 'label': 'prod_flag', 'type': 'S32'},  # TODO: this should be a bit array - need to work out how to convert on load
             {'index': 6, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 7, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 8, 'label': 'lin_accl_z', 'type': np.double},

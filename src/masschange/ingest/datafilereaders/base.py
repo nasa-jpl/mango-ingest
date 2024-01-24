@@ -1,14 +1,11 @@
 import os
 import re
-import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Sequence, Dict, Any
 
 import numpy as np
 import pandas as pd
-
-from masschange.utils.timespan import TimeSpan
 
 
 class DataFileReader(ABC):
@@ -45,34 +42,6 @@ class DataFileReader(ABC):
     def extract_stream_id(cls, filepath: str) -> str:
         """Given a path to a data file, return the id of the stream (usually satellite) to which the file relates"""
         pass
-
-    @classmethod
-    def parse_data_span(cls, filepath: str) -> TimeSpan:
-        """
-        Given a path to a data file, parse the timespan of the contained data.
-        This is used to delete data prior to overwrite, if necessary
-
-        This default implementation is for daily granules labeled with YYYY-MM-DD, and may need to be overridden in some
-        subclasses or generalized further
-        """
-        match_patterns = [cls.get_input_file_default_regex(), cls.get_zipped_input_file_default_regex()]
-        match_group_name = 'date_str'
-        filename = os.path.split(filepath)[-1]
-
-        for pattern in match_patterns:
-            match = re.match(pattern, filename)
-            if not match:
-                continue
-
-            try:
-                span_start_str = match.group(match_group_name)
-                span_start = datetime.strptime(span_start_str, '%Y-%m-%d')
-                return TimeSpan(begin=span_start, duration=timedelta(days=1))  # end-exclusive
-            except IndexError:
-                raise NotImplementedError(f'regex match group "{match_group_name}" not defined for one or more input file patterns in {cls.__name__}')
-
-        # if no match is found
-        raise ValueError(f'Failed to match filename {filename} using available match patterns in {cls.__name__}: {match_patterns}')
 
 
 class AsciiDataFileReader(DataFileReader):
