@@ -6,7 +6,7 @@ import tarfile
 import tempfile
 from datetime import datetime
 from io import StringIO
-from typing import Iterable, Type
+from typing import Iterable
 
 import pandas
 import pandas as pd
@@ -16,10 +16,10 @@ from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
-from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 from masschange.utils.logging import configure_root_logger
+from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
@@ -119,10 +119,25 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
             pass
 
 
+def delete_overlapping_data(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
+    table_name = dataset.get_table_name(stream_id)
+    with get_db_connection() as conn, conn.cursor() as cur:
+        sql = f"""
+            DELETE 
+            FROM {table_name}
+                WHERE   {dataset.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
+                    AND {dataset.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
+                """
+        cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
+        conn.commit()
+        log.debug(f'purged data from {table_name} for span {data_temporal_span}')
+
+
 def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     """
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
+    log.info(f'writing data to table {table_name}')
 
     with get_db_connection() as conn:
         buffer = StringIO()
@@ -144,12 +159,15 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
 
     reader = dataset.get_reader()
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
+    data_temporal_span = TimeSpan(begin=min(pd_df[dataset.TIMESTAMP_COLUMN_NAME]),
+                                  end=max(pd_df[dataset.TIMESTAMP_COLUMN_NAME]))
 
     stream_id = reader.extract_stream_id(src_filepath)
-    table_name = dataset.get_table_name(stream_id)
 
     ensure_table_exists(dataset, stream_id)
-    log.info(f'writing data to table {table_name}')
+
+    table_name = dataset.get_table_name(stream_id)
+    delete_overlapping_data(dataset, stream_id, data_temporal_span)
     ingest_df(pd_df, table_name)
 
     if log.isEnabledFor(logging.DEBUG):
