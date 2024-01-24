@@ -82,12 +82,12 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def select(cls, stream_id: str, from_dt: datetime, to_dt: datetime,
-               filter_to_fields: Collection[str] = None) -> List[Dict]:
+               filter_to_fields: Collection[str] = None, limit_data_span: bool = True) -> List[Dict]:
         requested_fields = filter_to_fields or cls.available_fields
         cls._validate_requested_fields(requested_fields)
 
         requested_temporal_span = to_dt - from_dt
-        if requested_temporal_span > cls.max_query_temporal_span:
+        if limit_data_span and requested_temporal_span > cls.max_query_temporal_span:
             raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(cls.max_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
