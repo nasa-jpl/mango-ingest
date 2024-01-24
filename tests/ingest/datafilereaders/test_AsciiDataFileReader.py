@@ -54,7 +54,7 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                 }
 
         reader = CheckConstFieldsStubReader()
-        filepath = './tests/input_data/test_AsciiDataFileReader_test_check_const_fields_failure.txt'
+        filepath = './tests/input_data/ingest/datafilereaders/test_AsciiDataFileReader_test_check_const_fields_failure.txt'
         raw_data = reader._load_raw_data_from_file(filepath)
 
         for column_label, expected_value in reader.get_const_column_expected_values().items():
