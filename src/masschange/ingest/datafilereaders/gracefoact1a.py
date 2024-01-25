@@ -9,11 +9,6 @@ from masschange.utils.timespan import TimeSpan
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     @classmethod
-    def parse_data_span(cls, filepath: str) -> TimeSpan:
-        # TODO: implement
-        raise NotImplementedError()
-
-    @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
 
@@ -46,6 +41,7 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_const_column_expected_values(cls) -> Sequence[Dict]:
         return {
+
             'time_ref': 'R',
             'prod_flag': '00000100000000000000000000111111'
         }

@@ -7,8 +7,6 @@ from typing import Sequence, Dict, Any
 import numpy as np
 import pandas as pd
 
-from masschange.utils.timespan import TimeSpan
-
 
 class DataFileReader(ABC):
 
@@ -43,15 +41,6 @@ class DataFileReader(ABC):
     @abstractmethod
     def extract_stream_id(cls, filepath: str) -> str:
         """Given a path to a data file, return the id of the stream (usually satellite) to which the file relates"""
-        pass
-
-    @classmethod
-    @abstractmethod
-    def parse_data_span(cls, filepath: str) -> TimeSpan:
-        """
-        Given a path to a data file, parse the timespan of the contained data.
-        This is used to delete data prior to overwrite, if necessary
-        """
         pass
 
 
