@@ -31,13 +31,16 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
             {'index': 2, 'label': 'time_ref', 'type': 'S1'},
+            {'index': 3, 'label': 'GRACEFO_id', 'type': 'U1'},
+            {'index': 4, 'label': 'qualflg', 'type': 'U8'},
             {'index': 5, 'label': 'prod_flag', 'type': 'S32'},  # TODO: this should be a bit array - need to work out how to convert on load
             {'index': 6, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 7, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 8, 'label': 'lin_accl_z', 'type': np.double},
             {'index': 9, 'label': 'ang_accl_x', 'type': np.double},
             {'index': 10, 'label': 'ang_accl_y', 'type': np.double},
-            {'index': 11, 'label': 'ang_accl_z', 'type': np.double}
+            {'index': 11, 'label': 'ang_accl_z', 'type': np.double},
+            {'index': 12, 'label': 'icu_blk_nr', 'type': int}
         ]
 
     @classmethod
