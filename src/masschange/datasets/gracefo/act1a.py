@@ -13,19 +13,27 @@ class GraceFOAct1ADataset(TimeSeriesDataset):
     id_suffix = 'ACT1A'
     stream_ids = {'C', 'D'}
     available_fields = {
+        'qualflg',
+        'GRACEFO_id',
         'lin_accl_x',
         'lin_accl_y',
         'lin_accl_z',
         'ang_accl_x',
         'ang_accl_y',
         'ang_accl_z',
+        'icu_blk_nr',
         'rcvtime',
         'timestamp'
     }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
+        # NOTE: qualflag bit 7 = No ICU block number available for GRACE-FO,
+        # so assume that icu_blk_nr could be NULL
         return f"""
+            GRACEFO_id CHAR not null,
+            qualflg VARCHAR(8) not null,
+            
             lin_accl_x double precision not null,
             lin_accl_y double precision not null,
             lin_accl_z double precision not null,
@@ -34,6 +42,8 @@ class GraceFOAct1ADataset(TimeSeriesDataset):
             ang_accl_y double precision not null,
             ang_accl_z double precision not null,
 
+            icu_blk_nr int, 
+            
             rcvtime bigint not null,
             timestamp timestamptz not null
         """
