@@ -40,8 +40,8 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                 return [
                     {'index': 0, 'label': 'variable_int_col', 'type': np.ulonglong},
                     {'index': 1, 'label': 'const_int_col', 'type': np.uint},
-                    {'index': 2, 'label': 'const_char_col', 'type': 'S1'},
-                    {'index': 3, 'label': 'const_str_col', 'type': 'S4'},
+                    {'index': 2, 'label': 'const_char_col', 'type': 'U1'},
+                    {'index': 3, 'label': 'const_str_col', 'type': 'U4'},
                     {'index': 4, 'label': 'const_float_col', 'type': float_value_dtype},
                     {'index': 5, 'label': 'const_scifloat_col', 'type': float_value_dtype},
                 ]
@@ -50,8 +50,8 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
             def get_const_column_expected_values(cls):
                 return {
                     'const_int_col': 1,
-                    'const_char_col': b'A',
-                    'const_str_col': b'ABCD',
+                    'const_char_col': 'A',
+                    'const_str_col': 'ABCD',
                     'const_float_col': 1.234,
                     'const_scifloat_col': 23.45
                 }
