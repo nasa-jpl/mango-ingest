@@ -15,7 +15,8 @@ time_series_dataset_classes: Iterable[Type[TimeSeriesDataset]] = [
     GraceFOAcc1ADataset,
     GraceFOAct1ADataset,
     GraceFOIhk1ADataset,
-    GraceFOImu1ADataset
+    GraceFOImu1ADataset,
+    GraceFOMag1ADataset
 ]
 
 missions: Iterable[Type[Mission]] = {dataset.mission for dataset in time_series_dataset_classes}
