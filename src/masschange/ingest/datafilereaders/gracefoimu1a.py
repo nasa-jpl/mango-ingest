@@ -35,6 +35,5 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_const_column_expected_values(cls) -> Sequence[Dict]:
         return {
-
             'time_ref': 'R'
         }
