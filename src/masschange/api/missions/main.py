@@ -5,12 +5,15 @@ from fastapi import APIRouter
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
+from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
 
 # Declare all implemented TimeSeriesDataset subclasses here, and API endpoints will be automatically constructed
 time_series_dataset_classes: Iterable[Type[TimeSeriesDataset]] = [
-    GraceFOAcc1ADataset
+    GraceFOAcc1ADataset,
+    GraceFOAct1ADataset,
+    GraceFOIhk1ADataset
 ]
 
 missions: Iterable[Type[Mission]] = {dataset.mission for dataset in time_series_dataset_classes}
