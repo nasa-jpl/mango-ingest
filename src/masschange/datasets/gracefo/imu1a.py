@@ -1,27 +1,22 @@
 from masschange.ingest.datafilereaders.base import DataFileReader
-from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader
+from masschange.ingest.datafilereaders.gracefoimu1a import GraceFOImu1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 
 
-class GraceFOAcc1ADataset(TimeSeriesDataset):
+class GraceFOImu1ADataset(TimeSeriesDataset):
     @classmethod
     def get_reader(cls) -> DataFileReader:
-        return GraceFOAcc1ADataFileReader()
+        return GraceFOImu1ADataFileReader()
 
     mission = GraceFO
-    id_suffix = 'ACC1A'
+    id_suffix = 'IMU1A'
     stream_ids = {'C', 'D'}
     available_fields = {
         'GRACEFO_id',
-        'qualflg',
-        'lin_accl_x',
-        'lin_accl_y',
-        'lin_accl_z',
-        'ang_accl_x',
-        'ang_accl_y',
-        'ang_accl_z',
-        'icu_blk_nr',
+        'gyro_id',
+        'FiltAng',
+        'qualflg'
         'rcvtime',
         'timestamp'
     }
@@ -32,18 +27,10 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
         # so assume that icu_blk_nr could be NULL
         return f"""
             GRACEFO_id CHAR not null,
+            gyro_id smallint not null,
+            FiltAng double precision not null,
             qualflg VARCHAR(8) not null,
             
-            lin_accl_x double precision not null,
-            lin_accl_y double precision not null,
-            lin_accl_z double precision not null,
-
-            ang_accl_x double precision not null,
-            ang_accl_y double precision not null,
-            ang_accl_z double precision not null,
-             
-            icu_blk_nr int, 
-
             rcvtime bigint not null,
             timestamp timestamptz not null
         """

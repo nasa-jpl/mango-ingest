@@ -6,6 +6,7 @@ from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
+from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
 
@@ -13,7 +14,8 @@ from masschange.missions import Mission
 time_series_dataset_classes: Iterable[Type[TimeSeriesDataset]] = [
     GraceFOAcc1ADataset,
     GraceFOAct1ADataset,
-    GraceFOIhk1ADataset
+    GraceFOIhk1ADataset,
+    GraceFOImu1ADataset
 ]
 
 missions: Iterable[Type[Mission]] = {dataset.mission for dataset in time_series_dataset_classes}

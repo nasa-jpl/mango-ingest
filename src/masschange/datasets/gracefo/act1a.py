@@ -13,8 +13,8 @@ class GraceFOAct1ADataset(TimeSeriesDataset):
     id_suffix = 'ACT1A'
     stream_ids = {'C', 'D'}
     available_fields = {
-        'qualflg',
         'GRACEFO_id',
+        'qualflg',
         'lin_accl_x',
         'lin_accl_y',
         'lin_accl_z',

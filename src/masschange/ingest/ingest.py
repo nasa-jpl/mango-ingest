@@ -15,6 +15,8 @@ import psycopg2
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
+from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
+
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
@@ -182,7 +184,8 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
     mappings = {
         'GRACEFO_ACC1A': GraceFOAcc1ADataset,
         'GRACEFO_ACT1A': GraceFOAct1ADataset,
-        'GRACEFO_IHK1A': GraceFOIhk1ADataset
+        'GRACEFO_IHK1A': GraceFOIhk1ADataset,
+        'GRACEFO_IMU1A': GraceFOImu1ADataset
     }
 
     cls = mappings.get(dataset_id)()
