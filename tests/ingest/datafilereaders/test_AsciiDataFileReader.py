@@ -2,7 +2,7 @@ import logging
 import os
 import unittest
 from datetime import datetime
-from typing import Sequence, Type, Tuple, Dict
+from typing import Sequence, Type, Tuple, Dict, List
 
 import numpy as np
 
@@ -52,6 +52,18 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                     'const_float_col': 1.234,
                     'const_scifloat_col': 23.45
                 }
+
+            @classmethod
+            def get_time_column_labels(cls) -> List:
+                return []
+
+            @classmethod
+            def populate_rcvtime(cls, row) -> int:
+                pass
+
+            @classmethod
+            def populate_timestamp(cls, row) -> datetime:
+                pass
 
         reader = CheckConstFieldsStubReader()
         filepath = './tests/input_data/ingest/datafilereaders/test_AsciiDataFileReader_test_check_const_fields_failure.txt'

@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Sequence, Dict
+from datetime import datetime, timedelta
+from typing import Sequence, Dict, Any, List
 
 import numpy as np
 
@@ -33,7 +33,19 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
         ]
 
     @classmethod
-    def get_const_column_expected_values(cls) -> Sequence[Dict]:
+    def get_const_column_expected_values(cls) -> Dict[str, Any]:
         return {
             'time_ref': 'R'
         }
+
+    @classmethod
+    def get_time_column_labels(cls) -> List:
+        return ['rcvtime_intg', 'rcvtime_frac']
+
+    @classmethod
+    def populate_rcvtime(cls, row) -> int:
+        return int(row.rcvtime_intg * 1000000 + row.rcvtime_frac)
+
+    @classmethod
+    def populate_timestamp(cls, row) -> datetime:
+        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
