@@ -46,7 +46,7 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             'prod_flag': '00000100000000000000000000111111'
         }
     @classmethod
-    def get_time_column_labels(cls) -> List:
+    def get_timestamp_input_column_labels(cls) -> List:
         return ['rcvtime_intg', 'rcvtime_frac']
 
     @classmethod

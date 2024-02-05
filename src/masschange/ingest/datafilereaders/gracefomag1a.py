@@ -62,7 +62,7 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         }
 
     @classmethod
-    def get_time_column_labels(cls) -> List:
+    def get_timestamp_input_column_labels(cls) -> List:
         return ['time_intg', 'time_frac']
 
     @classmethod
