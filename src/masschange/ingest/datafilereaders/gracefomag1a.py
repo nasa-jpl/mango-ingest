@@ -35,8 +35,8 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         #         valid_range: C,D
         #
         return [
-            {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
-            {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
+            {'index': 0, 'label': 'time_intg', 'type': np.ulonglong},
+            {'index': 1, 'label': 'time_frac', 'type': np.uint},
             {'index': 2, 'label': 'GRACEFO_id', 'type': 'U1'},
             {'index': 3, 'label': 'time_ref', 'type': 'U1'},
             {'index': 4, 'label': 'MfvX_RAW', 'type': np.double},
@@ -60,3 +60,7 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         return {
             'time_ref': 'R'
         }
+
+    @classmethod
+    def get_time_column_labels(cls) -> Dict:
+        return {'time_sec': 'time_intg', 'time_frac': 'time_frac'}
