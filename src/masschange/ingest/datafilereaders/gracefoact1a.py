@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Sequence, Dict
+from datetime import datetime, timedelta
+from typing import Sequence, Dict, Any, List
 
 import numpy as np
 
@@ -21,7 +21,7 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
         return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
-    def get_input_column_defs(cls) -> Sequence[Dict]:
+    def get_input_column_defs(cls) -> Dict[str, Any]:
         return [
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
@@ -45,3 +45,14 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             'time_ref': 'R',
             'prod_flag': '00000100000000000000000000111111'
         }
+    @classmethod
+    def get_time_column_labels(cls) -> List:
+        return ['rcvtime_intg', 'rcvtime_frac']
+
+    @classmethod
+    def populate_rcvtime(cls, row) -> int:
+        return int(row.rcvtime_intg * 1000000 + row.rcvtime_frac)
+
+    @classmethod
+    def populate_timestamp(cls, row) -> datetime:
+        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)

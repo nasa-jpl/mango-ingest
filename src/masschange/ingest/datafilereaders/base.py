@@ -2,7 +2,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any
+from typing import Sequence, Dict, Any, List
 
 import numpy as np
 import pandas as pd
@@ -56,14 +56,6 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    def get_time_column_labels(cls) -> Dict:
-        """
-        Return labels for time columns in the ASCII CSV data file, in the following format:
-        {'time_sec': $columnName, 'time_frac': $columnName}
-        """
-        return {'time_sec': 'rcvtime_intg', 'time_frac': 'rcvtime_frac'}
-
-    @classmethod
     @abstractmethod
     def get_const_column_expected_values(cls) -> Dict[str, Any]:
         """
@@ -72,6 +64,13 @@ class AsciiDataFileReader(DataFileReader):
         """
         pass
 
+    @classmethod
+    @abstractmethod
+    def get_time_column_labels(cls) -> List:
+        """
+        Return list of labels of time column in data product
+        """
+        pass
     @classmethod
     @abstractmethod
     def get_reference_epoch(cls) -> datetime:
@@ -104,29 +103,32 @@ class AsciiDataFileReader(DataFileReader):
         # TODO: investigate whether dropping/excluding const columns prior to pd df construction improves performance
         #  at all
         df = pd.DataFrame(raw_data)
-        time_sec_label = cls.get_time_column_labels()['time_sec']
-        time_frac_label = cls.get_time_column_labels()['time_frac']
-        df['rcvtime'] = df.apply(cls.populate_rcvtime, args = (time_sec_label, time_frac_label), axis=1)
-        df['timestamp'] = df.apply(cls.populate_timestamp, args = (time_sec_label, time_frac_label), axis=1)
+
+        df['rcvtime'] = df.apply(cls.populate_rcvtime, axis=1)
+        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
         const_valued_column_labels = list(cls.get_const_column_expected_values().keys())
-        cols_to_drop = [time_sec_label, time_frac_label] + const_valued_column_labels
+        time_column_labels = cls.get_time_column_labels()
+        cols_to_drop = time_column_labels + const_valued_column_labels
         df = df.drop(cols_to_drop, axis=1)
 
         return df
 
     @classmethod
-    def populate_timestamp(cls, row, time_sec_label, time_frac_label) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row[time_sec_label], microseconds=row[time_frac_label])
+    @abstractmethod
+    def populate_timestamp(cls, row) -> datetime:
+        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
     @classmethod
-    def populate_rcvtime(cls, row, time_sec_label, time_frac_label) -> int:
+    @abstractmethod
+    def populate_rcvtime(cls, row) -> int:
         """
         Convert the integer and fractional (microsecond) multipart rcvtime components into a single rcvtime integer value
         representing the number of microseconds since the reference_epoch
         """
-        return int(row[time_sec_label] * 1000000 + row[time_frac_label])
+        pass
+
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
