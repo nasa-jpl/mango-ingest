@@ -2,7 +2,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any
+from typing import Sequence, Dict, Any, List
 
 import numpy as np
 import pandas as pd
@@ -66,6 +66,14 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
+    def get_timestamp_input_column_labels(cls) -> List:
+        """
+        Return list of labels for any columns used to derive timestamp, if those columns are not stored in the database
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
     def get_reference_epoch(cls) -> datetime:
         """Return the reference epoch used as the basis of rcvtime fields"""
         pass
@@ -102,22 +110,26 @@ class AsciiDataFileReader(DataFileReader):
 
         # Drop extraneous columns
         const_valued_column_labels = list(cls.get_const_column_expected_values().keys())
-        cols_to_drop = ['rcvtime_intg', 'rcvtime_frac'] + const_valued_column_labels
+        time_column_labels = cls.get_timestamp_input_column_labels()
+        cols_to_drop = time_column_labels + const_valued_column_labels
         df = df.drop(cols_to_drop, axis=1)
 
         return df
 
     @classmethod
+    @abstractmethod
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
     @classmethod
+    @abstractmethod
     def populate_rcvtime(cls, row) -> int:
         """
         Convert the integer and fractional (microsecond) multipart rcvtime components into a single rcvtime integer value
         representing the number of microseconds since the reference_epoch
         """
-        return int(row.rcvtime_intg * 1000000 + row.rcvtime_frac)
+        pass
+
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
