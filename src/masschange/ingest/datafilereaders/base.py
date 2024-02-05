@@ -68,7 +68,7 @@ class AsciiDataFileReader(DataFileReader):
     @abstractmethod
     def get_timestamp_input_column_labels(cls) -> List:
         """
-        Return list of labels for any columns used to derive timestamp, if those columns are not stored in the database:wq
+        Return list of labels for any columns used to derive timestamp, if those columns are not stored in the database
         """
         pass
 
