@@ -24,8 +24,6 @@ class GraceFOIhk1ADataset(TimeSeriesDataset):
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
-        # NOTE: qualflag bit 7 = No ICU block number available for GRACE-FO,
-        # so assume that icu_blk_nr could be NULL
         return f"""
             GRACEFO_id CHAR not null,
             qualflg VARCHAR(8) not null,
