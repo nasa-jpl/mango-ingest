@@ -66,12 +66,12 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
-    def get_time_column_labels(cls) -> List:
+    def get_timestamp_input_column_labels(cls) -> List:
         """
-        Return list of labels of time column in data product
+        Return list of labels for any columns used to derive timestamp, if those columns are not stored in the database:wq
         """
         pass
-    
+
     @classmethod
     @abstractmethod
     def get_reference_epoch(cls) -> datetime:
@@ -110,7 +110,7 @@ class AsciiDataFileReader(DataFileReader):
 
         # Drop extraneous columns
         const_valued_column_labels = list(cls.get_const_column_expected_values().keys())
-        time_column_labels = cls.get_time_column_labels()
+        time_column_labels = cls.get_timestamp_input_column_labels()
         cols_to_drop = time_column_labels + const_valued_column_labels
         df = df.drop(cols_to_drop, axis=1)
 

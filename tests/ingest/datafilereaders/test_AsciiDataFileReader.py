@@ -54,7 +54,7 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                 }
 
             @classmethod
-            def get_time_column_labels(cls) -> List:
+            def get_timestamp_input_column_labels(cls) -> List:
                 return []
 
             @classmethod
