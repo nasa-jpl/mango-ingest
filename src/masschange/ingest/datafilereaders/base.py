@@ -71,6 +71,7 @@ class AsciiDataFileReader(DataFileReader):
         Return list of labels of time column in data product
         """
         pass
+    
     @classmethod
     @abstractmethod
     def get_reference_epoch(cls) -> datetime:
