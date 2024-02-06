@@ -46,14 +46,5 @@ class GraceFOAcc1ADataFileReader(AsciiDataFileReader):
         }
 
     @classmethod
-    def get_timestamp_input_column_labels(cls) -> List:
-        return ['rcvtime_intg', 'rcvtime_frac']
-
-    @classmethod
-
-    def populate_rcvtime(cls, row) -> int:
-        return int(row.rcvtime_intg * 1000000 + row.rcvtime_frac)
-
-    @classmethod
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)

@@ -13,6 +13,8 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
     id_suffix = 'ACC1A'
     stream_ids = {'C', 'D'}
     available_fields = {
+        'rcvtime_intg',
+        'rcvtime_frac',
         'GRACEFO_id',
         'qualflg',
         'lin_accl_x',
@@ -22,7 +24,6 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
         'ang_accl_y',
         'ang_accl_z',
         'icu_blk_nr',
-        'rcvtime',
         'timestamp'
     }
 
@@ -31,6 +32,9 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
         # NOTE: qualflag bit 7 = No ICU block number available for GRACE-FO,
         # so assume that icu_blk_nr could be NULL
         return f"""
+            rcvtime_intg bigint not null,
+            rcvtime_frac int not null,
+            
             GRACEFO_id CHAR not null,
             qualflg VARCHAR(8) not null,
             
@@ -44,6 +48,5 @@ class GraceFOAcc1ADataset(TimeSeriesDataset):
              
             icu_blk_nr int, 
 
-            rcvtime bigint not null,
             timestamp timestamptz not null
         """
