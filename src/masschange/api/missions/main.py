@@ -7,6 +7,7 @@ from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
 from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
+from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
 
