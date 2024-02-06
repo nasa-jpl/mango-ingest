@@ -8,8 +8,9 @@ dependencies:
   - pandas=2.0.0
   - pip:
 #    - ./src
-    - fastapi[all]==0.109.0
-    - uvicorn==0.23.1
+    - fastapi[all]==0.108.0  # 0.109.0 and later depends on bugged version of uvicorn (see below)
+    - uvicorn==0.25.0  # 0.26.0 breaks in case of --root-path "/" - issue opened at https://github.com/encode/uvicorn/discussions/2244
+#                        This may be worked around by setting --root-path "" instead, if needed
 #    - fastapi-utils==0.2.1  # conflicts with pydantic>=2, which is required for latest fastapi
     - psycopg2-binary==2.9.9
 #    - psycopg2==2.9.9  # need to figure out how to get the python headers in RHEL8 so we can build from source
