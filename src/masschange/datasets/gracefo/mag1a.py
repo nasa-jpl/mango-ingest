@@ -13,6 +13,8 @@ class GraceFOMag1ADataset(TimeSeriesDataset):
     id_suffix = 'MAG1A'
     stream_ids = {'C', 'D'}
     available_fields = {
+        'time_intg',
+        'time_frac',
         'GRACEFO_id',
         'MfvX_RAW',
         'MfvY_RAW',
@@ -28,13 +30,15 @@ class GraceFOMag1ADataset(TimeSeriesDataset):
         'MF_BCalZ',
         'torque_cal',
         'qualflg',
-        'rcvtime',
         'timestamp'
     }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
         return f"""
+            time_intg bigint not null,
+            time_frac int not null,
+            
             GRACEFO_id CHAR not null,
             MfvX_RAW double precision not null,
             MfvY_RAW double precision not null,
@@ -51,6 +55,5 @@ class GraceFOMag1ADataset(TimeSeriesDataset):
             torque_cal double precision not null,
             qualflg VARCHAR(8) not null,
             
-            rcvtime bigint not null,
             timestamp timestamptz not null
         """

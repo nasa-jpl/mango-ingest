@@ -66,14 +66,6 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
-    def get_timestamp_input_column_labels(cls) -> List:
-        """
-        Return list of labels for any columns used to derive timestamp, if those columns are not stored in the database
-        """
-        pass
-
-    @classmethod
-    @abstractmethod
     def get_reference_epoch(cls) -> datetime:
         """Return the reference epoch used as the basis of rcvtime fields"""
         pass
@@ -105,31 +97,17 @@ class AsciiDataFileReader(DataFileReader):
         #  at all
         df = pd.DataFrame(raw_data)
 
-        df['rcvtime'] = df.apply(cls.populate_rcvtime, axis=1)
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
-        const_valued_column_labels = list(cls.get_const_column_expected_values().keys())
-        time_column_labels = cls.get_timestamp_input_column_labels()
-        cols_to_drop = time_column_labels + const_valued_column_labels
-        df = df.drop(cols_to_drop, axis=1)
+        df = df.drop(list(cls.get_const_column_expected_values().keys()), axis=1)
 
         return df
 
     @classmethod
     @abstractmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
-
-    @classmethod
-    @abstractmethod
-    def populate_rcvtime(cls, row) -> int:
-        """
-        Convert the integer and fractional (microsecond) multipart rcvtime components into a single rcvtime integer value
-        representing the number of microseconds since the reference_epoch
-        """
-        pass
-
+       pass
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
