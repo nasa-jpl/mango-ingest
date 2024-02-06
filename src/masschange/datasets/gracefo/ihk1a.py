@@ -13,18 +13,22 @@ class GraceFOIhk1ADataset(TimeSeriesDataset):
     id_suffix = 'IHK1A'
     stream_ids = {'C', 'D'}
     available_fields = {
+        'time_intg',
+        'time_frac',
         'GRACEFO_id',
         'qualflg',
         'sensortype',
         'sensorvalue',
         'sensorname',
-        'rcvtime',
         'timestamp'
     }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
         return f"""
+            time_intg bigint not null,
+            time_frac int not null,
+            
             GRACEFO_id CHAR not null,
             qualflg VARCHAR(8) not null,
             
@@ -32,6 +36,5 @@ class GraceFOIhk1ADataset(TimeSeriesDataset):
             sensorvalue double precision not null,
             sensorname VARCHAR(2) not null,
 
-            rcvtime bigint not null,
             timestamp timestamptz not null
         """
