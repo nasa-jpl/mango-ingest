@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any, List
+from typing import Sequence, Dict, Any
 
 import numpy as np
 
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader
-from masschange.utils.timespan import TimeSpan
 
 # GRACE-FO Level-1A Magnetometer and Torque Rod Data
 class GraceFOMag1ADataFileReader(AsciiDataFileReader):

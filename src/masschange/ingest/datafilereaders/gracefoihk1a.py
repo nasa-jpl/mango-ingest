@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any, List
+from typing import Sequence, Dict, Any
 
 import numpy as np
 
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader
-from masschange.utils.timespan import TimeSpan
-
 
 class GraceFOIhk1ADataFileReader(AsciiDataFileReader):
     @classmethod

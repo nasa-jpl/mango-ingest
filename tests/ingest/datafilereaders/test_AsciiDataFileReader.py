@@ -11,7 +11,6 @@ from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader
-from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
