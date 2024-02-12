@@ -9,6 +9,7 @@ from psycopg2 import extras
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.db import get_db_connection
+from masschange.db.utils import list_table_columns as list_db_table_columns
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
 from masschange.utils.misc import get_human_readable_timedelta
@@ -104,8 +105,14 @@ class TimeSeriesDataset(ABC):
                 cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
                 results = cur.fetchall()
                 results.reverse()  # timescale indexes in time-descending order, probably for a reason
+            except psycopg2.errors.UndefinedColumn as err:
+                logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
+                available_columns = list_db_table_columns(table_name)
+                missing_columns = {f for f in cls.available_fields if f.lower() not in available_columns}
+                raise ValueError(f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
-                logging.info(f'query failed with {err}: {sql}')
+                logging.error(f'query failed with {err}: {sql}')
+                raise Exception
 
         return results
 
