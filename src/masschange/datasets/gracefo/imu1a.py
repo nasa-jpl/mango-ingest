@@ -18,7 +18,7 @@ class GraceFOImu1ADataset(TimeSeriesDataset):
         'GRACEFO_id',
         'gyro_id',
         'FiltAng',
-        'qualflg'
+        'qualflg',
         'timestamp'
     }
 
