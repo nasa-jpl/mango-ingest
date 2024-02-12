@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any, List
+from typing import Sequence, Dict, Any
 
 import numpy as np
 
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader
-from masschange.utils.timespan import TimeSpan
 
 # 8-Hz IMU measurements
 class GraceFOImu1ADataFileReader(AsciiDataFileReader):
