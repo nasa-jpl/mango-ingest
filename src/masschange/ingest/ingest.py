@@ -47,7 +47,7 @@ def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
     target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
-        else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex))
+        else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
     for fp in target_filepaths:
         ingest_file_to_db(dataset, fp)
 
@@ -72,13 +72,13 @@ def get_zipped_input_iterable(root_dir: str,
 
     """
 
-    for tar_fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex)):
+    for tar_fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
         with tarfile.open(tar_fp) as tf:
             tf.extractall(temp_dir)
 
-        for fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(temp_dir, filename_match_regex)):
+        for fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
             yield fp
 
         log.debug(f'cleaning up {temp_dir}')
