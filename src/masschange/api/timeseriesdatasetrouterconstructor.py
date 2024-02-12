@@ -18,8 +18,8 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             stream_id: StreamEnum,
             # default values are chosen to allow users to immediately run a fast query from docs page
             # these may be removed later if they are confusing
-            from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]),
-            to_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) + timedelta(minutes=1),
+            from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min,
+            to_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min + timedelta(minutes=1),
             fields: Annotated[List[str], Query()] = sorted(DatasetCls.available_fields),
     ):
 
