@@ -22,7 +22,7 @@ from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
-from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
+from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 
@@ -48,7 +48,7 @@ def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
     target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
-        else enumerate_input_filepaths(src, unzipped_regex)
+        else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
     for fp in target_filepaths:
         ingest_file_to_db(dataset, fp)
 
@@ -73,22 +73,17 @@ def get_zipped_input_iterable(root_dir: str,
 
     """
 
-    for tar_fp in enumerate_input_filepaths(root_dir, enclosing_filename_match_regex):
+    for tar_fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
         with tarfile.open(tar_fp) as tf:
             tf.extractall(temp_dir)
 
-        for fp in enumerate_input_filepaths(temp_dir, filename_match_regex):
+        for fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
             yield fp
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
-
-
-def enumerate_input_filepaths(root_dir: str, filename_match_regex: str) -> Iterable[str]:
-    # TODO: replace all calls to enumerate_input_filepaths() with calls to enumerate_files_in_dir_tree()
-    return enumerate_files_in_dir_tree(root_dir, filename_match_regex, match_filename_only=True)
 
 
 def ensure_database_exists(db_name: str) -> None:
@@ -230,6 +225,7 @@ if __name__ == '__main__':
     start = datetime.now()
     log.info(f'starting ingest of {args.dataset.get_full_id()} from {args.src} begin')
     run(args.dataset, args.src, data_is_zipped=args.target_zipped_data)
-    log.info(f'ingest of {args.dataset.get_full_id()} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
+    log.info(
+        f'ingest of {args.dataset.get_full_id()} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)
