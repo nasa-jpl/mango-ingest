@@ -3,11 +3,14 @@ from typing import Iterable, Type
 from fastapi import APIRouter
 
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
+
 from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
 from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
 from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
 from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
+from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
+
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
 
@@ -17,7 +20,8 @@ time_series_dataset_classes: Iterable[Type[TimeSeriesDataset]] = [
     GraceFOAct1ADataset,
     GraceFOIhk1ADataset,
     GraceFOImu1ADataset,
-    GraceFOMag1ADataset
+    GraceFOMag1ADataset,
+    GraceFOPci1ADataset
 ]
 
 missions: Iterable[Type[Mission]] = {dataset.mission for dataset in time_series_dataset_classes}
