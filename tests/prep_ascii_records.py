@@ -2,8 +2,6 @@ import os
 
 out_dir = '/tests/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI-truncated/'
 in_dir = '/tests/input_data/gracefo_1A_2023-06-01_RL04.ascii.noLRI/'
-in_dir = '/Users/ira/MASS_CHANGE_DATA/unit_test_l1b/'
-out_dir = '/Users/ira/MASS_CHANGE_DATA/unit_test_l1b_truncated/'
 
 for fn in os.listdir(in_dir):
     try:
