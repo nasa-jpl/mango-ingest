@@ -18,6 +18,7 @@ from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
 from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
 from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
 from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
+from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
@@ -184,7 +185,8 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
         'GRACEFO_IHK1A': GraceFOIhk1ADataset,
         'GRACEFO_IMU1A': GraceFOImu1ADataset,
         'GRACEFO_MAG1A': GraceFOMag1ADataset,
-        'GRACEFO_PCI1A': GraceFOPci1ADataset
+        'GRACEFO_PCI1A': GraceFOPci1ADataset,
+        'GRACEFO_SCA1A': GraceFOSca1ADataset
     }
 
     cls = mappings.get(dataset_id)()
