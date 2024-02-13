@@ -22,7 +22,7 @@ for fn in os.listdir(in_dir):
                 outfile.write(l)
 
 
-                if l.startswith('# End of YAML header'):
+                if l.startswith('# End of YAML header') or l.startswith('END OF HEADER'):
                     header_consumed = True
 
                 if header_consumed:
