@@ -186,7 +186,7 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
         'GRACEFO_IMU1A': GraceFOImu1ADataset,
         'GRACEFO_MAG1A': GraceFOMag1ADataset,
         'GRACEFO_PCI1A': GraceFOPci1ADataset,
-        'GRACEFO_SCA1A': GraceFOSca1ADataset,
+        'GRACEFO_SCA1A': GraceFOSca1ADataset
     }
 
     cls = mappings.get(dataset_id)()
