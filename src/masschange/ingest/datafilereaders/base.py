@@ -72,14 +72,16 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def get_header_line_count(cls, filename: str) -> int:
-        last_header_line_prefix = '# End of YAML header'
+        last_header_line_prefixes = ['# End of YAML header', 'END OF HEADER']
 
         header_rows = 0
         with open(filename) as f:
             for line in f:  # iterates lazily
                 header_rows += 1
-                if line.startswith(last_header_line_prefix):
-                    return header_rows
+                for hdr_end_prefix in last_header_line_prefixes:
+                    if line.startswith(hdr_end_prefix):
+                        return header_rows
+        raise ValueError(f'Can not find the end of header in {filename}')
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
