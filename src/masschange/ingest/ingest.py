@@ -115,6 +115,7 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
             {dataset.get_sql_table_create_statement(stream_id)}
             
             select create_hypertable('{table_name}','{timestamp_column_name}');
+            select set_chunk_time_interval({table_name}, interval '24 hours')
             """
             cur.execute(sql)
             conn.commit()
