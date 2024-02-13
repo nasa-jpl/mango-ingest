@@ -20,6 +20,8 @@ from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
 from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
 from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
 
+from masschange.datasets.gracefo.act1b import GraceFOAct1BDataset
+
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
@@ -186,7 +188,8 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
         'GRACEFO_IMU1A': GraceFOImu1ADataset,
         'GRACEFO_MAG1A': GraceFOMag1ADataset,
         'GRACEFO_PCI1A': GraceFOPci1ADataset,
-        'GRACEFO_SCA1A': GraceFOSca1ADataset
+        'GRACEFO_SCA1A': GraceFOSca1ADataset,
+        'GRACEFO_ACT1B': GraceFOAct1BDataset
     }
 
     cls = mappings.get(dataset_id)()
