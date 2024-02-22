@@ -1,4 +1,5 @@
 import logging
+import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime, timedelta
@@ -19,12 +20,16 @@ log = logging.getLogger()
 
 
 class TimeSeriesDataset(ABC):
+    # TODO: Document this class properly
     mission: Type[Mission]
-    id_suffix: str  #  TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
+    id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
     time_series_interval: timedelta
 
-    max_query_temporal_span: timedelta = timedelta(minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
+    aggregation_step_factor: int = 10
+    max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
+    max_query_temporal_span: timedelta = timedelta(
+        minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'
 
@@ -182,3 +187,9 @@ class TimeSeriesDataset(ABC):
     @classmethod
     def get_available_fields(cls) -> Set[TimeSeriesDatasetField]:
         return {TimeSeriesDatasetField(cls.TIMESTAMP_COLUMN_NAME)}.union(cls.get_reader().get_fields())
+
+    @classmethod
+    def get_required_aggregation_depth(cls) -> int:
+        full_span_data_count = cls.max_data_span / cls.time_series_interval
+        required_decimation_levels = math.ceil(math.log(full_span_data_count, cls.aggregation_step_factor))
+        return required_decimation_levels
