@@ -125,11 +125,20 @@ class TimeSeriesDataset(ABC):
         return cls.get_full_id().lower()
 
     @classmethod
-    def get_table_name(cls, stream_id: str) -> str:
+    def get_table_name(cls, stream_id: str, aggregation_depth: int = 0) -> str:
         if stream_id not in cls.stream_ids:
             raise ValueError(f'stream id "{stream_id}" not recognized (expected one of {sorted(cls.stream_ids)})')
 
-        return f'{cls._get_table_name_prefix()}_{stream_id}'.lower()
+        aggregation_depth_pad_width = 2
+        padded_aggregation_depth = str(aggregation_depth).rjust(aggregation_depth_pad_width, "0")
+        if len(padded_aggregation_depth) > aggregation_depth_pad_width:
+            raise ValueError(f'aggregation_depth "{aggregation_depth}" exceeds maximum accounted for ({aggregation_depth_pad_width} digits)')
+
+        aggregation_suffix = f'agg{padded_aggregation_depth}'
+
+        table_base_name = f'{cls._get_table_name_prefix()}_{stream_id}'.lower()
+
+        return table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}'
 
     @classmethod
     def _validate_requested_fields(cls, requested_field_names: Collection[str]) -> None:
