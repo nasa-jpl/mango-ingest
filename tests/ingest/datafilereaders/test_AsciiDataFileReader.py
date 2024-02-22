@@ -9,7 +9,7 @@ import numpy as np
 from masschange.ingest import ingest
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
 from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader
 
 log = logging.getLogger()
@@ -33,7 +33,7 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
             @classmethod
             def get_input_column_defs(cls):
                 float_value_dtype = np.double
-                return [
+                legacy_column_defs = [
                     {'index': 0, 'label': 'variable_int_col', 'type': np.ulonglong},
                     {'index': 1, 'label': 'const_int_col', 'type': np.uint},
                     {'index': 2, 'label': 'const_char_col', 'type': 'U1'},
@@ -41,6 +41,8 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                     {'index': 4, 'label': 'const_float_col', 'type': float_value_dtype},
                     {'index': 5, 'label': 'const_scifloat_col', 'type': float_value_dtype},
                 ]
+
+                return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
             @classmethod
             def get_const_column_expected_values(cls):

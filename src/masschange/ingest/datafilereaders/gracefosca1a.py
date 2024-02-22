@@ -1,9 +1,11 @@
+from collections.abc import Collection
 from datetime import datetime, timedelta
 from typing import Sequence, Dict, Any
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+
 
 # Star Camera Assembly data
 # 2-Hz SCA attitude measurements in the form of quaternions expressed in each of the three SCFs
@@ -21,7 +23,7 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
         return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
-    def get_input_column_defs(cls) -> Dict[str, Any]:
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         #NOTE: THe product has 2 unusual columns:
         # - sca_null1
         # - sca_null1
@@ -38,7 +40,7 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
         #
         # For now, assume that these are constant columns
 
-        return [
+        legacy_column_defs = [
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
             {'index': 2, 'label': 'GRACEFO_id', 'type': 'U1'},
@@ -56,6 +58,8 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
             {'index': 14, 'label': 'sca_mode', 'type': 'U8'},
             {'index': 15, 'label': 'qualflg', 'type': 'U8'}
         ]
+
+        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def get_const_column_expected_values(cls) -> Sequence[Dict]:

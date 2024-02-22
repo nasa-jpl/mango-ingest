@@ -1,9 +1,11 @@
+from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any
+from typing import Dict, Any
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+
 
 # 0.1-Hz GPS-derived onboard navigation measurements
 class GraceFOPci1ADataFileReader(AsciiDataFileReader):
@@ -20,8 +22,8 @@ class GraceFOPci1ADataFileReader(AsciiDataFileReader):
         return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
-    def get_input_column_defs(cls) -> Sequence[Dict]:
-        return [
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
+        legacy_column_defs = [
             {'index': 0, 'label': 'gps_time', 'type': np.ulonglong}, # Seconds past 12:00:00 noon of January 1, 2000 in GPS Time
             {'index': 1, 'label': 'GRACEFO_id', 'type': 'U1'},
             {'index': 2, 'label': 'ant_centr_corr', 'type': np.double},
@@ -29,6 +31,8 @@ class GraceFOPci1ADataFileReader(AsciiDataFileReader):
             {'index': 4, 'label': 'ant_centr_accl', 'type': np.double},
             {'index': 5, 'label': 'qualflg', 'type': 'U8'}
         ]
+
+        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def get_const_column_expected_values(cls) -> Dict[str, Any]:
