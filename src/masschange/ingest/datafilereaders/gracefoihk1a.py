@@ -1,6 +1,5 @@
 from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Dict, Any
 
 import numpy as np
 
