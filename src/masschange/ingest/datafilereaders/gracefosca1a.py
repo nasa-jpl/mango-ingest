@@ -23,7 +23,7 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-        #NOTE: THe product has 2 unusual columns:
+        # NOTE: THe product has 2 unusual columns:
         # - sca_null1
         # - sca_null1
         # which are not defined in the data book.
@@ -38,27 +38,24 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
         #    long_name: Not defined
         #
         # For now, assume that these are constant columns
-
-        legacy_column_defs = [
-            {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
-            {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
-            {'index': 2, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 3, 'label': 'sca_id', 'type': np.ubyte},  # valid_range: 1, 3
-            {'index': 4, 'label': 'sca_desig', 'type': 'U1'},
-            {'index': 5, 'label': 'quatangle', 'type': np.double},
-            {'index': 6, 'label': 'quaticoeff', 'type': np.double},
-            {'index': 7, 'label': 'quatjcoeff', 'type': np.double},
-            {'index': 8, 'label': 'quatkcoeff', 'type': np.double},
-            {'index': 9, 'label': 'nlocks', 'type': np.uint},
-            {'index': 10, 'label': 'nstars', 'type': np.uint},
-            {'index': 11, 'label': 'sca_confid', 'type': np.ubyte}, # valid_range: 0, 255
-            {'index': 12, 'label': 'sca_null1', 'type': int, 'const_value': 0},
-            {'index': 13, 'label': 'sca_null2', 'type': int, 'const_value': 0},
-            {'index': 14, 'label': 'sca_mode', 'type': 'U8'},
-            {'index': 15, 'label': 'qualflg', 'type': 'U8'}
+        return [
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=3, name='sca_id', np_type=np.ubyte),
+            AsciiDataFileReaderColumn(index=4, name='sca_desig', np_type='U1'),
+            AsciiDataFileReaderColumn(index=5, name='quatangle', np_type=np.double),
+            AsciiDataFileReaderColumn(index=6, name='quaticoeff', np_type=np.double),
+            AsciiDataFileReaderColumn(index=7, name='quatjcoeff', np_type=np.double),
+            AsciiDataFileReaderColumn(index=8, name='quatkcoeff', np_type=np.double),
+            AsciiDataFileReaderColumn(index=9, name='nlocks', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=10, name='nstars', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=11, name='sca_confid', np_type=np.ubyte),
+            AsciiDataFileReaderColumn(index=12, name='sca_null1', np_type=int, const_value=0),
+            AsciiDataFileReaderColumn(index=13, name='sca_null2', np_type=int, const_value=0),
+            AsciiDataFileReaderColumn(index=14, name='sca_mode', np_type='U8'),
+            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8')
         ]
-
-        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

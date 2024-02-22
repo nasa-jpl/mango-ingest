@@ -33,16 +33,16 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
             @classmethod
             def get_input_column_defs(cls):
                 float_value_dtype = np.double
-                legacy_column_defs = [
-                    {'index': 0, 'label': 'variable_int_col', 'type': np.ulonglong},
-                    {'index': 1, 'label': 'const_int_col', 'type': np.uint, 'const_value': 1},
-                    {'index': 2, 'label': 'const_char_col', 'type': 'U1', 'const_value': 'A'},
-                    {'index': 3, 'label': 'const_str_col', 'type': 'U4', 'const_value': 'ABCD'},
-                    {'index': 4, 'label': 'const_float_col', 'type': float_value_dtype, 'const_value': 1.234},
-                    {'index': 5, 'label': 'const_scifloat_col', 'type': float_value_dtype, 'const_value': 23.45},
+                return [
+                    AsciiDataFileReaderColumn(index=0, name='variable_int_col', np_type=np.ulonglong),
+                    AsciiDataFileReaderColumn(index=1, name='const_int_col', np_type=np.uint, const_value=1),
+                    AsciiDataFileReaderColumn(index=2, name='const_char_col', np_type='U1', const_value='A'),
+                    AsciiDataFileReaderColumn(index=3, name='const_str_col', np_type='U4', const_value='ABCD'),
+                    AsciiDataFileReaderColumn(index=4, name='const_float_col', np_type=float_value_dtype,
+                                              const_value=1.234),
+                    AsciiDataFileReaderColumn(index=5, name='const_scifloat_col', np_type=float_value_dtype,
+                                              const_value=23.45),
                 ]
-
-                return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
             @classmethod
             def get_timestamp_input_column_labels(cls) -> List:

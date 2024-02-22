@@ -21,18 +21,16 @@ class GraceFOIhk1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-        legacy_column_defs = [
-            {'index': 0, 'label': 'time_intg', 'type': np.ulonglong},
-            {'index': 1, 'label': 'time_frac', 'type': np.uint},
-            {'index': 2, 'label': 'time_ref', 'type': 'U1', 'const_value': 'R'},
-            {'index': 3, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 4, 'label': 'qualflg', 'type': 'U8'},
-            {'index': 5, 'label': 'sensortype', 'type': 'U1'},
-            {'index': 6, 'label': 'sensorvalue', 'type': np.double},
-            {'index': 7, 'label': 'sensorname', 'type': 'U2'},
+        return [
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8'),
+            AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1'),
+            AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.double),
+            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U2'),
         ]
-
-        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

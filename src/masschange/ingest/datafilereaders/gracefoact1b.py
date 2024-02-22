@@ -21,22 +21,20 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-        legacy_column_defs = [
-            {'index': 0, 'label': 'gps_time', 'type': np.ulonglong},
-            {'index': 1, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 2, 'label': 'lin_accl_x', 'type': np.double},
-            {'index': 3, 'label': 'lin_accl_y', 'type': np.double},
-            {'index': 4, 'label': 'lin_accl_z', 'type': np.double},
-            {'index': 5, 'label': 'ang_accl_x', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
-            {'index': 6, 'label': 'ang_accl_y', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
-            {'index': 7, 'label': 'ang_accl_z', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
-            {'index': 8, 'label': 'acl_x_res', 'type': np.double},
-            {'index': 9, 'label': 'acl_y_res', 'type': np.double},
-            {'index': 10, 'label': 'acl_z_res', 'type': np.double},
-            {'index': 11, 'label': 'qualflg', 'type': 'U8'}
+        return [
+            AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=2, name='lin_accl_x', np_type=np.double),
+            AsciiDataFileReaderColumn(index=3, name='lin_accl_y', np_type=np.double),
+            AsciiDataFileReaderColumn(index=4, name='lin_accl_z', np_type=np.double),
+            AsciiDataFileReaderColumn(index=5, name='ang_accl_x', np_type=np.double, const_value=0),
+            AsciiDataFileReaderColumn(index=6, name='ang_accl_y', np_type=np.double, const_value=0),
+            AsciiDataFileReaderColumn(index=7, name='ang_accl_z', np_type=np.double, const_value=0),
+            AsciiDataFileReaderColumn(index=8, name='acl_x_res', np_type=np.double),
+            AsciiDataFileReaderColumn(index=9, name='acl_y_res', np_type=np.double),
+            AsciiDataFileReaderColumn(index=10, name='acl_z_res', np_type=np.double),
+            AsciiDataFileReaderColumn(index=11, name='qualflg', np_type='U8')
         ]
-
-        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

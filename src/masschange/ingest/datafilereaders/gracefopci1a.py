@@ -22,16 +22,14 @@ class GraceFOPci1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-        legacy_column_defs = [
-            {'index': 0, 'label': 'gps_time', 'type': np.ulonglong}, # Seconds past 12:00:00 noon of January 1, 2000 in GPS Time
-            {'index': 1, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 2, 'label': 'ant_centr_corr', 'type': np.double},
-            {'index': 3, 'label': 'ant_centr_rate', 'type': np.double},
-            {'index': 4, 'label': 'ant_centr_accl', 'type': np.double},
-            {'index': 5, 'label': 'qualflg', 'type': 'U8'}
+        return [
+            AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=2, name='ant_centr_corr', np_type=np.double),
+            AsciiDataFileReaderColumn(index=3, name='ant_centr_rate', np_type=np.double),
+            AsciiDataFileReaderColumn(index=4, name='ant_centr_accl', np_type=np.double),
+            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8')
         ]
-
-        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
