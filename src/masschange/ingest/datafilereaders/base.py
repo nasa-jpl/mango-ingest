@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import abc
 import os
 import re
 from abc import ABC, abstractmethod
@@ -10,6 +9,8 @@ from typing import Dict, Any, Union, Type, Callable, Optional
 
 import numpy as np
 import pandas as pd
+
+from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField
 
 
 class DataFileReader(ABC):
@@ -45,6 +46,12 @@ class DataFileReader(ABC):
     @abstractmethod
     def extract_stream_id(cls, filepath: str) -> str:
         """Given a path to a data file, return the id of the stream (usually satellite) to which the file relates"""
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+        """Return implementation-agnostic definitions for the fields ingested by the reader"""
         pass
 
 
@@ -86,7 +93,7 @@ class AsciiDataFileReader(DataFileReader):
         try:
             constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
             for column in constant_columns:
-                cls._ensure_constant_column_value(column.label, column.const_value, raw_data)
+                cls._ensure_constant_column_value(column.name, column.const_value, raw_data)
         except ValueError as err:
             raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
 
@@ -97,7 +104,7 @@ class AsciiDataFileReader(DataFileReader):
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
-        df = df.drop([col.label for col in cls.get_input_column_defs() if col.is_constant], axis=1)
+        df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
 
         return df
 
@@ -118,19 +125,19 @@ class AsciiDataFileReader(DataFileReader):
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
             usecols=([col.index for col in column_defs]),
-            dtype=[(col.label, col.np_type) for col in column_defs]
+            dtype=[(col.name, col.np_type) for col in column_defs]
         )
 
         return data
 
     @classmethod
-    def _ensure_constant_column_value(cls, column_label: str, expected_value: Any, data: np.ndarray):
+    def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: np.ndarray):
         """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
-        column_data = data[column_label]
+        column_data = data[column_name]
         unexpected_data = np.where(column_data != expected_value)
         if unexpected_data[0].size != 0:
             first_bad = column_data[unexpected_data[0][0]]
-            raise ValueError(f'Unexpected value for const-valued field "{column_label} "'
+            raise ValueError(f'Unexpected value for const-valued field "{column_name} "'
                              f'expected: "{expected_value}", was: "{first_bad}"')
 
     @classmethod
@@ -139,36 +146,18 @@ class AsciiDataFileReader(DataFileReader):
         satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
         return satellite_id_char
 
+    @classmethod
+    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+        return cls.get_input_column_defs()
 
-class DataFileReaderField(abc.ABC):
-    """
-    An abstract class for inheriting implementation-agnostic behaviour common to all reader implementations.
-    Currently, this is just the concept of a field having an assumed-constant value, though this may expand in future
-
-    Attributes
-        const_value (Any | None): an optional value for the column, which is assumed to be constant across every datum '
-        of a given data product, which is validated during ingestion
-
-    """
-
-    const_value: Union[Any, None]
-
-    def __init__(self, const_value: Union[Any, None]):
-        self.const_value = const_value
-
-    @property
-    def is_constant(self):
-        return self.const_value is not None
-
-
-class AsciiDataFileReaderColumn(DataFileReaderField):
+class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
 
     Attributes
         index (int): the tabular index of the field in the input file
 
-        label (str): the label to give the extracted
+        name (str): the field name, (and the name to give the numpy column for the extracted data)
 
         type (Type | str): the type, numpy dtype, or numpy dtype string representing the column type to extract with numpy
 
@@ -178,15 +167,14 @@ class AsciiDataFileReaderColumn(DataFileReaderField):
     """
 
     index: int
-    label: str
     np_type: Union[Type, str]
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, label: str, np_type: Union[Type, str],
+    def __init__(self, index: int, name: str, np_type: Union[Type, str],
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
-        super().__init__(const_value)
+        super().__init__(name, const_value)
         self.index = index
-        self.label = label
+        self.name = name
         self.np_type = np_type
         self.transform = transform or self._no_op
 
@@ -208,7 +196,7 @@ class AsciiDataFileReaderColumn(DataFileReaderField):
         """Create an AsciiDataFileReaderColumn from the old-style dict-based definition, with null transform"""
         return AsciiDataFileReaderColumn(
             index=legacy_definition['index'],
-            label=legacy_definition['label'],
+            name=legacy_definition['label'],
             np_type=legacy_definition['type'],
             const_value=legacy_definition.get('const_value')
         )
