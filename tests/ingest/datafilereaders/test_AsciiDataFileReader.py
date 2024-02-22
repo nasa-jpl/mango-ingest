@@ -35,24 +35,14 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
                 float_value_dtype = np.double
                 legacy_column_defs = [
                     {'index': 0, 'label': 'variable_int_col', 'type': np.ulonglong},
-                    {'index': 1, 'label': 'const_int_col', 'type': np.uint},
-                    {'index': 2, 'label': 'const_char_col', 'type': 'U1'},
-                    {'index': 3, 'label': 'const_str_col', 'type': 'U4'},
-                    {'index': 4, 'label': 'const_float_col', 'type': float_value_dtype},
-                    {'index': 5, 'label': 'const_scifloat_col', 'type': float_value_dtype},
+                    {'index': 1, 'label': 'const_int_col', 'type': np.uint, 'const_value': 1},
+                    {'index': 2, 'label': 'const_char_col', 'type': 'U1', 'const_value': 'A'},
+                    {'index': 3, 'label': 'const_str_col', 'type': 'U4', 'const_value': 'ABCD'},
+                    {'index': 4, 'label': 'const_float_col', 'type': float_value_dtype, 'const_value': 1.234},
+                    {'index': 5, 'label': 'const_scifloat_col', 'type': float_value_dtype, 'const_value': 23.45},
                 ]
 
                 return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-
-            @classmethod
-            def get_const_column_expected_values(cls):
-                return {
-                    'const_int_col': 1,
-                    'const_char_col': 'A',
-                    'const_str_col': 'ABCD',
-                    'const_float_col': 1.234,
-                    'const_scifloat_col': 23.45
-                }
 
             @classmethod
             def get_timestamp_input_column_labels(cls) -> List:
@@ -70,6 +60,7 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
         filepath = './tests/input_data/ingest/datafilereaders/test_AsciiDataFileReader_test_check_const_fields_failure.txt'
         raw_data = reader._load_raw_data_from_file(filepath)
 
-        for column_label, expected_value in reader.get_const_column_expected_values().items():
+        const_columns = [col for col in reader.get_input_column_defs() if col.is_constant]
+        for column in const_columns:
             with self.assertRaises(ValueError):
-                reader._ensure_constant_column_value(column_label, expected_value, raw_data)
+                reader._ensure_constant_column_value(column.label, column.const_value, raw_data)

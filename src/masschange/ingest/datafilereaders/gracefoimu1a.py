@@ -26,7 +26,7 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
         legacy_column_defs = [
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
-            {'index': 2, 'label': 'time_ref', 'type': 'U1'},
+            {'index': 2, 'label': 'time_ref', 'type': 'U1', 'const_value': 'R'},
             {'index': 3, 'label': 'GRACEFO_id', 'type': 'U1'},
             {'index': 4, 'label': 'gyro_id', 'type': np.ubyte}, # valid_range: 1, 4
             {'index': 5, 'label': 'FiltAng', 'type': np.double},
@@ -34,12 +34,6 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
         ]
 
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-
-    @classmethod
-    def get_const_column_expected_values(cls) -> Dict[str, Any]:
-        return {
-            'time_ref': 'R'
-        }
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
