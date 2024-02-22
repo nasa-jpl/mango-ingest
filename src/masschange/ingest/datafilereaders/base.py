@@ -171,9 +171,9 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     np_type: Union[Type, str]
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, name: str, np_type: Union[Type, str],
+    def __init__(self, index: int, name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
-        super().__init__(name, const_value)
+        super().__init__(name, aggregations=aggregations, const_value=const_value)
         self.index = index
         self.name = name
         self.np_type = np_type
