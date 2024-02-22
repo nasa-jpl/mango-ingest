@@ -24,9 +24,9 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1'),
-            AsciiDataFileReaderColumn(index=2, name='lin_accl_x', np_type=np.double),
-            AsciiDataFileReaderColumn(index=3, name='lin_accl_y', np_type=np.double),
-            AsciiDataFileReaderColumn(index=4, name='lin_accl_z', np_type=np.double),
+            AsciiDataFileReaderColumn(index=2, name='lin_accl_x', np_type=np.double, aggregations=['MIN', 'MAX']),
+            AsciiDataFileReaderColumn(index=3, name='lin_accl_y', np_type=np.double, aggregations=['MIN', 'MAX']),
+            AsciiDataFileReaderColumn(index=4, name='lin_accl_z', np_type=np.double, aggregations=['MIN', 'MAX']),
             AsciiDataFileReaderColumn(index=5, name='ang_accl_x', np_type=np.double, const_value=0),
             AsciiDataFileReaderColumn(index=6, name='ang_accl_y', np_type=np.double, const_value=0),
             AsciiDataFileReaderColumn(index=7, name='ang_accl_z', np_type=np.double, const_value=0),
