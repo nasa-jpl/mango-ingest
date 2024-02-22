@@ -1,9 +1,11 @@
+from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any
+from typing import Dict, Sequence
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     @classmethod
@@ -19,8 +21,8 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
         return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
-    def get_input_column_defs(cls) -> Dict[str, Any]:
-        return [
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
+        legacy_column_defs = [
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
             {'index': 2, 'label': 'time_ref', 'type': 'U1'},
@@ -35,6 +37,8 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             {'index': 11, 'label': 'ang_accl_z', 'type': np.double},
             {'index': 12, 'label': 'icu_blk_nr', 'type': int}
         ]
+
+        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def get_const_column_expected_values(cls) -> Sequence[Dict]:

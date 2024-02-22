@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import os
 import re
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any, List, Union, Type, Callable
+from collections.abc import Collection
+from datetime import datetime
+from typing import Dict, Any, Union, Type, Callable
 
 import numpy as np
 import pandas as pd
@@ -48,10 +51,9 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
-    def get_input_column_defs(cls) -> Sequence[Dict]:
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         """
-        Return a sequence of columns to extract from the ASCII CSV data file, in the following format:
-        {'index': $columnIndex, 'label' $columnName, 'type': $numpyType}
+        Return a collection of columns to extract from the ASCII CSV data file
         """
         pass
 
@@ -122,8 +124,8 @@ class AsciiDataFileReader(DataFileReader):
             fname=filename,
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
-            usecols=([col['index'] for col in column_defs]),
-            dtype=[(col['label'], col['type']) for col in column_defs]
+            usecols=([col.index for col in column_defs]),
+            dtype=[(col.label, col.np_type) for col in column_defs]
         )
 
         return data
@@ -178,3 +180,12 @@ class AsciiDataFileReaderColumn:
     @staticmethod
     def _no_op(x):
         return x
+
+    @classmethod
+    def from_legacy_definition(cls, legacy_definition: Dict[str, Any]) -> AsciiDataFileReaderColumn:
+        """Create an AsciiDataFileReaderColumn from the old-style dict-based definition, with null transform"""
+        return AsciiDataFileReaderColumn(
+            index=legacy_definition['index'],
+            label=legacy_definition['label'],
+            np_type=legacy_definition['type']
+        )

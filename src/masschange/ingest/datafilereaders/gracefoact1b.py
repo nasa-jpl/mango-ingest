@@ -1,9 +1,11 @@
+from collections.abc import Collection
 from datetime import datetime, timedelta
 from typing import Sequence, Dict, Any
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+
 
 class GraceFOAct1BDataFileReader(AsciiDataFileReader):
     @classmethod
@@ -19,21 +21,23 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
         return 'gracefo_1B_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
 
     @classmethod
-    def get_input_column_defs(cls) -> Dict[str, Any]:
-        return [
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
+        legacy_column_defs = [
             {'index': 0, 'label': 'gps_time', 'type': np.ulonglong},
             {'index': 1, 'label': 'GRACEFO_id', 'type': 'U1'},
             {'index': 2, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 3, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 4, 'label': 'lin_accl_z', 'type': np.double},
             {'index': 5, 'label': 'ang_accl_x', 'type': np.double},  # 0 if ACT1B according to the data book
-            {'index': 6, 'label': 'ang_accl_y', 'type': np.double}, # 0 if ACT1B according to the data book
-            {'index': 7, 'label': 'ang_accl_z', 'type': np.double}, # 0 if ACT1B according to the data book
+            {'index': 6, 'label': 'ang_accl_y', 'type': np.double},  # 0 if ACT1B according to the data book
+            {'index': 7, 'label': 'ang_accl_z', 'type': np.double},  # 0 if ACT1B according to the data book
             {'index': 8, 'label': 'acl_x_res', 'type': np.double},
             {'index': 9, 'label': 'acl_y_res', 'type': np.double},
             {'index': 10, 'label': 'acl_z_res', 'type': np.double},
             {'index': 11, 'label': 'qualflg', 'type': 'U8'}
         ]
+
+        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def get_const_column_expected_values(cls) -> Sequence[Dict]:
