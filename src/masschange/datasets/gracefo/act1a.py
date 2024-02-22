@@ -12,20 +12,6 @@ class GraceFOAct1ADataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'ACT1A'
     stream_ids = {'C', 'D'}
-    available_fields = {
-        'rcvtime_intg',
-        'rcvtime_frac',
-        'GRACEFO_id',
-        'qualflg',
-        'lin_accl_x',
-        'lin_accl_y',
-        'lin_accl_z',
-        'ang_accl_x',
-        'ang_accl_y',
-        'ang_accl_z',
-        'icu_blk_nr',
-        'timestamp'
-    }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:

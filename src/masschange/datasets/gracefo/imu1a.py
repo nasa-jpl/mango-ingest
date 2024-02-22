@@ -12,15 +12,6 @@ class GraceFOImu1ADataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'IMU1A'
     stream_ids = {'C', 'D'}
-    available_fields = {
-        'rcvtime_intg',
-        'rcvtime_frac',
-        'GRACEFO_id',
-        'gyro_id',
-        'FiltAng',
-        'qualflg',
-        'timestamp'
-    }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:

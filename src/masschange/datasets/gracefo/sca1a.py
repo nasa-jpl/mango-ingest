@@ -12,23 +12,6 @@ class GraceFOSca1ADataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'SCA1A'
     stream_ids = {'C', 'D'}
-    available_fields = {
-        'rcvtime_intg',
-        'rcvtime_frac',
-        'GRACEFO_id',
-        'sca_id',
-        'sca_desig',
-        'quatangle',
-        'quaticoeff',
-        'quatjcoeff',
-        'quatkcoeff',
-        'nlocks',
-        'nstars',
-        'sca_confid',
-        'sca_mode',
-        'qualflg',
-        'timestamp'
-    }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:

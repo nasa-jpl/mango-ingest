@@ -12,26 +12,6 @@ class GraceFOMag1ADataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'MAG1A'
     stream_ids = {'C', 'D'}
-    available_fields = {
-        'time_intg',
-        'time_frac',
-        'GRACEFO_id',
-        'MfvX_RAW',
-        'MfvY_RAW',
-        'MfvZ_RAW',
-        'torque1A',
-        'torque2A',
-        'torque3A',
-        'torque1B',
-        'torque2B',
-        'torque3B',
-        'MF_BCalX',
-        'MF_BCalY',
-        'MF_BCalZ',
-        'torque_cal',
-        'qualflg',
-        'timestamp'
-    }
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
