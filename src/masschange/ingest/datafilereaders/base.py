@@ -2,7 +2,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Sequence, Dict, Any, List
+from typing import Sequence, Dict, Any, List, Union, Type, Callable
 
 import numpy as np
 import pandas as pd
@@ -109,7 +109,7 @@ class AsciiDataFileReader(DataFileReader):
     @classmethod
     @abstractmethod
     def populate_timestamp(cls, row) -> datetime:
-       pass
+        pass
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
@@ -143,3 +143,38 @@ class AsciiDataFileReader(DataFileReader):
         filename = os.path.split(filepath)[-1]
         satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
         return satellite_id_char
+
+
+class AsciiDataFileReaderColumn:
+    """
+    Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
+
+    Attributes
+        index (int): the tabular index of the field in the input file
+
+        label (str): the label to give the extracted
+
+        type (Type | str): the type, numpy dtype, or numpy dtype string representing the column type to extract with numpy
+
+        transform (Callable[[T], T]): a transform (or wrapper for series of transforms) to apply to the extracted values, if applicable
+    """
+
+    index: int
+    label: str
+    np_type: Union[Type, str]
+    transform: Callable[[Any], Any]
+
+    def __init__(self, index: int, label: str, np_type: Union[Type, str], transform: Union[Callable[[Any], Any], None] = None):
+        self.index = index
+        self.label = label
+        self.np_type = np_type
+        self.transform = transform or self._no_op
+
+    @property
+    def has_transform(self):
+        """Return whether the column has a transform defined"""
+        return self.transform is not self._no_op
+
+    @staticmethod
+    def _no_op(x):
+        return x
