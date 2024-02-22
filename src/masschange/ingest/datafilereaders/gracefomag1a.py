@@ -34,28 +34,26 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         #         comment: 4th column
         #         valid_range: C,D
         #
-        legacy_column_defs = [
-            {'index': 0, 'label': 'time_intg', 'type': np.ulonglong},
-            {'index': 1, 'label': 'time_frac', 'type': np.uint},
-            {'index': 2, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 3, 'label': 'time_ref', 'type': 'U1', 'const_value': 'R'},
-            {'index': 4, 'label': 'MfvX_RAW', 'type': np.double},
-            {'index': 5, 'label': 'MfvY_RAW', 'type': np.double},
-            {'index': 6, 'label': 'MfvZ_RAW', 'type': np.double},
-            {'index': 7, 'label': 'torque1A', 'type': np.double},
-            {'index': 8, 'label': 'torque2A', 'type': np.double},
-            {'index': 9, 'label': 'torque3A', 'type': np.double},
-            {'index': 10, 'label': 'torque1B', 'type': np.double},
-            {'index': 11, 'label': 'torque2B', 'type': np.double},
-            {'index': 12, 'label': 'torque3B', 'type': np.double},
-            {'index': 13, 'label': 'MF_BCalX', 'type': np.double},
-            {'index': 14, 'label': 'MF_BCalY', 'type': np.double},
-            {'index': 15, 'label': 'MF_BCalZ', 'type': np.double},
-            {'index': 16, 'label': 'torque_cal', 'type': np.double},
-            {'index': 17, 'label': 'qualflg', 'type': 'U8'},
+        return [
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=3, name='time_ref', np_type='U1', const_value='R'),
+            AsciiDataFileReaderColumn(index=4, name='MfvX_RAW', np_type=np.double),
+            AsciiDataFileReaderColumn(index=5, name='MfvY_RAW', np_type=np.double),
+            AsciiDataFileReaderColumn(index=6, name='MfvZ_RAW', np_type=np.double),
+            AsciiDataFileReaderColumn(index=7, name='torque1A', np_type=np.double),
+            AsciiDataFileReaderColumn(index=8, name='torque2A', np_type=np.double),
+            AsciiDataFileReaderColumn(index=9, name='torque3A', np_type=np.double),
+            AsciiDataFileReaderColumn(index=10, name='torque1B', np_type=np.double),
+            AsciiDataFileReaderColumn(index=11, name='torque2B', np_type=np.double),
+            AsciiDataFileReaderColumn(index=12, name='torque3B', np_type=np.double),
+            AsciiDataFileReaderColumn(index=13, name='MF_BCalX', np_type=np.double),
+            AsciiDataFileReaderColumn(index=14, name='MF_BCalY', np_type=np.double),
+            AsciiDataFileReaderColumn(index=15, name='MF_BCalZ', np_type=np.double),
+            AsciiDataFileReaderColumn(index=16, name='torque_cal', np_type=np.double),
+            AsciiDataFileReaderColumn(index=17, name='qualflg', np_type='U8'),
         ]
-
-        return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

@@ -150,6 +150,7 @@ class AsciiDataFileReader(DataFileReader):
     def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
         return cls.get_input_column_defs()
 
+
 class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
@@ -190,13 +191,3 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     @property
     def is_constant(self):
         return self.const_value is not None
-
-    @classmethod
-    def from_legacy_definition(cls, legacy_definition: Dict[str, Any]) -> AsciiDataFileReaderColumn:
-        """Create an AsciiDataFileReaderColumn from the old-style dict-based definition, with null transform"""
-        return AsciiDataFileReaderColumn(
-            index=legacy_definition['index'],
-            name=legacy_definition['label'],
-            np_type=legacy_definition['type'],
-            const_value=legacy_definition.get('const_value')
-        )
