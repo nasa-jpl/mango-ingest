@@ -34,3 +34,7 @@ class TimeSeriesDatasetField:
     @property
     def is_constant(self):
         return self.const_value is not None
+
+    @property
+    def has_aggregations(self):
+        return len(self.aggregations) > 0
