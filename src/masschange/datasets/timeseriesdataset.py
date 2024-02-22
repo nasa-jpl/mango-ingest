@@ -22,6 +22,7 @@ class TimeSeriesDataset(ABC):
     mission: Type[Mission]
     id_suffix: str  #  TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
+    time_series_interval: timedelta
 
     max_query_temporal_span: timedelta = timedelta(minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
 
