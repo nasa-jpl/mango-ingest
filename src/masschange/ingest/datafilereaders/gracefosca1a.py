@@ -53,20 +53,13 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
             {'index': 9, 'label': 'nlocks', 'type': np.uint},
             {'index': 10, 'label': 'nstars', 'type': np.uint},
             {'index': 11, 'label': 'sca_confid', 'type': np.ubyte}, # valid_range: 0, 255
-            {'index': 12, 'label': 'sca_null1', 'type': int},
-            {'index': 13, 'label': 'sca_null2', 'type': int},
+            {'index': 12, 'label': 'sca_null1', 'type': int, 'const_value': 0},
+            {'index': 13, 'label': 'sca_null2', 'type': int, 'const_value': 0},
             {'index': 14, 'label': 'sca_mode', 'type': 'U8'},
             {'index': 15, 'label': 'qualflg', 'type': 'U8'}
         ]
 
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-
-    @classmethod
-    def get_const_column_expected_values(cls) -> Sequence[Dict]:
-        return {
-            'sca_null1': 0,
-            'sca_null2': 0
-        }
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

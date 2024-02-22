@@ -28,9 +28,9 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
             {'index': 2, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 3, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 4, 'label': 'lin_accl_z', 'type': np.double},
-            {'index': 5, 'label': 'ang_accl_x', 'type': np.double},  # 0 if ACT1B according to the data book
-            {'index': 6, 'label': 'ang_accl_y', 'type': np.double},  # 0 if ACT1B according to the data book
-            {'index': 7, 'label': 'ang_accl_z', 'type': np.double},  # 0 if ACT1B according to the data book
+            {'index': 5, 'label': 'ang_accl_x', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
+            {'index': 6, 'label': 'ang_accl_y', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
+            {'index': 7, 'label': 'ang_accl_z', 'type': np.double, 'const_value': 0},  # 0 if ACT1B according to the data book
             {'index': 8, 'label': 'acl_x_res', 'type': np.double},
             {'index': 9, 'label': 'acl_y_res', 'type': np.double},
             {'index': 10, 'label': 'acl_z_res', 'type': np.double},
@@ -38,14 +38,6 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
         ]
 
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-
-    @classmethod
-    def get_const_column_expected_values(cls) -> Sequence[Dict]:
-        return {
-            'ang_accl_x': 0,
-            'ang_accl_y': 0,
-            'ang_accl_z': 0
-        }
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

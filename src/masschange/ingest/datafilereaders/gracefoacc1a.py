@@ -25,10 +25,11 @@ class GraceFOAcc1ADataFileReader(AsciiDataFileReader):
         legacy_column_defs = [
             {'index': 0, 'label': 'rcvtime_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'rcvtime_frac', 'type': np.uint},
-            {'index': 2, 'label': 'time_ref', 'type': 'U1'},
+            {'index': 2, 'label': 'time_ref', 'type': 'U1', 'const_value': 'R'},
             {'index': 3, 'label': 'GRACEFO_id', 'type': 'U1'},
             {'index': 4, 'label': 'qualflg', 'type': 'U8'},
-            {'index': 5, 'label': 'prod_flag', 'type': 'U32'},  # TODO: this should be a bit array - need to work out how to convert on load
+            {'index': 5, 'label': 'prod_flag', 'type': 'U32', 'const_value': '00000100000000000000000000111111'},
+            # TODO: prod_flag should be a bit array - need to work out how to convert on load
             {'index': 6, 'label': 'lin_accl_x', 'type': np.double},
             {'index': 7, 'label': 'lin_accl_y', 'type': np.double},
             {'index': 8, 'label': 'lin_accl_z', 'type': np.double},
@@ -39,13 +40,6 @@ class GraceFOAcc1ADataFileReader(AsciiDataFileReader):
         ]
 
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-
-    @classmethod
-    def get_const_column_expected_values(cls) -> Dict[str, Any]:
-        return {
-            'time_ref': 'R',
-            'prod_flag': '00000100000000000000000000111111'
-        }
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

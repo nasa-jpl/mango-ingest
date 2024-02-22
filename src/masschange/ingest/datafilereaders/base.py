@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import abc
 import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime
-from typing import Dict, Any, Union, Type, Callable
+from typing import Dict, Any, Union, Type, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -59,15 +60,6 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     @abstractmethod
-    def get_const_column_expected_values(cls) -> Dict[str, Any]:
-        """
-        Some fields are expected to have one single value for every row in an entire data product.  Return a mapping of
-        every const-valued column label to its expected value.
-        """
-        pass
-
-    @classmethod
-    @abstractmethod
     def get_reference_epoch(cls) -> datetime:
         """Return the reference epoch used as the basis of rcvtime fields"""
         pass
@@ -92,8 +84,9 @@ class AsciiDataFileReader(DataFileReader):
         raw_data = cls._load_raw_data_from_file(filepath)
 
         try:
-            for column_label, expected_value in cls.get_const_column_expected_values().items():
-                cls._ensure_constant_column_value(column_label, expected_value, raw_data)
+            constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
+            for column in constant_columns:
+                cls._ensure_constant_column_value(column.label, column.const_value, raw_data)
         except ValueError as err:
             raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
 
@@ -104,7 +97,7 @@ class AsciiDataFileReader(DataFileReader):
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
-        df = df.drop(list(cls.get_const_column_expected_values().keys()), axis=1)
+        df = df.drop([col.label for col in cls.get_input_column_defs() if col.is_constant], axis=1)
 
         return df
 
@@ -147,7 +140,28 @@ class AsciiDataFileReader(DataFileReader):
         return satellite_id_char
 
 
-class AsciiDataFileReaderColumn:
+class DataFileReaderField(abc.ABC):
+    """
+    An abstract class for inheriting implementation-agnostic behaviour common to all reader implementations.
+    Currently, this is just the concept of a field having an assumed-constant value, though this may expand in future
+
+    Attributes
+        const_value (Any | None): an optional value for the column, which is assumed to be constant across every datum '
+        of a given data product, which is validated during ingestion
+
+    """
+
+    const_value: Union[Any, None]
+
+    def __init__(self, const_value: Union[Any, None]):
+        self.const_value = const_value
+
+    @property
+    def is_constant(self):
+        return self.const_value is not None
+
+
+class AsciiDataFileReaderColumn(DataFileReaderField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
 
@@ -159,6 +173,8 @@ class AsciiDataFileReaderColumn:
         type (Type | str): the type, numpy dtype, or numpy dtype string representing the column type to extract with numpy
 
         transform (Callable[[T], T]): a transform (or wrapper for series of transforms) to apply to the extracted values, if applicable
+
+        const_value(Any | None): an optional assumed_constant value for the column, which is validated during ingestion
     """
 
     index: int
@@ -166,7 +182,9 @@ class AsciiDataFileReaderColumn:
     np_type: Union[Type, str]
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, label: str, np_type: Union[Type, str], transform: Union[Callable[[Any], Any], None] = None):
+    def __init__(self, index: int, label: str, np_type: Union[Type, str],
+                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
+        super().__init__(const_value)
         self.index = index
         self.label = label
         self.np_type = np_type
@@ -181,11 +199,16 @@ class AsciiDataFileReaderColumn:
     def _no_op(x):
         return x
 
+    @property
+    def is_constant(self):
+        return self.const_value is not None
+
     @classmethod
     def from_legacy_definition(cls, legacy_definition: Dict[str, Any]) -> AsciiDataFileReaderColumn:
         """Create an AsciiDataFileReaderColumn from the old-style dict-based definition, with null transform"""
         return AsciiDataFileReaderColumn(
             index=legacy_definition['index'],
             label=legacy_definition['label'],
-            np_type=legacy_definition['type']
+            np_type=legacy_definition['type'],
+            const_value=legacy_definition.get('const_value')
         )

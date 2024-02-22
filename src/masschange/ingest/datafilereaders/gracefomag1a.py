@@ -39,7 +39,7 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
             {'index': 0, 'label': 'time_intg', 'type': np.ulonglong},
             {'index': 1, 'label': 'time_frac', 'type': np.uint},
             {'index': 2, 'label': 'GRACEFO_id', 'type': 'U1'},
-            {'index': 3, 'label': 'time_ref', 'type': 'U1'},
+            {'index': 3, 'label': 'time_ref', 'type': 'U1', 'const_value': 'R'},
             {'index': 4, 'label': 'MfvX_RAW', 'type': np.double},
             {'index': 5, 'label': 'MfvY_RAW', 'type': np.double},
             {'index': 6, 'label': 'MfvZ_RAW', 'type': np.double},
@@ -57,11 +57,6 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         ]
 
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
-    @classmethod
-    def get_const_column_expected_values(cls) -> Dict[str, Any]:
-        return {
-            'time_ref': 'R'
-        }
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:

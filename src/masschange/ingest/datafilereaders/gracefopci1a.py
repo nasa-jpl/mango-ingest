@@ -35,9 +35,5 @@ class GraceFOPci1ADataFileReader(AsciiDataFileReader):
         return [AsciiDataFileReaderColumn.from_legacy_definition(col) for col in legacy_column_defs]
 
     @classmethod
-    def get_const_column_expected_values(cls) -> Dict[str, Any]:
-        return {}
-
-    @classmethod
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.gps_time)
