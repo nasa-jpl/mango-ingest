@@ -77,13 +77,15 @@ def get_zipped_input_iterable(root_dir: str,
 
     """
 
-    for tar_fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
+    for tar_fp in order_filepaths_by_filename(
+            enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
         with tarfile.open(tar_fp) as tf:
             tf.extractall(temp_dir)
 
-        for fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
+        for fp in order_filepaths_by_filename(
+                enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
             yield fp
 
         log.debug(f'cleaning up {temp_dir}')
@@ -108,20 +110,58 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
     timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
-
+    aggregation_levels = range(1, dataset.get_required_aggregation_depth() + 1)
+    aggregation_statements = [get_continuous_aggregate_create_statement(dataset, stream_id, agg_level) for agg_level in
+                              aggregation_levels]
+    aggregation_statements_block = '\n'.join(aggregation_statements)
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
             sql = f"""
             {dataset.get_sql_table_create_statement(stream_id)}
             
             select create_hypertable('{table_name}','{timestamp_column_name}');
-            select set_chunk_time_interval({table_name}, interval '24 hours')
+            select set_chunk_time_interval('{table_name}', interval '24 hours');
+            {aggregation_statements_block}
             """
             cur.execute(sql)
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
             pass
+
+
+def get_continuous_aggregate_create_statement(
+        dataset: TimeSeriesDataset,
+        stream_id: str,
+        aggregation_level: int) -> str:
+    aggregation_interval_seconds = (
+            dataset.time_series_interval * dataset.aggregation_step_factor ** aggregation_level).total_seconds()
+    source_name = dataset.get_table_name(stream_id, aggregation_level - 1)
+    new_view_name = dataset.get_table_name(stream_id, aggregation_level)
+
+    agg_column_exprs = []
+    aggregable_fields = [field for field in dataset.get_available_fields() if field.has_aggregations]
+    for field in aggregable_fields:
+        for agg in field.aggregations:
+            dest_column = f'{field.name}_{agg.lower()}'
+            src_column = dest_column if aggregation_level > 1 else field.name
+            column_expr = f'{agg}({src_column}) as {dest_column}'
+            agg_column_exprs.append(column_expr)
+
+    select_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.timestamp) AS bucket" if aggregation_level < 2 \
+        else f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECONDS', src.bucket) as bucket"
+    agg_columns_block = ',\n'.join(agg_column_exprs)
+    group_by_expr = 'bucket' if aggregation_level < 2 else f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECONDS', bucket)"
+
+    return f"""
+        CREATE MATERIALIZED VIEW {new_view_name}
+        WITH (timescaledb.continuous) AS
+        SELECT {select_expr},
+        {agg_columns_block}
+        FROM {source_name} as src
+        GROUP BY {group_by_expr}
+        WITH NO DATA;
+    """
 
 
 def delete_overlapping_data(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
