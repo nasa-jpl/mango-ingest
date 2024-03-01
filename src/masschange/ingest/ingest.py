@@ -4,7 +4,7 @@ import os
 import shutil
 import tarfile
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 from typing import Iterable
 
@@ -154,6 +154,7 @@ def get_continuous_aggregate_create_statement(
     group_by_expr = 'bucket' if aggregation_level < 2 else f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECONDS', bucket)"
 
     return f"""
+         -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
         SELECT {select_expr},
@@ -161,6 +162,20 @@ def get_continuous_aggregate_create_statement(
         FROM {source_name} as src
         GROUP BY {group_by_expr}
         WITH NO DATA;
+        
+         ---- disable realtime aggregation
+         -- RTA is prohibitively expensive, so data availability will be determined by the values used in the continuous
+         -- aggregation refresh policy
+        ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
+        
+         ---- create continuous aggregation maintenance policy
+         -- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/
+         -- values are hardcoded for now but will eventually depend on datasets, as different datasets will have 
+         -- different operational needs viz data availablility lack
+        SELECT add_continuous_aggregate_policy('{new_view_name}',
+        start_offset => NULL,
+        end_offset => INTERVAL '1 hour',
+        schedule_interval => INTERVAL '1 hour');
     """
 
 
