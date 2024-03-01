@@ -136,8 +136,8 @@ def get_continuous_aggregate_create_statement(
         aggregation_level: int) -> str:
     aggregation_interval_seconds = (
             dataset.time_series_interval * dataset.aggregation_step_factor ** aggregation_level).total_seconds()
-    source_name = dataset.get_table_name(stream_id, aggregation_level - 1)
-    new_view_name = dataset.get_table_name(stream_id, aggregation_level)
+    source_name = dataset.get_table_or_view_name(stream_id, aggregation_level - 1)
+    new_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
 
     agg_column_exprs = []
     aggregable_fields = [field for field in dataset.get_available_fields() if field.has_aggregations]
