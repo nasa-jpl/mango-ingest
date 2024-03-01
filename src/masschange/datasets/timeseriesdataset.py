@@ -130,7 +130,16 @@ class TimeSeriesDataset(ABC):
         return cls.get_full_id().lower()
 
     @classmethod
-    def get_table_name(cls, stream_id: str, aggregation_depth: int = 0) -> str:
+    def get_table_name(cls, stream_id: str) -> str:
+        """Return the name of the SQL table storing the data for this dataset for a given stream"""
+        return cls.get_table_or_view_name(stream_id, aggregation_depth=0)
+
+    @classmethod
+    def get_table_or_view_name(cls, stream_id: str, aggregation_depth: int) -> str:
+        """
+        Return the name of the SQL table or view providing access to data for this dataset for a given stream at a given
+        aggregation level
+        """
         if stream_id not in cls.stream_ids:
             raise ValueError(f'stream id "{stream_id}" not recognized (expected one of {sorted(cls.stream_ids)})')
 
