@@ -218,7 +218,10 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str, da
     for aggregation_level in dataset.get_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
         bucket_interval = dataset.get_aggregation_interval(aggregation_level)
-        refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)
+        # Refresh span calculation soft-disabled as initial tests indicate that refreshing continuous aggregates for
+        #   which no relevant data change has taken place is essentially free
+        # refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)
+        refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
         conn = get_db_connection()
         conn.autocommit = True
         with conn.cursor() as cur:
