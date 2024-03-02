@@ -1,7 +1,7 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from datetime import datetime, timedelta
 from typing import List, Dict, Set, Type, Union
 
@@ -202,3 +202,19 @@ class TimeSeriesDataset(ABC):
         full_span_data_count = cls.max_data_span / cls.time_series_interval
         required_decimation_levels = math.ceil(math.log(full_span_data_count, cls.aggregation_step_factor))
         return required_decimation_levels
+
+    @classmethod
+    def get_aggregation_levels(cls) -> Sequence[int]:
+        """
+        Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
+        """
+        return [x for x in range(1, cls.get_required_aggregation_depth() + 1)]
+
+
+    @classmethod
+    def get_aggregation_interval(cls, aggregation_depth: int) -> timedelta:
+        """
+        For a given aggregation depth (hierarchical level, not decimation factor), return the duration of the bucket
+        interval
+        """
+        return cls.time_series_interval * cls.aggregation_step_factor ** aggregation_depth
