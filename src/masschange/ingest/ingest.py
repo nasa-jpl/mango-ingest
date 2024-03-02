@@ -106,13 +106,16 @@ def ensure_database_exists(db_name: str) -> None:
 
 
 def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
+    """
+    Ensure that the table for this dataset and stream_id's data exists, creating the table and all necessary views if
+    the table doesn't exist.  Does not check for or fix partial existence (i.e. table exists but views do not).
+    """
     table_name = dataset.get_table_name(stream_id)
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
     timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
-    aggregation_levels = range(1, dataset.get_required_aggregation_depth() + 1)
-    aggregation_statements = [get_continuous_aggregate_create_statement(dataset, stream_id, agg_level) for agg_level in
-                              aggregation_levels]
+    aggregation_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for agg_level in
+                              dataset.get_aggregation_levels()]
     aggregation_statements_block = '\n'.join(aggregation_statements)
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
@@ -130,12 +133,11 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
             pass
 
 
-def get_continuous_aggregate_create_statement(
+def get_continuous_aggregate_create_statements(
         dataset: TimeSeriesDataset,
         stream_id: str,
         aggregation_level: int) -> str:
-    aggregation_interval_seconds = (
-            dataset.time_series_interval * dataset.aggregation_step_factor ** aggregation_level).total_seconds()
+    aggregation_interval_seconds = dataset.get_aggregation_interval(aggregation_level).total_seconds()
     source_name = dataset.get_table_or_view_name(stream_id, aggregation_level - 1)
     new_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
 
@@ -168,14 +170,14 @@ def get_continuous_aggregate_create_statement(
          -- aggregation refresh policy
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
         
-         ---- create continuous aggregation maintenance policy
-         -- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/
-         -- values are hardcoded for now but will eventually depend on datasets, as different datasets will have 
-         -- different operational needs viz data availablility lack
-        SELECT add_continuous_aggregate_policy('{new_view_name}',
-        start_offset => NULL,
-        end_offset => INTERVAL '1 hour',
-        schedule_interval => INTERVAL '1 hour');
+         ------ create continuous aggregation maintenance policy
+         ---- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/
+         ---- values are hardcoded for now but will eventually depend on datasets, as different datasets will have 
+         ---- different operational needs viz data availablility lack
+        --SELECT add_continuous_aggregate_policy('{new_view_name}',
+        --start_offset => NULL,
+        --end_offset => INTERVAL '1 hour',
+        --schedule_interval => INTERVAL '1 hour');
     """
 
 
@@ -211,6 +213,54 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
+    log.info(f'refreshing continuous aggregates for {dataset.get_table_name(stream_id)}')
+    for aggregation_level in dataset.get_aggregation_levels():
+        materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
+        bucket_interval = dataset.get_aggregation_interval(aggregation_level)
+        refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)
+        conn = get_db_connection()
+        conn.autocommit = True
+        with conn.cursor() as cur:
+            sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
+            cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
+            log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
+        conn.close()
+
+
+def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: TimeSpan) -> TimeSpan:
+    """
+    Get a dataspan enclosing all extant buckets which overlap a given data_span.  If no data exists in the materialized
+    view yet, instead return a safe value which will ensure timescaledb does not complain about too-small a window.
+
+    Parameters
+    ----------
+    view_name - the name of the materialized view
+    bucket_interval - the interval/size of this view's buckets
+    data_span - the span of data for which to resolve a refresh span
+
+    Returns
+    -------
+    an inclusive bucket span over which to refresh the continuous aggregate/materialized view
+
+    """
+
+    sql = f"""
+    select min(bucket), max(bucket)
+    from {view_name}
+    where bucket >= ('{data_span.begin.isoformat()}'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
+      and bucket <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
+      """
+
+    with get_db_connection() as conn, conn.cursor() as cur:
+        cur.execute(sql)
+        results = cur.fetchone()
+        if None not in results:
+            return TimeSpan(begin=results[0], end=results[1] + bucket_interval)
+        else:
+            return TimeSpan(begin=datetime.min, end=datetime.max)
+
+
 def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
@@ -229,6 +279,7 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     table_name = dataset.get_table_name(stream_id)
     delete_overlapping_data(dataset, stream_id, data_temporal_span)
     ingest_df(pd_df, table_name)
+    refresh_continuous_aggregates(dataset, stream_id, data_temporal_span)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
