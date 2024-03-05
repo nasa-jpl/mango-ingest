@@ -56,7 +56,7 @@ class TimeSeriesDataset(ABC):
                 {
                     'downsampling_factor': factor,
                     'time_series_interval_seconds': cls.time_series_interval.total_seconds() * factor
-                } for factor in cls.get_available_aggregation_factors()
+                } for factor in cls.get_available_downsampling_factors()
             ],
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
             'query_result_limit': cls.query_result_limit
@@ -259,21 +259,22 @@ class TimeSeriesDataset(ABC):
     def get_available_aggregation_levels(cls) -> Sequence[int]:
         """
         Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
+        , *exclusive* of level 0 (full-resolution)
         """
         return [x for x in range(1, cls.get_required_aggregation_depth() + 1)]
 
     @classmethod
-    def get_available_aggregation_factors(cls) -> Sequence[int]:
+    def get_available_downsampling_factors(cls) -> Sequence[int]:
         """
-        Return the sorted downsampling/aggregation factors which exist for this dataset
+        Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset
         """
         return [1] + [cls.aggregation_step_factor ** level for level in cls.get_available_aggregation_levels()]
 
 
     @classmethod
-    def get_aggregation_interval(cls, aggregation_depth: int) -> timedelta:
+    def get_nominal_data_interval(cls, downsampling_level: int) -> timedelta:
         """
-        For a given aggregation depth (hierarchical level, not decimation factor), return the duration of the bucket
-        interval
+        For a given downsampling level (hierarchical level, not factor), return the nominal interval between data.  For
+        aggregated data, this is the bucket width
         """
-        return cls.time_series_interval * cls.aggregation_step_factor ** aggregation_depth
+        return cls.time_series_interval * cls.aggregation_step_factor ** downsampling_level

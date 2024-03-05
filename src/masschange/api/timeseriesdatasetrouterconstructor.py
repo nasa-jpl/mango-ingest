@@ -39,12 +39,11 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
                 raise HTTPException(status_code=400, detail=f'Field "{field_name}" not defined for dataset {DatasetCls.get_full_id()} (expected one of {sorted([f.name for f in DatasetCls.get_available_fields()])})')
         fields.add(dataset_fields_by_name[DatasetCls.TIMESTAMP_COLUMN_NAME])
 
-        aggregation_level = int(math.log(downsampling_factor.value, DatasetCls.aggregation_step_factor))
-        using_aggregation = aggregation_level > 0
+        downsampling_level = int(math.log(downsampling_factor.value, DatasetCls.aggregation_step_factor))
 
         try:
             query_start = datetime.now()
-            results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, aggregation_level=aggregation_level, fields=fields)
+            results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, aggregation_level=downsampling_level, fields=fields)
             query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
         except TooMuchDataRequestedError as err:
             raise HTTPException(status_code=400, detail=str(err))
@@ -58,7 +57,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
             'downsampling_factor': downsampling_factor.value,
-            'aggregation_interval_seconds': DatasetCls.get_aggregation_interval(aggregation_level).total_seconds() if using_aggregation else None,
+            'nominal_data_interval': DatasetCls.get_nominal_data_interval(downsampling_level).total_seconds(),
             'query_elapsed_ms': query_elapsed_ms,
             'data': results
         }
