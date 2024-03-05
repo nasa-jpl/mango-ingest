@@ -118,10 +118,10 @@ class TimeSeriesDataset(ABC):
                     FROM {table_name}
                     WHERE   {cls.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                         AND {cls.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
+                    ORDER BY {cls.TIMESTAMP_COLUMN_NAME}
                     """
                 cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
                 results = cur.fetchall()
-                results.reverse()  # timescale indexes in time-descending order, probably for a reason
             except psycopg2.errors.UndefinedTable as err:
                 logging.error(f'Query failed with {err}: {sql}')
                 raise RuntimeError(f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
