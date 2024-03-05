@@ -137,7 +137,7 @@ def get_continuous_aggregate_create_statements(
         dataset: TimeSeriesDataset,
         stream_id: str,
         aggregation_level: int) -> str:
-    aggregation_interval_seconds = dataset.get_aggregation_interval(aggregation_level).total_seconds()
+    aggregation_interval_seconds = dataset.get_nominal_data_interval(aggregation_level).total_seconds()
     source_name = dataset.get_table_or_view_name(stream_id, aggregation_level - 1)
     new_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
 
@@ -215,7 +215,7 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str, da
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name(stream_id)}')
     for aggregation_level in dataset.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
-        bucket_interval = dataset.get_aggregation_interval(aggregation_level)
+        bucket_interval = dataset.get_nominal_data_interval(aggregation_level)
         # Refresh span calculation soft-disabled as initial tests indicate that refreshing continuous aggregates for
         #   which no relevant data change has taken place is essentially free
         # refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)
