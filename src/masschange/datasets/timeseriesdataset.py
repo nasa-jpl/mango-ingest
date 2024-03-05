@@ -55,7 +55,7 @@ class TimeSeriesDataset(ABC):
             'available_resolutions': [
                 {
                     'downsampling_factor': factor,
-                    'nominal_data_interval': cls.time_series_interval.total_seconds() * factor
+                    'nominal_data_interval_seconds': cls.time_series_interval.total_seconds() * factor
                 } for factor in cls.get_available_downsampling_factors()
             ],
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
