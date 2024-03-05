@@ -173,9 +173,10 @@ class TimeSeriesDataset(ABC):
         if not all([f in available_fields for f in requested_fields]):
             available_field_names = [f.name for f in available_fields]
             # requested fields which aren't available for selection
-            unavailable_field_names = [f.name for f in requested_fields.difference(available_fields)]
+            unavailable_fields = {f for f in requested_fields.difference(available_fields)}
+            unavailable_field_names = {f.name for f in unavailable_fields}
             # requested fields which aren't available for selection due to lack of defined aggregations
-            unavailable_aggregate_field_names = [f.name for f in requested_fields.difference(available_fields).difference(unavailable_field_names)] if using_aggregations else set()
+            unavailable_aggregate_field_names = {f.name for f in unavailable_fields if not f.has_aggregations} if using_aggregations else set()
 
             msg = f'Some requested fields {sorted(unavailable_field_names)} not present in available fields ({sorted(available_field_names)}).'
 
