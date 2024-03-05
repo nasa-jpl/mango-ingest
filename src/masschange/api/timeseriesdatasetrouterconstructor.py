@@ -36,7 +36,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             try:
                 fields.add(dataset_fields_by_name[field_name])
             except KeyError:
-                raise ValueError(f'Field not defined for dataset {DatasetCls.get_full_id()} (expected one of {sorted([f.name for f in DatasetCls.get_available_fields()])}, got "{field_name}")')
+                raise HTTPException(status_code=400, detail=f'Field "{field_name}" not defined for dataset {DatasetCls.get_full_id()} (expected one of {sorted([f.name for f in DatasetCls.get_available_fields()])})')
         fields.add(dataset_fields_by_name[DatasetCls.TIMESTAMP_COLUMN_NAME])
 
         available_downsampling_factors = [e.value for e in DownsamplingFactorEnum]
