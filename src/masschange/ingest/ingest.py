@@ -4,6 +4,7 @@ import os
 import shutil
 import tarfile
 import tempfile
+from collections.abc import Set, Collection
 from datetime import datetime, timedelta
 from io import StringIO
 from typing import Iterable
@@ -107,16 +108,12 @@ def ensure_database_exists(db_name: str) -> None:
 
 def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
     """
-    Ensure that the table for this dataset and stream_id's data exists, creating the table and all necessary views if
-    the table doesn't exist.  Does not check for or fix partial existence (i.e. table exists but views do not).
+    Ensure that the table for this dataset exists, creating and configuring the table if it does not.
     """
     table_name = dataset.get_table_name(stream_id)
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
     timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
-    aggregation_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for agg_level in
-                              dataset.get_available_aggregation_levels()]
-    aggregation_statements_block = '\n'.join(aggregation_statements)
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
             sql = f"""
@@ -124,13 +121,60 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
             
             select create_hypertable('{table_name}','{timestamp_column_name}');
             select set_chunk_time_interval('{table_name}', interval '24 hours');
-            {aggregation_statements_block}
             """
             cur.execute(sql)
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
             pass
+
+
+def ensure_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str) -> None:
+    """
+    Ensure that the table for this dataset and stream_id's data exists, creating the table and all necessary views if
+    the table doesn't exist.  Does not check for or fix partial existence (i.e. table exists but views do not).
+    """
+    log.info(f'Ensuring expected continuous aggregates exist for dataset "{dataset.get_full_id()}"')
+
+    expected_dataset_caggs = {dataset.get_table_or_view_name(stream_id, level) for level in
+                              dataset.get_available_aggregation_levels()}
+    extant_dataset_caggs = get_extant_continuous_aggregates(dataset, stream_id)
+
+    if expected_dataset_caggs != extant_dataset_caggs:
+        log.info(f'Mismatch between expected/extant caggs (expected {sorted(expected_dataset_caggs)}, '
+                 f'got {sorted(extant_dataset_caggs)})')
+
+        delete_caggs(extant_dataset_caggs)
+
+        cagg_create_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for
+                                  agg_level in
+                                  dataset.get_available_aggregation_levels()]
+        with get_db_connection() as conn, conn.cursor() as cur:
+            sql = '\n'.join(cagg_create_statements)
+            cur.execute(sql)
+            conn.commit()
+            log.info(f'Created continous aggregates for dataset "{dataset.get_full_id()}"')
+
+        refresh_continuous_aggregates(dataset, stream_id)
+
+
+def get_extant_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str) -> Set[str]:
+    with get_db_connection() as conn, conn.cursor() as cur:
+        sql = f"""select table_name from information_schema.views where table_name like '{dataset.get_table_name(stream_id)}_%';"""
+        cur.execute(sql)
+        results = cur.fetchall()
+        return {result[0] for result in results}
+
+
+def delete_caggs(table_names: Collection[str]):
+    ordered_table_names = sorted(table_names, reverse=True)  # must be in reverse order due to dependencies
+    pass  # TODO: IMPLEMENT
+    for table_name in ordered_table_names:
+        sql = f"drop materialized view {table_name};"
+        with get_db_connection() as conn, conn.cursor() as cur:
+            cur.execute(sql)
+            conn.commit()
+            log.debug(f'Deleted continous aggregate "{table_name}"')
 
 
 def get_continuous_aggregate_create_statements(
@@ -211,7 +255,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str):
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name(stream_id)}')
     for aggregation_level in dataset.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
@@ -276,11 +320,12 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     stream_id = reader.extract_stream_id(src_filepath)
 
     ensure_table_exists(dataset, stream_id)
+    ensure_continuous_aggregates(dataset, stream_id)
 
     table_name = dataset.get_table_name(stream_id)
     delete_overlapping_data(dataset, stream_id, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset, stream_id, data_temporal_span)
+    refresh_continuous_aggregates(dataset, stream_id)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
