@@ -241,6 +241,9 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def get_required_aggregation_depth(cls) -> int:
+        if not any(field.has_aggregations for field in cls.get_available_fields()):
+            return 0
+
         full_span_data_count = cls.max_data_span / cls.time_series_interval
         required_decimation_levels = math.ceil(math.log(full_span_data_count, cls.aggregation_step_factor))
         return required_decimation_levels
