@@ -26,7 +26,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min,
             to_isotimestamp: datetime = (DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min) + timedelta(minutes=1),
             fields: Annotated[List[str], Query()] = sorted(f.name for f in DatasetCls.get_available_fields() if not f.is_constant),
-            requested_aggregation_factor: DownsamplingFactorEnum = 1
+            downsampling_factor: DownsamplingFactorEnum = 1
     ):
         #  ensure that timestamp column name is always present in query
         field_names = fields
@@ -39,9 +39,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
                 raise HTTPException(status_code=400, detail=f'Field "{field_name}" not defined for dataset {DatasetCls.get_full_id()} (expected one of {sorted([f.name for f in DatasetCls.get_available_fields()])})')
         fields.add(dataset_fields_by_name[DatasetCls.TIMESTAMP_COLUMN_NAME])
 
-        available_downsampling_factors = [e.value for e in DownsamplingFactorEnum]
-        closest_available_downsampling_factor = min(available_downsampling_factors, key= lambda f: abs(f - requested_aggregation_factor))
-        aggregation_level = int(math.log(closest_available_downsampling_factor, DatasetCls.aggregation_step_factor))
+        aggregation_level = int(math.log(downsampling_factor.value, DatasetCls.aggregation_step_factor))
         using_aggregation = aggregation_level > 0
 
         try:
@@ -59,7 +57,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_begin': None if len(results) < 1 else results[0][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
-            'aggregation_factor': closest_available_downsampling_factor,
+            'downsampling_factor': downsampling_factor.value,
             'aggregation_interval_seconds': DatasetCls.get_aggregation_interval(aggregation_level).total_seconds() if using_aggregation else None,
             'query_elapsed_ms': query_elapsed_ms,
             'data': results
