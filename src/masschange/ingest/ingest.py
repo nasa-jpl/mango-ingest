@@ -150,19 +150,17 @@ def get_continuous_aggregate_create_statements(
             column_expr = f'{agg}({src_column}) as {dest_column}'
             agg_column_exprs.append(column_expr)
 
-    select_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.timestamp) AS bucket" if aggregation_level < 2 \
-        else f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECONDS', src.bucket) as bucket"
+    bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.timestamp)"
     agg_columns_block = ',\n'.join(agg_column_exprs)
-    group_by_expr = 'bucket' if aggregation_level < 2 else f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECONDS', bucket)"
 
     return f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
-        SELECT {select_expr},
+        SELECT {bucket_expr} AS timestamp,
         {agg_columns_block}
         FROM {source_name} as src
-        GROUP BY {group_by_expr}
+        GROUP BY {bucket_expr}
         WITH NO DATA;
         
          ---- disable realtime aggregation
