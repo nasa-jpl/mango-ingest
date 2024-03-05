@@ -52,9 +52,9 @@ class TimeSeriesDataset(ABC):
             'full_id': cls.get_full_id(),
             'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
                         sorted(cls.stream_ids)],
-            'available_fields': sorted([f.name for f in cls.get_available_fields()]),
+            'available_fields': sorted([field.describe() for field in cls.get_available_fields()], key=lambda description: description['name']),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
-            'query_span_max_seconds': cls.max_full_res_query_temporal_span.total_seconds()
+            'approximate_query_result_limit': cls.max_full_res_query_temporal_span / cls.time_series_interval
         }
 
     @classmethod
