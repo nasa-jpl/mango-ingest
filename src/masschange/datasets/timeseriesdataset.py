@@ -28,7 +28,7 @@ class TimeSeriesDataset(ABC):
 
     aggregation_step_factor: int = 10
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
-    max_query_temporal_span: timedelta = timedelta(
+    max_full_res_query_temporal_span: timedelta = timedelta(
         minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'
@@ -54,7 +54,7 @@ class TimeSeriesDataset(ABC):
                         sorted(cls.stream_ids)],
             'available_fields': sorted([f.name for f in cls.get_available_fields()]),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
-            'query_span_max_seconds': cls.max_query_temporal_span.total_seconds()
+            'query_span_max_seconds': cls.max_full_res_query_temporal_span.total_seconds()
         }
 
     @classmethod
@@ -89,17 +89,29 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def select(cls, stream_id: str, from_dt: datetime, to_dt: datetime,
-               filter_to_fields: Collection[str] = None, limit_data_span: bool = True) -> List[Dict]:
-        requested_field_names = filter_to_fields or [f.name for f in cls.get_available_fields() if not f.is_constant]
-        cls._validate_requested_fields(requested_field_names)
+               fields: Collection[TimeSeriesDatasetField] = None, aggregation_level: int = 0, limit_data_span: bool = True) -> List[Dict]:
+        fields = fields or [f for f in cls.get_available_fields() if not f.is_constant]
+        using_aggregations = aggregation_level > 0
+        cls._validate_requested_fields(fields, using_aggregations=using_aggregations)
+        if not using_aggregations:
+            column_names = {field.name for field in fields}
+        else:
+            column_names = set()
+            for field in fields:
+                if field.has_aggregations:
+                    column_names.update(field.aggregation_db_column_names)
+                else:
+                    column_names.add(field.name)
 
+        downsampling_factor = cls.aggregation_step_factor ** aggregation_level
+        max_query_temporal_span = cls.max_full_res_query_temporal_span * downsampling_factor
         requested_temporal_span = to_dt - from_dt
-        if limit_data_span and requested_temporal_span > cls.max_query_temporal_span:
-            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(cls.max_query_temporal_span)})')
+        if limit_data_span and requested_temporal_span > max_query_temporal_span:
+            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(cls.max_full_res_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            table_name = cls.get_table_name(stream_id)
-            select_columns_clause = ','.join(requested_field_names)
+            table_name = cls.get_table_or_view_name(stream_id, aggregation_level)
+            select_columns_clause = ','.join(column_names)
 
             try:
                 sql = f"""
@@ -155,13 +167,23 @@ class TimeSeriesDataset(ABC):
         return table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}'
 
     @classmethod
-    def _validate_requested_fields(cls, requested_field_names: Collection[str]) -> None:
-        requested_field_names = set(requested_field_names)
-        available_field_names = {f.name for f in cls.get_available_fields()}
-        if not all([f in available_field_names for f in requested_field_names]):
-            unavailable_field_names = requested_field_names.difference(available_field_names)
-            raise ValueError(
-                f'Some requested fields {sorted(unavailable_field_names)} not present in available fields ({sorted(available_field_names)})')
+    def _validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool) -> None:
+        requested_fields = set(requested_fields)
+        available_fields = {f for f in cls.get_available_fields() \
+                                 if (f.has_aggregations  or f.name == cls.TIMESTAMP_COLUMN_NAME or not using_aggregations) and not f.is_constant}
+        if not all([f in available_fields for f in requested_fields]):
+            available_field_names = [f.name for f in available_fields]
+            # requested fields which aren't available for selection
+            unavailable_field_names = [f.name for f in requested_fields.difference(available_fields)]
+            # requested fields which aren't available for selection due to lack of defined aggregations
+            unavailable_aggregate_field_names = [f.name for f in requested_fields.difference(available_fields).difference(unavailable_field_names)] if using_aggregations else set()
+
+            msg = f'Some requested fields {sorted(unavailable_field_names)} not present in available fields ({sorted(available_field_names)}).'
+
+            if len(unavailable_aggregate_field_names) > 0:
+                msg += f' The following fields are unavailable due to lack of defined aggregations: {sorted(unavailable_aggregate_field_names)}'
+
+            raise ValueError(msg)
 
     @classmethod
     def get_sql_table_create_statement(cls, stream_id: str) -> str:

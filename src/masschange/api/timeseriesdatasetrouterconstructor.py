@@ -1,4 +1,6 @@
+import math
 from datetime import datetime, timedelta
+from enum import IntEnum
 from typing import Type, Union, Annotated, List
 
 from fastapi import APIRouter, HTTPException, Query
@@ -13,6 +15,9 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
 
     StreamEnum = StrEnum('Stream', sorted(DatasetCls.stream_ids))
 
+    downsampling_factors = [DatasetCls.aggregation_step_factor**exp for exp in range(0, DatasetCls.get_required_aggregation_depth())]
+    DownsamplingFactorEnum = IntEnum(value='DownsamplingFactor', names=[(str(f), f) for f in downsampling_factors])
+
     @router.get('/streams/{stream_id}/data', tags=[DatasetCls.mission.id, DatasetCls.get_full_id(), 'data'])
     async def get_data(
             stream_id: StreamEnum,
@@ -21,14 +26,26 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min,
             to_isotimestamp: datetime = (DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min) + timedelta(minutes=1),
             fields: Annotated[List[str], Query()] = sorted(f.name for f in DatasetCls.get_available_fields()),
+            requested_aggregation_factor: DownsamplingFactorEnum = 1
     ):
         #  ensure that timestamp column name is always present in query
-        fields = set(fields)
-        fields.add(DatasetCls.TIMESTAMP_COLUMN_NAME)
+        field_names = fields
+        fields = set()
+        dataset_fields_by_name = {field.name: field for field in DatasetCls.get_available_fields()}
+        for field_name in field_names:
+            try:
+                fields.add(dataset_fields_by_name[field_name])
+            except KeyError:
+                raise ValueError(f'Field not defined for dataset {DatasetCls.get_full_id()} (expected one of {sorted([f.name for f in DatasetCls.get_available_fields()])}, got "{field_name}")')
+        fields.add(dataset_fields_by_name[DatasetCls.TIMESTAMP_COLUMN_NAME])
+
+        available_downsampling_factors = [e.value for e in DownsamplingFactorEnum]
+        closest_available_downsampling_factor = min(available_downsampling_factors, key= lambda f: abs(f - requested_aggregation_factor))
+        aggregation_level = int(math.log(closest_available_downsampling_factor, DatasetCls.aggregation_step_factor))
 
         try:
             query_start = datetime.now()
-            results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, filter_to_fields=fields)
+            results = DatasetCls.select(stream_id.name, from_isotimestamp, to_isotimestamp, aggregation_level=aggregation_level, fields=fields)
             query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
         except TooMuchDataRequestedError as err:
             raise HTTPException(status_code=400, detail=str(err))
@@ -41,6 +58,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_begin': None if len(results) < 1 else results[0][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
+            'aggregation_factor': closest_available_downsampling_factor,
             'query_elapsed_ms': query_elapsed_ms,
             'data': results
         }
