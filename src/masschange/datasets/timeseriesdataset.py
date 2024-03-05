@@ -52,6 +52,7 @@ class TimeSeriesDataset(ABC):
             'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
                         sorted(cls.stream_ids)],
             'available_fields': sorted([field.describe() for field in cls.get_available_fields()], key=lambda description: description['name']),
+            'available_aggregation_factors': cls.get_available_aggregation_factors(),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
             'query_result_limit': cls.query_result_limit
         }
@@ -250,11 +251,18 @@ class TimeSeriesDataset(ABC):
         return required_decimation_levels
 
     @classmethod
-    def get_aggregation_levels(cls) -> Sequence[int]:
+    def get_available_aggregation_levels(cls) -> Sequence[int]:
         """
         Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
         """
         return [x for x in range(1, cls.get_required_aggregation_depth() + 1)]
+
+    @classmethod
+    def get_available_aggregation_factors(cls) -> Sequence[int]:
+        """
+        Return the sorted downsampling/aggregation factors which exist for this dataset
+        """
+        return [1] + [cls.aggregation_step_factor ** level for level in cls.get_available_aggregation_levels()]
 
 
     @classmethod
