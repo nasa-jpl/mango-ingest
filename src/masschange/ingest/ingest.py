@@ -115,7 +115,7 @@ def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
 
     timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
     aggregation_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for agg_level in
-                              dataset.get_aggregation_levels()]
+                              dataset.get_available_aggregation_levels()]
     aggregation_statements_block = '\n'.join(aggregation_statements)
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
@@ -213,7 +213,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
 
 def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name(stream_id)}')
-    for aggregation_level in dataset.get_aggregation_levels():
+    for aggregation_level in dataset.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
         bucket_interval = dataset.get_aggregation_interval(aggregation_level)
         # Refresh span calculation soft-disabled as initial tests indicate that refreshing continuous aggregates for
