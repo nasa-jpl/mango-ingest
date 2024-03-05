@@ -23,7 +23,7 @@ class TimeSeriesDatasetField:
     VALID_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
     def __init__(self, name: str, aggregations: Collection[str] = None, const_value: Union[Any, None] = None):
-        self.name = name
+        self.name = name.lower()
         self.const_value = const_value
 
         if aggregations is not None:

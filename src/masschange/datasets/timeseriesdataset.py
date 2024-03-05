@@ -128,7 +128,7 @@ class TimeSeriesDataset(ABC):
             except psycopg2.errors.UndefinedColumn as err:
                 logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
                 available_columns = list_db_table_columns(table_name)
-                missing_columns = {f.name for f in cls.get_available_fields() if f.name.lower() not in available_columns}
+                missing_columns = {f.name for f in cls.get_available_fields() if f.name not in available_columns}
                 raise ValueError(f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
                 logging.error(f'query failed with {err}: {sql}')
