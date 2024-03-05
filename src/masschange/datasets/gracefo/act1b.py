@@ -14,7 +14,7 @@ class GraceFOAct1BDataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'ACT1B'
     stream_ids = {'C', 'D'}
-    time_series_interval = timedelta(milliseconds=100)  # TODO: CONFIRM CORRECT VALUE
+    time_series_interval = timedelta(seconds=1)
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
