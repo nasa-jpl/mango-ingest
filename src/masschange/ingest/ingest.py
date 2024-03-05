@@ -150,14 +150,14 @@ def get_continuous_aggregate_create_statements(
             column_expr = f'{agg}({src_column}) as {dest_column}'
             agg_column_exprs.append(column_expr)
 
-    bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.timestamp)"
+    bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.{dataset.TIMESTAMP_COLUMN_NAME})"
     agg_columns_block = ',\n'.join(agg_column_exprs)
 
     return f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
-        SELECT {bucket_expr} AS timestamp,
+        SELECT {bucket_expr} AS {dataset.TIMESTAMP_COLUMN_NAME},
         {agg_columns_block}
         FROM {source_name} as src
         GROUP BY {bucket_expr}
