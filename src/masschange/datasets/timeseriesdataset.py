@@ -251,8 +251,9 @@ class TimeSeriesDataset(ABC):
         if not any(field.has_aggregations for field in cls.get_available_fields()):
             return 0
 
+        approximate_pixel_count = 5000
         full_span_data_count = cls.max_data_span / cls.time_series_interval
-        required_decimation_levels = math.ceil(math.log(full_span_data_count, cls.aggregation_step_factor))
+        required_decimation_levels = math.ceil(math.log(full_span_data_count / approximate_pixel_count, cls.aggregation_step_factor))
         return required_decimation_levels
 
     @classmethod
