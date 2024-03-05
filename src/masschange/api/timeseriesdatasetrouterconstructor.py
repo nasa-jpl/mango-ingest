@@ -42,6 +42,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
         available_downsampling_factors = [e.value for e in DownsamplingFactorEnum]
         closest_available_downsampling_factor = min(available_downsampling_factors, key= lambda f: abs(f - requested_aggregation_factor))
         aggregation_level = int(math.log(closest_available_downsampling_factor, DatasetCls.aggregation_step_factor))
+        using_aggregation = aggregation_level > 0
 
         try:
             query_start = datetime.now()
@@ -59,6 +60,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
             'aggregation_factor': closest_available_downsampling_factor,
+            'aggregation_interval_seconds': DatasetCls.get_aggregation_interval(aggregation_level).total_seconds() if using_aggregation else None,
             'query_elapsed_ms': query_elapsed_ms,
             'data': results
         }
