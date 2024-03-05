@@ -1,5 +1,5 @@
 from collections.abc import Set, Collection
-from typing import Union, Any
+from typing import Union, Any, Dict
 
 from strenum import StrEnum
 
@@ -48,3 +48,14 @@ class TimeSeriesDatasetField:
 
     def __eq__(self, other):
         return self.name == other.name
+
+    def describe(self) -> Dict:
+        description = {
+            'name': self.name,
+            'supported_aggregations': sorted([agg.lower() for agg in self.aggregations])
+        }
+
+        if self.is_constant:
+            description['constant_value'] = self.const_value,
+
+        return description
