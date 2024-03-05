@@ -57,7 +57,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             'data_end': None if len(results) < 1 else results[-1][DatasetCls.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
             'downsampling_factor': downsampling_factor.value,
-            'nominal_data_interval': DatasetCls.get_nominal_data_interval(downsampling_level).total_seconds(),
+            'nominal_data_interval_seconds': DatasetCls.get_nominal_data_interval(downsampling_level).total_seconds(),
             'query_elapsed_ms': query_elapsed_ms,
             'data': results
         }
