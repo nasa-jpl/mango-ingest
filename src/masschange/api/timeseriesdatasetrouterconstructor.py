@@ -15,7 +15,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
 
     StreamEnum = StrEnum('Stream', sorted(DatasetCls.stream_ids))
 
-    downsampling_factors = [DatasetCls.aggregation_step_factor**exp for exp in range(0, DatasetCls.get_required_aggregation_depth())]
+    downsampling_factors = [DatasetCls.aggregation_step_factor**exp for exp in range(0, DatasetCls.get_required_aggregation_depth() + 1)]
     DownsamplingFactorEnum = IntEnum(value='DownsamplingFactor', names=[(str(f), f) for f in downsampling_factors])
 
     @router.get('/streams/{stream_id}/data', tags=[DatasetCls.mission.id, DatasetCls.get_full_id(), 'data'])
