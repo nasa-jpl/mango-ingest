@@ -22,6 +22,9 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             to_isotimestamp: datetime = (DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min) + timedelta(minutes=1),
             fields: Annotated[List[str], Query()] = sorted(DatasetCls.available_fields),
     ):
+        #  ensure that timestamp column name is always present in query
+        fields = set(fields)
+        fields.add(DatasetCls.TIMESTAMP_COLUMN_NAME)
 
         try:
             query_start = datetime.now()
