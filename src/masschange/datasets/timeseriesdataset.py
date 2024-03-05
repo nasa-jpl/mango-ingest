@@ -135,7 +135,7 @@ class TimeSeriesDataset(ABC):
                 logging.error(f'query failed with {err}: {sql}')
                 raise Exception
 
-        return results
+        return [cls._structure_results(fields, using_aggregations, result) for result in results]
 
     @classmethod
     def _get_table_name_prefix(cls) -> str:
@@ -184,6 +184,27 @@ class TimeSeriesDataset(ABC):
                 msg += f' The following fields are unavailable due to lack of defined aggregations: {sorted(unavailable_aggregate_field_names)}'
 
             raise ValueError(msg)
+
+    @classmethod
+    def _structure_results(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool,  result: Dict) -> Dict:
+        structured_result = {}
+        for field in requested_fields:
+            if field.name == cls.TIMESTAMP_COLUMN_NAME:
+                structured_result[field.name] = result[field.name]
+
+            elif using_aggregations and field.has_aggregations:
+                for column_name in field.aggregation_db_column_names:
+                    agg_name = column_name.replace(f'{field.name}_', '', 1)
+                    if field.name not in structured_result:
+                        structured_result[field.name] = {}
+                    structured_result[field.name][agg_name] = result[column_name]
+
+            else:
+                if field.name not in structured_result:
+                    structured_result[field.name] = {}
+                structured_result[field.name]['value'] = result[field.name]
+
+        return structured_result
 
     @classmethod
     def get_sql_table_create_statement(cls, stream_id: str) -> str:
