@@ -38,3 +38,13 @@ class TimeSeriesDatasetField:
     @property
     def has_aggregations(self):
         return len(self.aggregations) > 0
+
+    @property
+    def aggregation_db_column_names(self) -> Set[str]:
+        return {f'{self.name}_{agg.lower()}' for agg in self.aggregations}
+
+    def __hash__(self):
+        return self.name.__hash__()
+
+    def __eq__(self, other):
+        return self.name == other.name
