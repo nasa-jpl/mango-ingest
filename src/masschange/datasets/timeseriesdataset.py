@@ -52,7 +52,12 @@ class TimeSeriesDataset(ABC):
             'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
                         sorted(cls.stream_ids)],
             'available_fields': sorted([field.describe() for field in cls.get_available_fields()], key=lambda description: description['name']),
-            'available_aggregation_factors': cls.get_available_aggregation_factors(),
+            'available_resolutions': [
+                {
+                    'downsampling_factor': factor,
+                    'time_series_interval_seconds': cls.time_series_interval.total_seconds() * factor
+                } for factor in cls.get_available_aggregation_factors()
+            ],
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
             'query_result_limit': cls.query_result_limit
         }
