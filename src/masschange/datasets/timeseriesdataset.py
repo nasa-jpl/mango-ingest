@@ -28,8 +28,7 @@ class TimeSeriesDataset(ABC):
 
     aggregation_step_factor: int = 10
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
-    max_full_res_query_temporal_span: timedelta = timedelta(
-        minutes=60)  # TODO: When downsampling and non-10Hz data are implemented this will need to be dynamically generated
+    query_result_limit = 36000
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'
 
@@ -54,7 +53,7 @@ class TimeSeriesDataset(ABC):
                         sorted(cls.stream_ids)],
             'available_fields': sorted([field.describe() for field in cls.get_available_fields()], key=lambda description: description['name']),
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
-            'approximate_query_result_limit': cls.max_full_res_query_temporal_span / cls.time_series_interval
+            'query_result_limit': cls.query_result_limit
         }
 
     @classmethod
@@ -104,10 +103,10 @@ class TimeSeriesDataset(ABC):
                     column_names.add(field.name)
 
         downsampling_factor = cls.aggregation_step_factor ** aggregation_level
-        max_query_temporal_span = cls.max_full_res_query_temporal_span * downsampling_factor
+        max_query_temporal_span = cls.query_result_limit * cls.time_series_interval * downsampling_factor
         requested_temporal_span = to_dt - from_dt
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
-            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(cls.max_full_res_query_temporal_span)})')
+            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = cls.get_table_or_view_name(stream_id, aggregation_level)
