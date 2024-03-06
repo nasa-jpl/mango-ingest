@@ -4,16 +4,16 @@ from fastapi import APIRouter
 
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 
-from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
-from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
-from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
-from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
-from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
-from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
-from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
-from masschange.datasets.gracefo.thr1a import GraceFOThr1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOAcc1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOAct1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOIhk1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOImu1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOMag1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOPci1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOSca1ADataset
+from masschange.datasets.implementations.gracefo import GraceFOThr1ADataset
 
-from masschange.datasets.gracefo.act1b import GraceFOAct1BDataset
+from masschange.datasets.implementations.gracefo import GraceFOAct1BDataset
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.missions import Mission
