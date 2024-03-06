@@ -49,9 +49,16 @@ class TimeSeriesDataset(ABC):
             'mission': cls.mission.id,
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
-            'streams': [{'id': id, 'data_begin': cls.get_data_begin(id), 'data_end': cls.get_data_end(id)} for id in
-                        sorted(cls.stream_ids)],
-            'available_fields': sorted([field.describe() for field in cls.get_available_fields()], key=lambda description: description['name']),
+            'streams': [{
+                'id': id,
+                # These are disabled for the time being, as they are slow
+                # TODO: Store these in the metadata table that doesn't exist yet
+                # 'data_begin': cls.get_data_begin(id),
+                # 'data_end': cls.get_data_end(id)
+            } for id in
+                sorted(cls.stream_ids)],
+            'available_fields': sorted([field.describe() for field in cls.get_available_fields()],
+                                       key=lambda description: description['name']),
             'available_resolutions': [
                 {
                     'downsampling_factor': factor,
@@ -94,7 +101,8 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def select(cls, stream_id: str, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDatasetField] = None, aggregation_level: int = 0, limit_data_span: bool = True) -> List[Dict]:
+               fields: Collection[TimeSeriesDatasetField] = None, aggregation_level: int = 0,
+               limit_data_span: bool = True) -> List[Dict]:
         fields = fields or [f for f in cls.get_available_fields() if not f.is_constant]
         using_aggregations = aggregation_level > 0
         cls._validate_requested_fields(fields, using_aggregations=using_aggregations)
@@ -112,7 +120,8 @@ class TimeSeriesDataset(ABC):
         max_query_temporal_span = cls.query_result_limit * cls.time_series_interval * downsampling_factor
         requested_temporal_span = to_dt - from_dt
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
-            raise TooMuchDataRequestedError(f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
+            raise TooMuchDataRequestedError(
+                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = cls.get_table_or_view_name(stream_id, aggregation_level)
@@ -130,12 +139,14 @@ class TimeSeriesDataset(ABC):
                 results = cur.fetchall()
             except psycopg2.errors.UndefinedTable as err:
                 logging.error(f'Query failed with {err}: {sql}')
-                raise RuntimeError(f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
+                raise RuntimeError(
+                    f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
             except psycopg2.errors.UndefinedColumn as err:
                 logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
                 available_columns = list_db_table_columns(table_name)
                 missing_columns = {f.name for f in cls.get_available_fields() if f.name not in available_columns}
-                raise ValueError(f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
+                raise ValueError(
+                    f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
                 logging.error(f'query failed with {err}: {sql}')
                 raise Exception
@@ -163,7 +174,8 @@ class TimeSeriesDataset(ABC):
         aggregation_depth_pad_width = 2
         padded_aggregation_depth = str(aggregation_depth).rjust(aggregation_depth_pad_width, "0")
         if len(padded_aggregation_depth) > aggregation_depth_pad_width:
-            raise ValueError(f'aggregation_depth "{aggregation_depth}" exceeds maximum accounted for ({aggregation_depth_pad_width} digits)')
+            raise ValueError(
+                f'aggregation_depth "{aggregation_depth}" exceeds maximum accounted for ({aggregation_depth_pad_width} digits)')
 
         # f for factor, l for level - aids in view maintenance
         aggregation_suffix = f'f{cls.aggregation_step_factor}l{padded_aggregation_depth}'
@@ -173,17 +185,20 @@ class TimeSeriesDataset(ABC):
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
 
     @classmethod
-    def _validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool) -> None:
+    def _validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDatasetField],
+                                   using_aggregations: bool) -> None:
         requested_fields = set(requested_fields)
         available_fields = {f for f in cls.get_available_fields() \
-                                 if (f.has_aggregations  or f.name == cls.TIMESTAMP_COLUMN_NAME or not using_aggregations) and not f.is_constant}
+                            if (
+                                    f.has_aggregations or f.name == cls.TIMESTAMP_COLUMN_NAME or not using_aggregations) and not f.is_constant}
         if not all([f in available_fields for f in requested_fields]):
             available_field_names = [f.name for f in available_fields]
             # requested fields which aren't available for selection
             unavailable_fields = {f for f in requested_fields.difference(available_fields)}
             unavailable_field_names = {f.name for f in unavailable_fields}
             # requested fields which aren't available for selection due to lack of defined aggregations
-            unavailable_aggregate_field_names = {f.name for f in unavailable_fields if not f.has_aggregations} if using_aggregations else set()
+            unavailable_aggregate_field_names = {f.name for f in unavailable_fields if
+                                                 not f.has_aggregations} if using_aggregations else set()
 
             msg = f'Some requested fields {sorted(unavailable_field_names)} not present in available fields ({sorted(available_field_names)}).'
 
@@ -193,7 +208,8 @@ class TimeSeriesDataset(ABC):
             raise ValueError(msg)
 
     @classmethod
-    def _structure_results(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool,  result: Dict) -> Dict:
+    def _structure_results(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool,
+                           result: Dict) -> Dict:
         structured_result = {}
         for field in requested_fields:
             if field.name == cls.TIMESTAMP_COLUMN_NAME:
@@ -218,7 +234,8 @@ class TimeSeriesDataset(ABC):
         # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
         """Get an SQL statement to create a table for this dataset/stream"""
         if stream_id not in cls.stream_ids:
-            raise ValueError(f'stream_id {stream_id} not in {cls.__name__}.stream_ids - expected one of {cls.stream_ids}')
+            raise ValueError(
+                f'stream_id {stream_id} not in {cls.__name__}.stream_ids - expected one of {cls.stream_ids}')
 
         sql = f"""
             create table public.{cls.get_table_name(stream_id)}
@@ -254,7 +271,8 @@ class TimeSeriesDataset(ABC):
 
         approximate_pixel_count = 5000
         full_span_data_count = cls.max_data_span / cls.time_series_interval
-        required_decimation_levels = math.ceil(math.log(full_span_data_count / approximate_pixel_count, cls.aggregation_step_factor))
+        required_decimation_levels = math.ceil(
+            math.log(full_span_data_count / approximate_pixel_count, cls.aggregation_step_factor))
         return required_decimation_levels
 
     @classmethod
@@ -271,7 +289,6 @@ class TimeSeriesDataset(ABC):
         Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset
         """
         return [1] + [cls.aggregation_step_factor ** level for level in cls.get_available_aggregation_levels()]
-
 
     @classmethod
     def get_nominal_data_interval(cls, downsampling_level: int) -> timedelta:
