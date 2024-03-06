@@ -2,7 +2,7 @@ import os
 import unittest
 from datetime import datetime
 
-from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.implementations.gracefo.acc1a import GraceFOAcc1ADataset
 from masschange.ingest.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
 
