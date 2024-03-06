@@ -61,21 +61,27 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str) -> 
     extant_dataset_caggs = get_extant_continuous_aggregates(dataset, stream_id)
 
     if expected_dataset_caggs != extant_dataset_caggs:
-        log.info(f'Mismatch between expected/extant caggs (expected {sorted(expected_dataset_caggs)}, '
-                 f'got {sorted(extant_dataset_caggs)})')
+        if expected_dataset_caggs.issubset(extant_dataset_caggs):
+            extraneous_caggs = extant_dataset_caggs.difference(expected_dataset_caggs)
+            log.info(f'Extraneous caggs found - deleting {sorted(extraneous_caggs)}')
+            delete_caggs(extraneous_caggs)
+        else:
+            log.info(
+                f'Regenerating all dataset caggs due to mismatch between expected/extant caggs (expected {sorted(expected_dataset_caggs)}, '
+                f'got {sorted(extant_dataset_caggs)})')
 
-        delete_caggs(extant_dataset_caggs)
+            delete_caggs(extant_dataset_caggs)
 
-        cagg_create_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for
-                                  agg_level in
-                                  dataset.get_available_aggregation_levels()]
-        with get_db_connection() as conn, conn.cursor() as cur:
-            sql = '\n'.join(cagg_create_statements)
-            cur.execute(sql)
-            conn.commit()
-            log.info(f'Created continous aggregates for dataset "{dataset.get_full_id()}"')
+            cagg_create_statements = [get_continuous_aggregate_create_statements(dataset, stream_id, agg_level) for
+                                      agg_level in
+                                      dataset.get_available_aggregation_levels()]
+            with get_db_connection() as conn, conn.cursor() as cur:
+                sql = '\n'.join(cagg_create_statements)
+                cur.execute(sql)
+                conn.commit()
+                log.info(f'Created continous aggregates for dataset "{dataset.get_full_id()}"')
 
-        refresh_continuous_aggregates(dataset, stream_id)
+            refresh_continuous_aggregates(dataset, stream_id)
 
 
 def ensure_all_db_state(database_name: str):
