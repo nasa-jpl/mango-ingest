@@ -1,11 +1,14 @@
 import logging
+import os
 
 import psycopg2
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.utils import get_time_series_dataset_classes
 from masschange.db import get_db_connection
 from masschange.ingest.utils.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates
+from masschange.utils.logging import configure_root_logger
 
 log = logging.getLogger()
 
@@ -73,3 +76,21 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str) -> 
             log.info(f'Created continous aggregates for dataset "{dataset.get_full_id()}"')
 
         refresh_continuous_aggregates(dataset, stream_id)
+
+
+def ensure_all_db_state(database_name: str):
+    ensure_database_exists(database_name)
+
+    for cls in get_time_series_dataset_classes():
+        ds = cls()
+        for stream_id in ds.stream_ids:
+            ensure_table_exists(ds, stream_id)
+            ensure_continuous_aggregates(ds, stream_id)
+
+
+if __name__ == '__main__':
+    configure_root_logger()
+
+    database_name = os.environ['TSDB_DATABASE']
+    logging.info(f'Ensuring all database state for db "{database_name}"')
+    ensure_all_db_state(database_name)
