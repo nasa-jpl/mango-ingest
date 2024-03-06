@@ -165,7 +165,8 @@ class TimeSeriesDataset(ABC):
         if len(padded_aggregation_depth) > aggregation_depth_pad_width:
             raise ValueError(f'aggregation_depth "{aggregation_depth}" exceeds maximum accounted for ({aggregation_depth_pad_width} digits)')
 
-        aggregation_suffix = f'agg{padded_aggregation_depth}'
+        # F for factor, L for level - aids in view maintenance
+        aggregation_suffix = f'F{cls.aggregation_step_factor}L{padded_aggregation_depth}'
 
         table_base_name = f'{cls._get_table_name_prefix()}_{stream_id}'.lower()
 

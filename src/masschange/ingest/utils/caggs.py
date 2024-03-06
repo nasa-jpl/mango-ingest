@@ -1,7 +1,6 @@
 import logging
-from collections.abc import Set
 from datetime import datetime, timedelta
-from typing import Collection
+from typing import Collection, Set
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
