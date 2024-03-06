@@ -63,15 +63,6 @@ def get_continuous_aggregate_create_statements(
          -- RTA is prohibitively expensive, so data availability will be determined by the values used in the continuous
          -- aggregation refresh policy
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
-        
-         ------ create continuous aggregation maintenance policy
-         ---- https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/
-         ---- values are hardcoded for now but will eventually depend on datasets, as different datasets will have 
-         ---- different operational needs viz data availablility lack
-        --SELECT add_continuous_aggregate_policy('{new_view_name}',
-        --start_offset => NULL,
-        --end_offset => INTERVAL '1 hour',
-        --schedule_interval => INTERVAL '1 hour');
     """
 
 
