@@ -20,6 +20,7 @@ from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
 from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
 from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
 from masschange.datasets.gracefo.thr1a import GraceFOThr1ADataset
+from masschange.datasets.gracefo.ahk1a import GraceFOAhk1ADataset
 
 from masschange.datasets.gracefo.act1b import GraceFOAct1BDataset
 
@@ -191,6 +192,7 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
         'GRACEFO_PCI1A': GraceFOPci1ADataset,
         'GRACEFO_SCA1A': GraceFOSca1ADataset,
         'GRACEFO_THR1A': GraceFOThr1ADataset,
+        'GRACEFO_AHK1A': GraceFOAhk1ADataset,
 
         'GRACEFO_ACT1B': GraceFOAct1BDataset
 
