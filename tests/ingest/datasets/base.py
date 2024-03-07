@@ -10,7 +10,8 @@ from tests.ingest.base import IngestTestCaseBase
 
 log = logging.getLogger()
 
-
+class float_or_none_type:
+    pass
 class DatasetIngestTestCaseBase(IngestTestCaseBase):
     """
     Exists to allow efficient definition of regression tests for specific TimeSeriesDataset subclasses by inheriting
@@ -58,7 +59,10 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
                                      'row has expected number of columns')
                     for column_i, expected_type in enumerate(self.expected_field_types):
                         value = table_first_row[column_i]
-                        self.assertIsInstance(value, expected_type,
+                        if  isinstance(expected_type, float_or_none_type):
+                            self.assertTrue(isinstance(value, float) or (value is None))
+                        else:
+                            self.assertIsInstance(value, expected_type,
                                               f'column {column_i} has expected type {expected_type}')
 
     def test_has_expected_table_names(self):
@@ -82,5 +86,8 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
                     expected_first_row = self.expected_table_first_rows[i]
                     cur.execute(f'SELECT * from {table_name};')
                     table_first_row = cur.fetchone()
+
+
+
 
                     self.assertEqual(expected_first_row, table_first_row)
