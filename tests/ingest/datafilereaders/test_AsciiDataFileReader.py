@@ -63,4 +63,4 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
         const_columns = [col for col in reader.get_input_column_defs() if col.is_constant]
         for column in const_columns:
             with self.assertRaises(ValueError):
-                reader._ensure_constant_column_value(column.name, column.const_value, raw_data)
+                reader._ensure_constant_array_value(column.name, column.const_value, raw_data)

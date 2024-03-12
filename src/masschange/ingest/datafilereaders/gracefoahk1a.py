@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.datafilereaders.base import  DataFileWithProdFlagReader, \
-    AsciiDataFileReaderColumn, ProdFlagInputColumn, ProdFlagOutputColumn
+    AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
 
 
 class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
@@ -30,53 +30,38 @@ class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1'),
             AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8'),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32'),
-
-            ProdFlagInputColumn(index=6, name='data01', np_type = np.double),
-            ProdFlagInputColumn(index=7, name='data02', np_type = np.double),
-
-            # looks like this column is always icu_blk_nr
-            ProdFlagInputColumn(index=8, name='icu_blk_nr', np_type=int),
-            # looks like this column is always PPS_source
-            ProdFlagInputColumn(index=9, name='PPS_source', np_type=int),
-            # looks like this column is always Sync_Qual
-            ProdFlagInputColumn(index=10, name='Sync_Qual', np_type=int),
-            # looks like this column is always statusflag
-            ProdFlagInputColumn(index=11, name='statusflag', np_type='U32')
-        ]
-
-    @classmethod
-    def get_prod_flag_output_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-        return [
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=0, name='TFEEU_IF', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=1, name='TFEEU_REF', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=2, name='TFEEU_X', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=3, name='TFEEU_YZ', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=4, name='analog_GND', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=5, name='plus_3_dot_3V', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=6, name='Vp', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=7, name='MES_Vd', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=8, name='MES_DET_X1', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=9, name='MES_DET_X2', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=10, name='MES_DET_X3', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=11, name='MES_DET_Y1', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=12, name='MES_DET_Y2', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=13, name='MES_DET_Z1', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=14, name='TSU_Y_plus', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=15, name='TICUN', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=16, name='TSU_Y_minus', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=17, name='TSU_Z_plus', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=18, name='TSU_Z_minus', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=19, name='plus_5V', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=20, name='TICUR', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=21, name='plus_15V', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=22, name='minus_15V', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=23, name='plus_48V', np_type = np.double),
-            ProdFlagOutputColumn(index = None, prod_flag_bit_index=24, name='minus_48V', np_type = np.double),
+            # skip definitions of columns defined by 'prod_flag'
+            # add definitions for VariableSchemaAsciiDataFileReaderColumns
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='TFEEU_IF', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='TFEEU_REF', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='TFEEU_X', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='TFEEU_YZ', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='analog_GND', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='plus_3_dot_3V', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='Vp', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='MES_Vd', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=8, name='MES_DET_X1', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name='MES_DET_X2', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=10, name='MES_DET_X3', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='MES_DET_Y1', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=12, name='MES_DET_Y2', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=13, name='MES_DET_Z1', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=14, name='TSU_Y_plus', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=15, name='TICUN', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=16, name='TSU_Y_minus', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=17, name='TSU_Z_plus', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=18, name='TSU_Z_minus', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=19, name='plus_5V', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=20, name='TICUR', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=21, name='plus_15V', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=22, name='minus_15V', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=23, name='plus_48V', np_type=np.double),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=24, name='minus_48V', np_type=np.double),
             # prod_flag_bit_index = 25 is undefined
-            ProdFlagOutputColumn(index=None, prod_flag_bit_index=26, name='icu_blk_nr', np_type=int),
-            ProdFlagOutputColumn(index=None, prod_flag_bit_index=27, name='PPS_source', np_type=int),
-            ProdFlagOutputColumn(index=None, prod_flag_bit_index=28, name='Sync_Qual', np_type=int),
-            ProdFlagOutputColumn(index=None, prod_flag_bit_index=29, name='statusflag', np_type='U32'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=26, name='icu_blk_nr', np_type=int),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=27, name='PPS_source', np_type=int),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=28, name='Sync_Qual', np_type=int),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=29, name='statusflag', np_type='U32'),
             # prod_flag_bit_index = 30 is undefined
             # prod_flag_bit_index = 31 is undefined
         ]
@@ -84,3 +69,7 @@ class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+
+    @classmethod
+    def _get_first_prod_flag_data_column_position(cls) -> int:
+        return 6

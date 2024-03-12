@@ -54,7 +54,6 @@ class DataFileReader(ABC):
         """Return implementation-agnostic definitions for the fields ingested by the reader"""
         pass
 
-
 class AsciiDataFileReader(DataFileReader):
 
     @classmethod
@@ -86,55 +85,53 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
-        # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most datasets.
-        # If this is not the case, refactoring will be necessary.
-        raw_data = cls._load_raw_data_from_file(filepath)
 
-        try:
-            constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
-            for column in constant_columns:
-                cls._ensure_constant_column_value(column.name, column.const_value, raw_data)
-        except ValueError as err:
-            raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
+        # get raw data as 2D array of strings
+        raw_data_as_str = cls._load_raw_data_from_file(filepath)
 
-        # TODO: investigate whether dropping/excluding const columns prior to pd df construction improves performance
-        #  at all
-        df = pd.DataFrame(raw_data)
+        # create an empty data frame
+        df = pd.DataFrame()
 
+        # add regular (not prod_flag) columns to DF column-by-column, converting to corresponding data type
+        reg_columns = [col for col in cls.get_input_column_defs() if not
+        isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
+        for column in reg_columns:
+            values = np.array(raw_data_as_str[:, column.index]).astype(column.np_type)
+            # Check const columns, do not add const columns to the DF
+            if column.is_constant:
+                try:
+                    cls._ensure_constant_array_value(column.name, column.const_value, values)
+                except ValueError as err:
+                    raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
+            else:
+                df[column.name] = values
+        # add timestamp
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
-        # Drop extraneous columns
-        df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
-
+        # append append variable schema data at the end of the frame
+        if cls._has_variable_schema_data():
+            cls.append_variable_schema_data(raw_data_as_str, df)
         return df
+
+    @classmethod
+    def _has_variable_schema_data(cls):
+        for col in cls.get_input_column_defs():
+            if isinstance(col, VariableSchemaAsciiDataFileReaderColumn):
+                return True
+        return False
+
+    @classmethod
+    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+        header_line_count = cls.get_header_line_count(filename)
+        # get data as arrays of strings, because data types for input
+        # columns are not known in advance
+        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python')
+        return df.values
 
     @classmethod
     @abstractmethod
     def populate_timestamp(cls, row) -> datetime:
         pass
-
-    @classmethod
-    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-        header_line_count = cls.get_header_line_count(filename)
-        # TODO: extract indices, descriptions, units dynamically from the header?
-        # TODO: use prodflag and/or QC for filtering measurements?
-
-        column_defs = cls.get_input_column_defs()
-        data = np.loadtxt(
-            fname=filename,
-            skiprows=header_line_count,
-            delimiter=None,  # split rows by whitespace chunks
-            usecols=([col.index for col in column_defs]),
-            dtype=[(col.name, col.np_type) for col in column_defs]
-        )
-
-        return data
-
-    @classmethod
-    def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: np.ndarray):
-        """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
-        column_data = data[column_name]
-        cls._ensure_constant_array_value(column_name,  expected_value, column_data)
 
     @classmethod
     def _ensure_constant_array_value(cls,  column_name: str,  expected_value: Any, column_data: np.ndarray):
@@ -156,7 +153,25 @@ class AsciiDataFileReader(DataFileReader):
     def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
         return cls.get_input_column_defs()
 
+    def append_variable_schema_data(cls, raw_data_as_str: np.array, df: pd.DataFrame) -> pd.DataFrame:
+        pass
+
 class DataFileWithProdFlagReader(AsciiDataFileReader):
+
+    @classmethod
+    def append_variable_schema_data(cls, raw_data_as_str: np.array, df: pd.DataFrame) -> pd.DataFrame:
+        # prepare data for variables defined in the prod_flag, with np.nan for missing data
+        prod_flag_data_expanded = cls._get_expanded_prod_flag_data(raw_data_as_str)
+
+        # append prod_flag columns at the end
+        prod_flag_col = [col for col in cls.get_input_column_defs() \
+                         if isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
+
+        for i, col in enumerate(prod_flag_col):
+            # TODO: np.nan is defined for float data only.Might throw if we see
+            # missing prod_flag data of different type
+            df[col.name] = np.array(prod_flag_data_expanded[:, i]).astype(col.np_type)
+
 
     @classmethod
     def _get_prod_flag_column_position(cls) -> int:
@@ -168,67 +183,29 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         raise ValueError('Can not find "prod_file" column')
 
     @classmethod
+    @abstractmethod
     def _get_first_prod_flag_data_column_position(cls) -> int:
         """
         Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
         It is not always the next column after the prod_flag column
         TODO: This assumes that prod_data is contiguous and always at the end of the row
         """
-        for column in cls.get_input_column_defs():
-            if isinstance(column, ProdFlagInputColumn):
-                return column.index
-        raise ValueError('Can not find any ProdFlagInputColumn column in the input file')
-
-    @classmethod
-    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
-
-        # get raw data as 2D array of strings
-        raw_data_as_str = cls._load_raw_data_from_file(filepath)
-
-        # prepare data for variables defined in the prod_flag, with np.nan for missing data
-        prod_flag_data_expanded = cls._get_expanded_prod_flag_data(raw_data_as_str)
-
-        # create an empty data frame
-        df = pd.DataFrame()
-
-        # add regular (not prod_flag) columns to DF column-by-column, converting to corresponding data type
-        reg_columns = [col for col in cls.get_input_column_defs() if not
-                                        isinstance(col, ProdFlagInputColumn)]
-        for column in reg_columns:
-            values = np.array(raw_data_as_str[:,column.index]).astype(column.np_type)
-            # Check const columns, do not add const columns to the DF
-            if column.is_constant:
-                try:
-                    cls._ensure_constant_array_value(column.name, column.const_value, values)
-                except ValueError as err:
-                     raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
-            else:
-                df[column.name] = values
-        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
-
-        # append prod_flag columns at the end
-        prod_flag_col = cls.get_prod_flag_output_column_defs()
-
-        for i, col in enumerate(prod_flag_col):
-            #TODO: np.nan is defined for float data only.Might throw if we see
-            # missing prod_flag data of different type
-            df[col.name] = np.array(prod_flag_data_expanded[:,i]).astype(col.np_type)
-
-        return df
-
+        pass
     @classmethod
     def _get_prod_flag_for_defined_columns(cls, orig_prod_flag: np.array)->np.array:
         """
         Get prod_flag as 2D numpy array of integer, drop columns of bits that are not defined
+
         orig_prod_flag: prod_flag data from the input file as 1D np.array of strings
         """
         # convert original prod_flag into 2D array of int
         prod_flag = np.array(list(map(list, orig_prod_flag))).astype(int)
-        # flip left to right, to correspond the order of ProdFlagOutputColumn
+        # flip left to right, to correspond the order of VariableSchemaAsciiDataFileReaderColumn
         prod_flag = np.fliplr(prod_flag)
 
-        # drop columns for which  ProdFlagOutputColumn is not defined
-        bit_idx = [col.prod_flag_bit_index for col in cls.get_prod_flag_output_column_defs()]
+        # drop columns for which  VariableSchemaAsciiDataFileReaderColumn is not defined
+        bit_idx = [col.prod_flag_bit_index for col in cls.get_input_column_defs() \
+                   if isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
         return prod_flag[:, bit_idx]
 
     @classmethod
@@ -238,32 +215,17 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
 
         start_of_prod_flag_data = cls._get_first_prod_flag_data_column_position()
         prod_flag_data = raw_data[:,start_of_prod_flag_data:]
+
+        # init 2D np array of objects with np.nan
         prod_flag_expanded_data = np.full(prod_flag.shape, np.nan, dtype=object)
+
+        # populate array with data from input file according to prod_flag
         prod_flag_expanded_data[np.where(prod_flag == 1)] = prod_flag_data.flatten()
         return prod_flag_expanded_data
 
     @classmethod
-    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-        header_line_count = cls.get_header_line_count(filename)
-        # get data as arrays of strings, because data types for input
-        # columns are not known in advance
-        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype = str, engine='python')
-        return df.values
-
-    @classmethod
     def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
-        reg_columns = [col for col in cls.get_input_column_defs() if
-                       (not isinstance(col, ProdFlagInputColumn) and (not col.is_constant))]
-        prod_flag_columns = [col for col in cls.get_prod_flag_output_column_defs()]
-        return reg_columns + prod_flag_columns
-
-    @classmethod
-    @abstractmethod
-    def get_prod_flag_output_column_defs(cls) -> Collection[ProdFlagOutputColumn]:
-        """
-        Get definitions for all columns defined in the prod_flag for a product
-        """
-        pass
+        return [col for col in cls.get_input_column_defs() if not col.is_constant]
 
 class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
@@ -306,27 +268,19 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     def is_constant(self):
         return self.const_value is not None
 
-class ProdFlagInputColumn(AsciiDataFileReaderColumn):
-    """
-    Defines an individual column to extract from a tabular ASCII data file which holds different
-    data based on prod_flag bit
-    """
-    def __init__(self, index: int, name: str, np_type: Union[Type, str]):
-        super().__init__(index, name, np_type = np_type, aggregations = None, transform = self._no_op, const_value = None)
-
-class ProdFlagOutputColumn(AsciiDataFileReaderColumn):
+class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     """
     Defines an individual column created by reader that holds data for an individual variable
     defined in prod_flag. Some values in this column could be np.nan
 
     Attributes
-        prod_flag_bit_index (int): the index of the bit for this variable in the prod_flag,  right to left, 0-based
+        prod_flag_bit_index (int): the index of the bit for this variable in the prod_flag, right to left, 0-based
     """
     prod_flag_bit_index: int
-    def __init__(self, index: int, prod_flag_bit_index: int,
+    def __init__(self, prod_flag_bit_index: int,
                  name: str, np_type: Union[Type, str],  aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None ):
-        super().__init__(index, name, np_type, aggregations = aggregations,
+        super().__init__(None, name, np_type, aggregations = aggregations,
                  transform = transform, const_value = const_value)
         self.prod_flag_bit_index = prod_flag_bit_index
 
