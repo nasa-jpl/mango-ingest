@@ -83,7 +83,4 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
                     cur.execute(f'SELECT * from {table_name};')
                     table_first_row = cur.fetchone()
 
-
-
-
                     self.assertEqual(expected_first_row, table_first_row)
