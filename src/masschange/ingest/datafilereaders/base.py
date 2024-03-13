@@ -54,6 +54,7 @@ class DataFileReader(ABC):
         """Return implementation-agnostic definitions for the fields ingested by the reader"""
         pass
 
+
 class AsciiDataFileReader(DataFileReader):
 
     @classmethod
@@ -85,6 +86,80 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+        # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most datasets.
+        # If this is not the case, refactoring will be necessary.
+        raw_data = cls._load_raw_data_from_file(filepath)
+
+        try:
+            constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
+            for column in constant_columns:
+                cls._ensure_constant_column_value(column.name, column.const_value, raw_data)
+        except ValueError as err:
+            raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
+
+        # TODO: investigate whether dropping/excluding const columns prior to pd df construction improves performance
+        #  at all
+        df = pd.DataFrame(raw_data)
+
+        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
+
+        # Drop extraneous columns
+        df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
+
+        return df
+
+    @classmethod
+    @abstractmethod
+    def populate_timestamp(cls, row) -> datetime:
+        pass
+
+    @classmethod
+    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+        header_line_count = cls.get_header_line_count(filename)
+        # TODO: extract indices, descriptions, units dynamically from the header?
+        # TODO: use prodflag and/or QC for filtering measurements?
+
+        column_defs = cls.get_input_column_defs()
+        data = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=None,  # split rows by whitespace chunks
+            usecols=([col.index for col in column_defs]),
+            dtype=[(col.name, col.np_type) for col in column_defs]
+        )
+
+        return data
+
+    @classmethod
+    def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: np.ndarray):
+        """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
+        column_data = data[column_name]
+        cls._ensure_constant_array_value(column_name,  expected_value, column_data)
+
+    @classmethod
+    def _ensure_constant_array_value(cls,  column_name: str,  expected_value: Any, column_data: np.ndarray):
+        """Ensure that an array only contains the expected value, raising ValueError on failure"""
+        unexpected_data = np.where(column_data != expected_value)
+        if unexpected_data[0].size != 0:
+            first_bad = column_data[unexpected_data[0][0]]
+
+            raise ValueError(f'Unexpected value for const-valued field "{column_name} "'
+                             f'expected: "{expected_value}", was: "{first_bad}"')
+
+    @classmethod
+    def extract_stream_id(cls, filepath: str) -> str:
+        filename = os.path.split(filepath)[-1]
+        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
+        return satellite_id_char
+
+    @classmethod
+    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+        return cls.get_input_column_defs()
+
+class DataFileWithProdFlagReader(AsciiDataFileReader):
+
+    @classmethod
+    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
 
         # get raw data as 2D array of strings
         raw_data_as_str = cls._load_raw_data_from_file(filepath)
@@ -108,17 +183,10 @@ class AsciiDataFileReader(DataFileReader):
         # add timestamp
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
-        # append append variable schema data at the end of the frame
-        if cls._has_variable_schema_data():
-            cls.append_variable_schema_data(raw_data_as_str, df)
-        return df
+        # append variable schema data at the end of the frame
+        cls.append_variable_schema_data(raw_data_as_str, df)
 
-    @classmethod
-    def _has_variable_schema_data(cls):
-        for col in cls.get_input_column_defs():
-            if isinstance(col, VariableSchemaAsciiDataFileReaderColumn):
-                return True
-        return False
+        return df
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
@@ -127,36 +195,6 @@ class AsciiDataFileReader(DataFileReader):
         # columns are not known in advance
         df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python')
         return df.values
-
-    @classmethod
-    @abstractmethod
-    def populate_timestamp(cls, row) -> datetime:
-        pass
-
-    @classmethod
-    def _ensure_constant_array_value(cls,  column_name: str,  expected_value: Any, column_data: np.ndarray):
-        """Ensure that an array only contains the expected value, raising ValueError on failure"""
-        unexpected_data = np.where(column_data != expected_value)
-        if unexpected_data[0].size != 0:
-            first_bad = column_data[unexpected_data[0][0]]
-
-            raise ValueError(f'Unexpected value for const-valued field "{column_name} "'
-                             f'expected: "{expected_value}", was: "{first_bad}"')
-
-    @classmethod
-    def extract_stream_id(cls, filepath: str) -> str:
-        filename = os.path.split(filepath)[-1]
-        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
-        return satellite_id_char
-
-    @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
-        return cls.get_input_column_defs()
-
-    def append_variable_schema_data(cls, raw_data_as_str: np.array, df: pd.DataFrame) -> pd.DataFrame:
-        pass
-
-class DataFileWithProdFlagReader(AsciiDataFileReader):
 
     @classmethod
     def append_variable_schema_data(cls, raw_data_as_str: np.array, df: pd.DataFrame) -> pd.DataFrame:
