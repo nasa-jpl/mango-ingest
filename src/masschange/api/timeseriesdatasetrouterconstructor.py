@@ -26,7 +26,7 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
             from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min,
             to_isotimestamp: datetime = (DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min) + timedelta(minutes=1),
             fields: Annotated[List[str], Query()] = sorted(f.name for f in DatasetCls.get_available_fields() if not f.is_constant),
-            downsampling_factor: DownsamplingFactorEnum = 1
+            downsampling_factor: DownsamplingFactorEnum = DownsamplingFactorEnum['1']
     ):
         #  ensure that timestamp column name is always present in query
         field_names = fields
