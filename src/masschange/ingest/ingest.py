@@ -142,31 +142,6 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     else:
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
 
-def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
-    #     hardcode these for now, figure out how to generate them later
-    mappings = {
-        'GRACEFO_ACC1A': GraceFOAcc1ADataset,
-        'GRACEFO_ACT1A': GraceFOAct1ADataset,
-        'GRACEFO_IHK1A': GraceFOIhk1ADataset,
-        'GRACEFO_IMU1A': GraceFOImu1ADataset,
-        'GRACEFO_MAG1A': GraceFOMag1ADataset,
-        'GRACEFO_PCI1A': GraceFOPci1ADataset,
-        'GRACEFO_SCA1A': GraceFOSca1ADataset,
-        'GRACEFO_THR1A': GraceFOThr1ADataset,
-        'GRACEFO_AHK1A': GraceFOAhk1ADataset,
-
-        'GRACEFO_ACT1B': GraceFOAct1BDataset
-
-    }
-
-    cls = mappings.get(dataset_id)()
-    if cls is not None:
-        return cls
-    else:
-        err_msg = f"Failed to resolve provided dataset_id (got '{dataset_id}', expected one of {sorted(mappings.keys())})"
-        log.error(err_msg)
-        raise ValueError(err_msg)
-
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         prog='MassChange Data Ingester',
