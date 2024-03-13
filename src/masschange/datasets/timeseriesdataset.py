@@ -26,7 +26,7 @@ class TimeSeriesDataset(ABC):
     stream_ids: Set[str]
     time_series_interval: timedelta
 
-    aggregation_step_factor: int = 10
+    aggregation_step_factor: int = 5
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
