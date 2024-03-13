@@ -1,19 +1,19 @@
 import unittest
 from datetime import datetime, timezone
 from masschange.datasets.gracefo.ahk1a import GraceFOAhk1ADataset
-from tests.ingest.datasets.base import DatasetIngestTestCaseBase, float_or_none_type
-
+from tests.ingest.datasets.base import DatasetIngestTestCaseBase
+from typing import Union
 
 class GraceFOAhk1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
     dataset_cls = GraceFOAhk1ADataset
     expected_table_names = ['gracefo_ahk1a_c', 'gracefo_ahk1a_d']
 
     expected_field_types = [int, int, str, str, str, datetime,
-                            float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(),
-                            float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(),
-                            float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(),
-                            float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(),
-                            float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(), float_or_none_type(),
+                            Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
+                            Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
+                            Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
+                            Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
+                            Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             int, int, int, str
                             ]
     expected_table_row_counts = [100, 100]
