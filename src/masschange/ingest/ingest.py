@@ -142,6 +142,7 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     else:
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
 
+        
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         prog='MassChange Data Ingester',
