@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
+from masschange.datasets.implementations.gracefo.pci1a import GraceFOPci1ADataset
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 

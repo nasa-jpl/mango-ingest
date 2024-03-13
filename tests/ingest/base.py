@@ -2,6 +2,8 @@ import logging
 import os
 import unittest
 
+import psycopg2.errors
+
 from masschange.db import get_db_connection
 
 log = logging.getLogger()
@@ -32,6 +34,9 @@ class IngestTestCaseBase(unittest.TestCase):
     def tearDownClass(cls):
         conn = get_db_connection(without_db=True)
         conn.autocommit = True
-        with conn.cursor() as cur:
-            cur.execute(f'DROP DATABASE {cls.target_database} WITH (FORCE);')
+        try:
+            with conn.cursor() as cur:
+                cur.execute(f'DROP DATABASE {cls.target_database} WITH (FORCE);')
+        except psycopg2.errors.ObjectInUse:
+            pass
         conn.close()

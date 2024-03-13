@@ -12,21 +12,12 @@ import pandas
 import pandas as pd
 import psycopg2
 
-from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
-from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
-from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
-from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
-from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
-from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
-from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
-from masschange.datasets.gracefo.thr1a import GraceFOThr1ADataset
-from masschange.datasets.gracefo.ahk1a import GraceFOAhk1ADataset
-
-from masschange.datasets.gracefo.act1b import GraceFOAct1BDataset
-
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.utils import resolve_dataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
+from masschange.ingest.utils.caggs import refresh_continuous_aggregates
+from masschange.ingest.utils.ensure import ensure_database_exists, ensure_table_exists, ensure_continuous_aggregates
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
@@ -78,50 +69,19 @@ def get_zipped_input_iterable(root_dir: str,
 
     """
 
-    for tar_fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
+    for tar_fp in order_filepaths_by_filename(
+            enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
         with tarfile.open(tar_fp) as tf:
             tf.extractall(temp_dir)
 
-        for fp in order_filepaths_by_filename(enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
+        for fp in order_filepaths_by_filename(
+                enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
             yield fp
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
-
-
-def ensure_database_exists(db_name: str) -> None:
-    conn = get_db_connection(without_db=True)
-    conn.autocommit = True
-    with conn.cursor() as cur:
-        try:
-            cur.execute(f'CREATE DATABASE {db_name}')
-            log.info(f'Created missing database: "{db_name}"')
-        except psycopg2.errors.DuplicateDatabase:
-            pass
-        cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
-    conn.close()
-
-
-def ensure_table_exists(dataset: TimeSeriesDataset, stream_id: str) -> None:
-    table_name = dataset.get_table_name(stream_id)
-    log.info(f'Ensuring table_name exists: "{table_name}"')
-
-    timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
-
-    with get_db_connection() as conn, conn.cursor() as cur:
-        try:
-            sql = f"""
-            {dataset.get_sql_table_create_statement(stream_id)}
-            
-            select create_hypertable('{table_name}','{timestamp_column_name}');
-            """
-            cur.execute(sql)
-            conn.commit()
-            log.info(f'Created new table: "{table_name}"')
-        except psycopg2.errors.DuplicateTable:
-            pass
 
 
 def delete_overlapping_data(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
@@ -170,16 +130,17 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
     stream_id = reader.extract_stream_id(src_filepath)
 
     ensure_table_exists(dataset, stream_id)
+    ensure_continuous_aggregates(dataset, stream_id)
 
     table_name = dataset.get_table_name(stream_id)
     delete_overlapping_data(dataset, stream_id, data_temporal_span)
     ingest_df(pd_df, table_name)
+    refresh_continuous_aggregates(dataset, stream_id)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
     else:
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
-
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
     #     hardcode these for now, figure out how to generate them later
@@ -205,7 +166,6 @@ def resolve_dataset(dataset_id: str) -> TimeSeriesDataset:
         err_msg = f"Failed to resolve provided dataset_id (got '{dataset_id}', expected one of {sorted(mappings.keys())})"
         log.error(err_msg)
         raise ValueError(err_msg)
-
 
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(

@@ -1,5 +1,5 @@
 from collections.abc import Set, Collection
-from typing import Union, Any
+from typing import Union, Any, Dict
 
 from strenum import StrEnum
 
@@ -23,7 +23,7 @@ class TimeSeriesDatasetField:
     VALID_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
     def __init__(self, name: str, aggregations: Collection[str] = None, const_value: Union[Any, None] = None):
-        self.name = name
+        self.name = name.lower()
         self.const_value = const_value
 
         if aggregations is not None:
@@ -34,3 +34,28 @@ class TimeSeriesDatasetField:
     @property
     def is_constant(self):
         return self.const_value is not None
+
+    @property
+    def has_aggregations(self):
+        return len(self.aggregations) > 0
+
+    @property
+    def aggregation_db_column_names(self) -> Set[str]:
+        return {f'{self.name}_{agg.lower()}' for agg in self.aggregations}
+
+    def __hash__(self):
+        return self.name.__hash__()
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def describe(self) -> Dict:
+        description = {
+            'name': self.name,
+            'supported_aggregations': sorted([agg.lower() for agg in self.aggregations])
+        }
+
+        if self.is_constant:
+            description['constant_value'] = self.const_value,
+
+        return description

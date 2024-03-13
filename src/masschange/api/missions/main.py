@@ -4,38 +4,7 @@ from fastapi import APIRouter
 
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 
-from masschange.datasets.gracefo.acc1a import GraceFOAcc1ADataset
-from masschange.datasets.gracefo.act1a import GraceFOAct1ADataset
-from masschange.datasets.gracefo.ihk1a import GraceFOIhk1ADataset
-from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
-from masschange.datasets.gracefo.mag1a import GraceFOMag1ADataset
-from masschange.datasets.gracefo.pci1a import GraceFOPci1ADataset
-from masschange.datasets.gracefo.sca1a import GraceFOSca1ADataset
-from masschange.datasets.gracefo.thr1a import GraceFOThr1ADataset
-from masschange.datasets.gracefo.ahk1a import GraceFOAhk1ADataset
-
-from masschange.datasets.gracefo.act1b import GraceFOAct1BDataset
-
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
-from masschange.missions import Mission
-
-# Declare all implemented TimeSeriesDataset subclasses here, and API endpoints will be automatically constructed
-time_series_dataset_classes: Iterable[Type[TimeSeriesDataset]] = [
-    GraceFOAcc1ADataset,
-    GraceFOAct1ADataset,
-    GraceFOIhk1ADataset,
-    GraceFOImu1ADataset,
-    GraceFOMag1ADataset,
-    GraceFOPci1ADataset,
-    GraceFOSca1ADataset,
-    GraceFOThr1ADataset,
-    GraceFOAhk1ADataset,
-
-    GraceFOAct1BDataset
-
-]
-
-missions: Iterable[Type[Mission]] = {dataset.mission for dataset in time_series_dataset_classes}
+missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataset_classes()}
 
 # Constructs routing for everything in the /missions/{id}/datasets/{id} tree
 # This isn't super-clean, but saves having an equivalent "vine" of two-line files to navigate through.
@@ -47,7 +16,7 @@ for mission in missions:
 
     mission_datasets_router = APIRouter(prefix='/datasets')
 
-    mission_datasets = [dataset for dataset in time_series_dataset_classes if dataset.mission == mission]
+    mission_datasets = [dataset for dataset in get_time_series_dataset_classes() if dataset.mission == mission]
 
     @mission_datasets_router.get('/', tags=['datasets', 'metadata'])
     def get_available_datasets_for_mission():
