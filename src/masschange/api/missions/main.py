@@ -4,6 +4,10 @@ from fastapi import APIRouter
 
 from masschange.api.timeseriesdatasetrouterconstructor import construct_router
 
+from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.utils import get_time_series_dataset_classes
+from masschange.missions import Mission
+
 missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataset_classes()}
 
 # Constructs routing for everything in the /missions/{id}/datasets/{id} tree
