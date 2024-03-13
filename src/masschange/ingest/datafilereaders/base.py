@@ -289,7 +289,6 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
         super().__init__(name, aggregations=aggregations, const_value=const_value)
         self.index = index
-        self.name = name
         self.np_type = np_type
         self.transform = transform or self._no_op
 

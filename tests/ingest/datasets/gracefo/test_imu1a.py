@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.gracefo.imu1a import GraceFOImu1ADataset
+from masschange.datasets.implementations.gracefo.imu1a import GraceFOImu1ADataset
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 
