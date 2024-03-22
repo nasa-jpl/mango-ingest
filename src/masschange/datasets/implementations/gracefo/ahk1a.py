@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefoahk1a import GraceFOAhk1ADataFileReader
 from masschange.missions import GraceFO
@@ -12,6 +14,7 @@ class GraceFOAhk1ADataset(TimeSeriesDataset):
     mission = GraceFO
     id_suffix = 'AHK1A'
     stream_ids = {'C', 'D'}
+    time_series_interval = timedelta(hours=1)  # TODO: REPLACE WITH ACTUAL VALUE
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
