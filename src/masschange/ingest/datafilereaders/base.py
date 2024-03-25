@@ -193,7 +193,12 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         header_line_count = cls.get_header_line_count(filename)
         # get data as arrays of strings, because data types for input
         # columns are not known in advance
-        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python')
+
+        #  Provide read_csv with array of dummy column names,
+        #  so the number of columns in the output data frame would be equal to the
+        #  length of the name list
+        dummy_column_names = [i for i in range(len(cls.get_input_column_defs()))]
+        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python', names=dummy_column_names)
         return df.values
 
     @classmethod
@@ -254,11 +259,15 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         start_of_prod_flag_data = cls._get_first_prod_flag_data_column_position()
         prod_flag_data = raw_data[:,start_of_prod_flag_data:]
 
+        # drop all None from prod_flag_data
+        prod_flag_data = prod_flag_data[np.not_equal(prod_flag_data, None)]
+
         # init 2D np array of objects with np.nan
         prod_flag_expanded_data = np.full(prod_flag.shape, np.nan, dtype=object)
 
         # populate array with data from input file according to prod_flag
-        prod_flag_expanded_data[np.where(prod_flag == 1)] = prod_flag_data.flatten()
+
+        prod_flag_expanded_data[np.where(prod_flag == 1)] = prod_flag_data
         return prod_flag_expanded_data
 
     @classmethod
