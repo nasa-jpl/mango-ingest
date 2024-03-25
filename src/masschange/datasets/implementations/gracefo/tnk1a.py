@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefotnk1a import GraceFOTnk1ADataFileReader
 from masschange.missions import GraceFO
