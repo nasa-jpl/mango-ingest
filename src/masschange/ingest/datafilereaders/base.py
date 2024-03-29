@@ -211,10 +211,8 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
                          if isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
 
         for i, col in enumerate(prod_flag_col):
-            # TODO: np.nan is defined for float data only.Might throw if we see
-            # missing prod_flag data of different type
-            df[col.name] = np.array(prod_flag_data_expanded[:, i]).astype(col.np_type)
-
+            # Use pd.array here to handle nullable int datatype pd.Int64Dtype()
+            df[col.name] = pd.array(prod_flag_data_expanded[:, i], dtype=col.np_type)
 
     @classmethod
     def _get_prod_flag_column_position(cls) -> int:
