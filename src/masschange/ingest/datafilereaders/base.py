@@ -118,7 +118,6 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    @abstractmethod
     def append_lat_lon(cls, df) -> datetime:
         pass
 
@@ -282,19 +281,19 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         return [col for col in cls.get_input_column_defs() if not col.is_constant]
 
 
-class VariableTuplesPerRowReader(AsciiDataFileReader):
+class VariableDataClustersPerRowReader(AsciiDataFileReader):
     """
-    This reader works with data tuples that are repeated
+    This reader works with data clusters that are repeated
     variable number of times per line in the product file.
-    It re-formats data to a single tuple per row format
+    It re-formats data to a single cluster per row format
     """
 
     @classmethod
-    def _get_max_num_of_tuples_per_row(cls, filename):
+    def _get_max_num_of_clusters_per_row(cls, filename):
         header_line_count = cls.get_header_line_count(filename)
 
-        # Read tuples per row counter from the data file to calculate max number of columns
-        counter_col_name = cls._get_tuples_counter_col_name()
+        # Read clusters-per-row counter from the data file to calculate max number of columns
+        counter_col_name = cls._get_clusters_counter_col_name()
         column_defs = cls.get_input_column_defs()
         data = np.loadtxt(
             fname=filename,
@@ -309,17 +308,17 @@ class VariableTuplesPerRowReader(AsciiDataFileReader):
     def _columns_idx_to_drop(cls, n_cols):
         column_defs = cls.get_input_column_defs()
         idx_to_keep = [col.index for col in column_defs if not isinstance(col, DerivedAsciiDataFileReaderColumn)]
-        tuples_start_pos = cls._get_first_tuple_column_position()
-        return  [i for i in range(n_cols) if i not in idx_to_keep and i < tuples_start_pos]
+        clusters_start_pos = cls._get_first_cluster_column_position()
+        return  [i for i in range(n_cols) if i not in idx_to_keep and i < clusters_start_pos]
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
 
-        tuples_start_pos = cls._get_first_tuple_column_position()
-        tuple_size = cls._get_tuples_size()
+        clusters_start_pos = cls._get_first_cluster_column_position()
+        cluster_size = cls._get_num_variables_in_cluster()
 
         # calculate number of columns we need to read the data
-        n_cols = tuples_start_pos + cls._get_max_num_of_tuples_per_row(filename) * tuple_size
+        n_cols = clusters_start_pos + cls._get_max_num_of_clusters_per_row(filename) * cluster_size
 
         # read all data to a data frame
         dummy_column_names = [i for i in range(n_cols)]
@@ -329,10 +328,10 @@ class VariableTuplesPerRowReader(AsciiDataFileReader):
         # drop columns that we don't need
         df = df.drop(df.columns[cls._columns_idx_to_drop(n_cols)], axis=1)
 
-        # calculate number of rows in reformatted frame, where we will have one tuple per row
+        # calculate number of rows in the reformatted frame, where we will have one cluster per row
         column_defs = cls.get_input_column_defs()
         counter_idx = [col.index for col in column_defs if \
-                       col.name == cls._get_tuples_counter_col_name()][0]
+                       col.name == cls._get_clusters_counter_col_name()][0]
         # TODO: check if idx is found
 
         n_reformat_rows = np.sum(df[counter_idx].astype('int'))
@@ -349,12 +348,12 @@ class VariableTuplesPerRowReader(AsciiDataFileReader):
         df = df.reset_index()  # make sure indexes pair with number of rows
         num_prefix_col = len([col.index for col in column_defs if not isinstance(col, DerivedAsciiDataFileReaderColumn)])
         for index, row in df.iterrows():
-            n_tuples_in_row = int(row[counter_idx])
+            n_clusters_in_row = int(row[counter_idx])
             row = row[1:]
-            for i in range(n_tuples_in_row):
+            for i in range(n_clusters_in_row):
                 reformat_row[0:num_prefix_col] = row.values[:num_prefix_col]
                 reformat_row[num_prefix_col:] = \
-                    row.values[num_prefix_col + i*tuple_size: num_prefix_col + (i+1) * tuple_size]
+                    row.values[num_prefix_col + i*cluster_size: num_prefix_col + (i+1) * cluster_size]
 
                 reformat_array[reformat_array_idx] = reformat_row
                 reformat_array_idx = reformat_array_idx + 1
@@ -365,31 +364,25 @@ class VariableTuplesPerRowReader(AsciiDataFileReader):
 
     @classmethod
     @abstractmethod
-    def _get_first_tuple_column_position(cls) -> int:
+    def _get_first_cluster_column_position(cls) -> int:
         """
-        Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
-        It is not always the next column after the prod_flag column
-        TODO: This assumes that prod_data is contiguous and always at the end of the row
+        Return index(0-based) of the start of repeated clusters in the input ASCII file
         """
         pass
 
     @classmethod
     @abstractmethod
-    def _get_tuples_counter_col_name(cls) -> int:
+    def _get_clusters_counter_col_name(cls) -> int:
         """
-        Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
-        It is not always the next column after the prod_flag column
-        TODO: This assumes that prod_data is contiguous and always at the end of the row
+        Return name of a column that specifies number of repeated clusters per row
         """
         pass
 
     @classmethod
     @abstractmethod
-    def _get_tuples_size(cls) -> int:
+    def _get_num_variables_in_cluster(cls) -> int:
         """
-        Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
-        It is not always the next column after the prod_flag column
-        TODO: This assumes that prod_data is contiguous and always at the end of the row
+        Return number of variables in data cluster
         """
         pass
 class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
