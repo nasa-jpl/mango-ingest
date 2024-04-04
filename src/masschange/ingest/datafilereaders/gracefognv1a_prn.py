@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import VariableTuplesPerRowReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
+from masschange.ingest.datafilereaders.base import VariableDataClustersPerRowReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
 
 
-class GraceFOGnv1APrnDataFileReader(VariableTuplesPerRowReader):
+class GraceFOGnv1APrnDataFileReader(VariableDataClustersPerRowReader):
     @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
@@ -36,27 +36,17 @@ class GraceFOGnv1APrnDataFileReader(VariableTuplesPerRowReader):
         return cls.get_reference_epoch() + timedelta(seconds=row.rcv_time)
 
     @classmethod
-    def _get_first_tuple_column_position(cls) -> int:
-        """
-        Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
-        It is not always the next column after the prod_flag column
-        TODO: This assumes that prod_data is contiguous and always at the end of the row
-        """
+    def _get_first_cluster_column_position(cls) -> int:
         return 23
 
     @classmethod
-    def _get_tuples_counter_col_name(cls) -> int:
-        """
-        Return index(0-based) of first column in the input ASCII file with data defined by prod_flag.
-        It is not always the next column after the prod_flag column
-        TODO: This assumes that prod_data is contiguous and always at the end of the row
-        """
+    def _get_clusters_counter_col_name(cls) -> int:
         return 'n_prns'
 
     @classmethod
 
-    def _get_tuples_size(cls) -> int:
+    def _get_num_variables_in_cluster(cls) -> int:
         """
-        Return number of values in data tuple
+        Return number of values in data cluster
         """
         return 3
