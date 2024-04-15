@@ -101,6 +101,10 @@ class AsciiDataFileReader(DataFileReader):
         #  at all
         df = pd.DataFrame(raw_data)
 
+        # TODO this is a temporary solution until we figure out a generic way to
+        # to add geolocation to a dataset
+        cls.append_lat_lon(df)
+
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
@@ -114,6 +118,10 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
+    def append_lat_lon(cls, df) -> datetime:
+        pass
+
+    @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
         header_line_count = cls.get_header_line_count(filename)
         # TODO: extract indices, descriptions, units dynamically from the header?
@@ -124,8 +132,8 @@ class AsciiDataFileReader(DataFileReader):
             fname=filename,
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
-            usecols=([col.index for col in column_defs]),
-            dtype=[(col.name, col.np_type) for col in column_defs]
+            usecols=([col.index for col in column_defs if col.index is not None ]),
+            dtype=[(col.name, col.np_type) for col in column_defs if col.index is not None]
         )
 
         return data
@@ -272,6 +280,111 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
     def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
         return [col for col in cls.get_input_column_defs() if not col.is_constant]
 
+
+class VariableDataClustersPerRowReader(AsciiDataFileReader):
+    """
+    This reader works with data clusters that are repeated
+    variable number of times per line in the product file.
+    It re-formats data to a single cluster per row format
+    """
+
+    @classmethod
+    def _get_max_num_of_clusters_per_row(cls, filename):
+        header_line_count = cls.get_header_line_count(filename)
+
+        # Read clusters-per-row counter from the data file to calculate max number of columns
+        counter_col_name = cls._get_clusters_counter_col_name()
+        column_defs = cls.get_input_column_defs()
+        data = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=None,  # split rows by whitespace chunks
+            usecols=([col.index for col in column_defs if col.name == counter_col_name]),
+            dtype=[(col.name, col.np_type) for col in column_defs if col.name == counter_col_name]
+        )
+        return int(np.max(data[counter_col_name]))
+
+    @classmethod
+    def _columns_idx_to_drop(cls, n_cols):
+        column_defs = cls.get_input_column_defs()
+        idx_to_keep = [col.index for col in column_defs if not isinstance(col, DerivedAsciiDataFileReaderColumn)]
+        clusters_start_pos = cls._get_first_cluster_column_position()
+        return  [i for i in range(n_cols) if i not in idx_to_keep and i < clusters_start_pos]
+
+    @classmethod
+    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+
+        clusters_start_pos = cls._get_first_cluster_column_position()
+        cluster_size = cls._get_num_variables_in_cluster()
+
+        # calculate number of columns we need to read the data
+        n_cols = clusters_start_pos + cls._get_max_num_of_clusters_per_row(filename) * cluster_size
+
+        # read all data to a data frame
+        dummy_column_names = [i for i in range(n_cols)]
+        df = pd.read_csv(filename, skiprows=cls.get_header_line_count(filename),
+                         header=None, sep=" +", dtype=str, engine='python', names=dummy_column_names)
+
+        # drop columns that we don't need
+        df = df.drop(df.columns[cls._columns_idx_to_drop(n_cols)], axis=1)
+
+        # calculate number of rows in the reformatted frame, where we will have one cluster per row
+        column_defs = cls.get_input_column_defs()
+        counter_idx = [col.index for col in column_defs if \
+                       col.name == cls._get_clusters_counter_col_name()][0]
+        # TODO: check if idx is found
+
+        n_reformat_rows = np.sum(df[counter_idx].astype('int'))
+        n_reformat_col = len(column_defs)
+        # create 2D array to hold reformatted data
+        reformat_array = np.full((n_reformat_rows, n_reformat_col), np.nan, dtype=object)
+
+        # create 1D array to hold data for a row in the reformatted array
+        reformat_row = np.full(n_reformat_col, np.nan, dtype=object)
+
+        reformat_array_idx = 0
+
+        # iterate over each row in the raw data array and populate the reformatted array
+        df = df.reset_index()  # make sure indexes pair with number of rows
+        num_prefix_col = len([col.index for col in column_defs if not isinstance(col, DerivedAsciiDataFileReaderColumn)])
+        for index, row in df.iterrows():
+            n_clusters_in_row = int(row[counter_idx])
+            row = row[1:]
+            for i in range(n_clusters_in_row):
+                reformat_row[0:num_prefix_col] = row.values[:num_prefix_col]
+                reformat_row[num_prefix_col:] = \
+                    row.values[num_prefix_col + i*cluster_size: num_prefix_col + (i+1) * cluster_size]
+
+                reformat_array[reformat_array_idx] = reformat_row
+                reformat_array_idx = reformat_array_idx + 1
+
+        # convert to structured array, so we can use load_data_from_file from the parent class
+        return np.core.records.fromarrays(reformat_array.transpose(),
+                         dtype=np.dtype([(col.name, col.np_type) for col in column_defs]))
+
+    @classmethod
+    @abstractmethod
+    def _get_first_cluster_column_position(cls) -> int:
+        """
+        Return index(0-based) of the start of repeated clusters in the input ASCII file
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _get_clusters_counter_col_name(cls) -> int:
+        """
+        Return name of a column that specifies number of repeated clusters per row
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _get_num_variables_in_cluster(cls) -> int:
+        """
+        Return number of variables in data cluster
+        """
+        pass
 class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
@@ -327,4 +440,20 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
         super().__init__(None, name, np_type, aggregations = aggregations,
                  transform = transform, const_value = const_value)
         self.prod_flag_bit_index = prod_flag_bit_index
+
+
+class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
+    """
+    Defines an individual column created by reader that holds data
+    that are not read directly from a particular column in the product file,
+    but derived from data in the product file, possibly from different columns.
+    """
+
+    def __init__(self,
+                 name: str, np_type: Union[Type, str],  aggregations: Collection[str] = None,
+                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None ):
+        super().__init__(None, name, np_type, aggregations = aggregations,
+                 transform = transform, const_value = None)
+
+
 
