@@ -48,9 +48,7 @@ class GraceFOGnv1ADataset(TimeSeriesDataset):
             time_drift  double precision not null,
             err_drift  double precision not null,
             qualflg VARCHAR(8) not null,
-        
-            lat  double precision not null,
-            lon  double precision not null,
-            
+          
             timestamp timestamptz not null
         """
+        # TODO: add PostGIS coordinates

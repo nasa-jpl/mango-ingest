@@ -52,8 +52,9 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double),
             AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8'),
 
-            DerivedAsciiDataFileReaderColumn(name='lat', np_type=np.double),
-            DerivedAsciiDataFileReaderColumn(name='lon', np_type=np.double)
+            # TODO: replace with PostGIS coordinates
+            # DerivedAsciiDataFileReaderColumn(name='lat', np_type=np.double),
+            # DerivedAsciiDataFileReaderColumn(name='lon', np_type=np.double)
 
         ]
 
@@ -63,7 +64,9 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def append_lat_lon(cls, df):
-        df[['lat', 'lon']] = df.apply(cls.populate_lat_lon, axis=1, result_type='expand')
+        # TODO: add PostGIS coordinates instead of lat/lon
+        # df[['lat', 'lon']] = df.apply(cls.populate_lat_lon, axis=1, result_type='expand')
+        pass
 
     @classmethod
     def populate_lat_lon(cls, row):
