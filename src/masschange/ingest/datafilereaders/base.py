@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField
+from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
 
 class DataFileReader(ABC):
@@ -18,14 +19,38 @@ class DataFileReader(ABC):
     @classmethod
     @abstractmethod
     def get_input_file_default_regex(cls) -> str:
-        """Return the regex pattern to identify relevant datafiles by filename"""
+        """
+        Return the regex pattern to identify relevant datafiles by filename.
+        Must implement the following named capture groups:
+            - stream_id
+            - dataset_version
+        """
         pass
 
     @classmethod
     @abstractmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        """Return the regex pattern to identify relevant compressed files containing datafiles, by filename"""
+        """
+        Return the regex pattern to identify relevant compressed files containing datafiles, by filename
+        Must implement the following named capture groups:
+            - stream_id
+            - dataset_version
+        """
         pass
+
+    @classmethod
+    def extract_stream_id(cls, filepath: str) -> str:
+        """Extract stream id from unzipped input file"""
+        filename = os.path.split(filepath)[-1]
+        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
+        return satellite_id_char
+
+    @classmethod
+    def extract_dataset_version(cls, filepath: str) -> TimeSeriesDatasetVersion:
+        """Extract version id from unzipped input file"""
+        filename = os.path.split(filepath)[-1]
+        dataset_version_id = re.search(cls.get_input_file_default_regex(), filename).group('dataset_version')
+        return TimeSeriesDatasetVersion(dataset_version_id)
 
     @classmethod
     @abstractmethod
@@ -40,12 +65,6 @@ class DataFileReader(ABC):
     @abstractmethod
     def _load_raw_data_from_file(cls, filepath: str) -> np.ndarray:
         """Given a path to a source file, extract data from the desired columns as a numpy ndarray"""
-        pass
-
-    @classmethod
-    @abstractmethod
-    def extract_stream_id(cls, filepath: str) -> str:
-        """Given a path to a data file, return the id of the stream (usually satellite) to which the file relates"""
         pass
 
     @classmethod
@@ -142,10 +161,10 @@ class AsciiDataFileReader(DataFileReader):
     def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: np.ndarray):
         """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
         column_data = data[column_name]
-        cls._ensure_constant_array_value(column_name,  expected_value, column_data)
+        cls._ensure_constant_array_value(column_name, expected_value, column_data)
 
     @classmethod
-    def _ensure_constant_array_value(cls,  column_name: str,  expected_value: Any, column_data: np.ndarray):
+    def _ensure_constant_array_value(cls, column_name: str, expected_value: Any, column_data: np.ndarray):
         """Ensure that an array only contains the expected value, raising ValueError on failure"""
         unexpected_data = np.where(column_data != expected_value)
         if unexpected_data[0].size != 0:
@@ -155,14 +174,9 @@ class AsciiDataFileReader(DataFileReader):
                              f'expected: "{expected_value}", was: "{first_bad}"')
 
     @classmethod
-    def extract_stream_id(cls, filepath: str) -> str:
-        filename = os.path.split(filepath)[-1]
-        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
-        return satellite_id_char
-
-    @classmethod
     def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
         return cls.get_input_column_defs()
+
 
 class DataFileWithProdFlagReader(AsciiDataFileReader):
 
@@ -206,7 +220,8 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         #  so the number of columns in the output data frame would be equal to the
         #  length of the name list
         dummy_column_names = [i for i in range(len(cls.get_input_column_defs()))]
-        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python', names=dummy_column_names)
+        df = pd.read_csv(filename, skiprows=header_line_count, header=None, sep=" +", dtype=str, engine='python',
+                         names=dummy_column_names)
         return df.values
 
     @classmethod
@@ -240,8 +255,9 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         TODO: This assumes that prod_data is contiguous and always at the end of the row
         """
         pass
+
     @classmethod
-    def _get_prod_flag_for_defined_columns(cls, orig_prod_flag: np.array)->np.array:
+    def _get_prod_flag_for_defined_columns(cls, orig_prod_flag: np.array) -> np.array:
         """
         Get prod_flag as 2D numpy array of integer, drop columns of bits that are not defined
 
@@ -263,7 +279,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         prod_flag = cls._get_prod_flag_for_defined_columns(prod_flag_orig)
 
         start_of_prod_flag_data = cls._get_first_prod_flag_data_column_position()
-        prod_flag_data = raw_data[:,start_of_prod_flag_data:]
+        prod_flag_data = raw_data[:, start_of_prod_flag_data:]
 
         # drop all None from prod_flag_data
         prod_flag_data = prod_flag_data[np.not_equal(prod_flag_data, None)]
@@ -425,6 +441,7 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     def is_constant(self):
         return self.const_value is not None
 
+
 class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     """
     Defines an individual column created by reader that holds data for an individual variable
@@ -434,11 +451,12 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
         prod_flag_bit_index (int): the index of the bit for this variable in the prod_flag, right to left, 0-based
     """
     prod_flag_bit_index: int
+
     def __init__(self, prod_flag_bit_index: int,
-                 name: str, np_type: Union[Type, str],  aggregations: Collection[str] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None ):
-        super().__init__(None, name, np_type, aggregations = aggregations,
-                 transform = transform, const_value = const_value)
+                 name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
+                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
+        super().__init__(None, name, np_type, aggregations=aggregations,
+                         transform=transform, const_value=const_value)
         self.prod_flag_bit_index = prod_flag_bit_index
 
 
