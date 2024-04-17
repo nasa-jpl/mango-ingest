@@ -6,7 +6,7 @@ from typing import Union
 
 class GraceFOKbr1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
     dataset_cls = GraceFOKbr1ADataset
-    expected_table_names = ['gracefo_kbr1a_c', 'gracefo_kbr1a_d']
+    expected_table_names = ['gracefo_kbr1a_04_c', 'gracefo_kbr1a_04_d']
 
     expected_field_types = [int, int, str, int, int, str, str, datetime,
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],

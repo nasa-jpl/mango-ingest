@@ -3,15 +3,16 @@ from datetime import datetime, timedelta
 from typing import Collection, Set
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
 
-def get_extant_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str) -> Set[str]:
+def get_extant_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> Set[str]:
     with get_db_connection() as conn, conn.cursor() as cur:
-        sql = f"""select table_name from information_schema.views where table_name like '{dataset.get_table_name(stream_id)}_%';"""
+        sql = f"""select table_name from information_schema.views where table_name like '{dataset.get_table_name(dataset_version, stream_id)}_%';"""
         cur.execute(sql)
         results = cur.fetchall()
         return {result[0] for result in results}
@@ -30,11 +31,12 @@ def delete_caggs(table_names: Collection[str]):
 
 def get_continuous_aggregate_create_statements(
         dataset: TimeSeriesDataset,
+        dataset_version: TimeSeriesDatasetVersion,
         stream_id: str,
         aggregation_level: int) -> str:
     aggregation_interval_seconds = dataset.get_nominal_data_interval(aggregation_level).total_seconds()
-    source_name = dataset.get_table_or_view_name(stream_id, aggregation_level - 1)
-    new_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
+    source_name = dataset.get_table_or_view_name(dataset_version, stream_id, aggregation_level - 1)
+    new_view_name = dataset.get_table_or_view_name(dataset_version, stream_id, aggregation_level)
 
     agg_column_exprs = []
     aggregable_fields = [field for field in dataset.get_available_fields() if field.has_aggregations]
@@ -65,11 +67,12 @@ def get_continuous_aggregate_create_statements(
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, stream_id: str):
-    log.info(f'refreshing continuous aggregates for {dataset.get_table_name(stream_id)}')
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str):
+    log.info(f'refreshing continuous aggregates for {dataset.get_table_name(dataset_version, stream_id)}')
     for aggregation_level in dataset.get_available_aggregation_levels():
-        materialized_view_name = dataset.get_table_or_view_name(stream_id, aggregation_level)
-        bucket_interval = dataset.get_nominal_data_interval(aggregation_level)
+        materialized_view_name = dataset.get_table_or_view_name(dataset_version, stream_id,
+                                                                aggregation_level)
+        bucket_interval = dataset.get_nominal_data_interval(aggregation_level)  # TODO: Why is this unused?
         # Refresh span calculation soft-disabled as initial tests indicate that refreshing continuous aggregates for
         #   which no relevant data change has taken place is essentially free
         # refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)

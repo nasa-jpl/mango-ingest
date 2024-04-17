@@ -5,6 +5,7 @@ import unittest
 import psycopg2.errors
 
 from masschange.db import get_db_connection
+from masschange.ingest.utils.ensure import ensure_all_db_state
 
 log = logging.getLogger()
 
@@ -26,9 +27,9 @@ class IngestTestCaseBase(unittest.TestCase):
         conn.autocommit = True
         with conn.cursor() as cur:
             cur.execute(f'DROP DATABASE IF EXISTS {cls.target_database} WITH (FORCE);')
-            cur.execute(f'CREATE DATABASE {cls.target_database}')
-            cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
         conn.close()
+
+        ensure_all_db_state(cls.target_database)
 
     @classmethod
     def tearDownClass(cls):
