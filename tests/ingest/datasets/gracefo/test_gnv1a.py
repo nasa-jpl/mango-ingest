@@ -6,7 +6,7 @@ from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 class GraceFOGnv1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
     dataset_cls = GraceFOGnv1ADataset
-    expected_table_names = ['gracefo_gnv1a_c', 'gracefo_gnv1a_d']
+    expected_table_names = ['gracefo_gnv1a_04_c', 'gracefo_gnv1a_04_d']
     expected_field_types = [int, int, str,
                             float, float, float,
                             float, float, float,
