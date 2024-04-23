@@ -15,6 +15,20 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
             except AttributeError as err:
                 raise NotImplementedError(str(err))
 
+    def test_mandatory_filename_regex_capture_groups(self):
+        mandatory_capture_group_names = {
+            'stream_id',
+            'dataset_version'
+        }
+        dataset_implementations = get_time_series_dataset_classes()
+        for implementation in dataset_implementations:
+            for capture_group_name in mandatory_capture_group_names:
+                try:
+                    self.assertIn(f'(?P<{capture_group_name}>', implementation.get_reader().get_input_file_default_regex())
+                except AssertionError:
+                    raise NotImplementedError(
+                        f'Capture group "{capture_group_name}" not implemented in {implementation.__name__}.get_input_file_default_regex()')
+
 
 if __name__ == '__main__':
     unittest.main()

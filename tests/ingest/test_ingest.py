@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 
 from masschange.datasets.implementations.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.ingest.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
 
@@ -25,7 +26,9 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             for fp in self.input_filepaths:
                 ingest_file_to_db(dataset, fp)
 
-            current_record_count = len(dataset.select('C', datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
+            current_record_count = len(
+                dataset.select(TimeSeriesDatasetVersion('04'), 'C', datetime(2000, 1, 1), datetime(2999, 1, 1),
+                               limit_data_span=False))
             if previous_record_count is None:
                 previous_record_count = current_record_count
 
@@ -40,7 +43,9 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             for fp in self.input_filepaths:
                 ingest_file_to_db(dataset, fp)
 
-            record_count = len(dataset.select('C', datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
+            record_count = len(
+                dataset.select(TimeSeriesDatasetVersion('04'), 'C', datetime(2000, 1, 1), datetime(2999, 1, 1),
+                               limit_data_span=False))
 
             self.assertEqual(self.expected_record_count, record_count)
 
