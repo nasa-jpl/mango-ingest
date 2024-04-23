@@ -27,6 +27,12 @@ class IngestTestCaseBase(unittest.TestCase):
         with conn.cursor() as cur:
             cur.execute(f'DROP DATABASE IF EXISTS {cls.target_database} WITH (FORCE);')
             cur.execute(f'CREATE DATABASE {cls.target_database}')
+        conn.close()
+        # reset connection, so we would connect to the newly created cls.target_database
+        conn = get_db_connection()
+        conn.autocommit = True
+        with conn.cursor() as cur:
+            cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
             cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
         conn.close()
 
