@@ -18,8 +18,9 @@ from masschange.datasets.utils import resolve_dataset
 from masschange.db import get_db_connection, get_sqlalchemy_engine
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.caggs import refresh_continuous_aggregates
-from masschange.ingest.utils.ensure import ensure_database_exists, ensure_table_exists, ensure_continuous_aggregates
+from masschange.ingest.utils.ensure import ensure_table_exists, ensure_continuous_aggregates, ensure_database_exists, ensure_metadata_tables_exist
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
+from masschange.ingest.utils.metadata import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 
@@ -85,8 +86,8 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 
-def delete_overlapping_data(dataset: TimeSeriesDataset, stream_id: str, data_temporal_span: TimeSpan):
-    table_name = dataset.get_table_name(stream_id)
+def delete_overlapping_data(dataset: TimeSeriesDataset, dataset_version, stream_id: str, data_temporal_span: TimeSpan):
+    table_name = dataset.get_table_name(dataset_version, stream_id)
     with get_db_connection() as conn, conn.cursor() as cur:
         sql = f"""
             DELETE 
@@ -141,14 +142,16 @@ def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
                                   end=max(pd_df[dataset.TIMESTAMP_COLUMN_NAME]))
 
     stream_id = reader.extract_stream_id(src_filepath)
+    dataset_version = reader.extract_dataset_version(src_filepath)
 
-    ensure_table_exists(dataset, stream_id)
-    ensure_continuous_aggregates(dataset, stream_id)
+    ensure_table_exists(dataset, dataset_version, stream_id)
+    ensure_continuous_aggregates(dataset, dataset_version, stream_id)
 
-    table_name = dataset.get_table_name(stream_id)
-    delete_overlapping_data(dataset, stream_id, data_temporal_span)
+    table_name = dataset.get_table_name(dataset_version, stream_id)
+    delete_overlapping_data(dataset, dataset_version, stream_id, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset, stream_id)
+    refresh_continuous_aggregates(dataset, dataset_version, stream_id)
+    update_metadata(dataset, dataset_version, stream_id, data_temporal_span, )
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
@@ -181,6 +184,7 @@ if __name__ == '__main__':
 
     database_name = os.environ['TSDB_DATABASE']
     ensure_database_exists(database_name)
+    ensure_metadata_tables_exist(database_name)
 
     start = datetime.now()
     log.info(f'starting ingest of {args.dataset.get_full_id()} from {args.src} begin')
