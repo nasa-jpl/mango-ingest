@@ -11,10 +11,11 @@ from typing import Iterable
 import pandas
 import pandas as pd
 import psycopg2
+from geoalchemy2 import Geometry
 
 from masschange.datasets.timeseriesdataset import TimeSeriesDataset
 from masschange.datasets.utils import resolve_dataset
-from masschange.db import get_db_connection
+from masschange.db import get_db_connection, get_sqlalchemy_engine
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.caggs import refresh_continuous_aggregates
 from masschange.ingest.utils.ensure import ensure_database_exists, ensure_table_exists, ensure_continuous_aggregates
@@ -104,16 +105,28 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     """
     log.info(f'writing data to table {table_name}')
 
-    with get_db_connection() as conn:
-        buffer = StringIO()
-        df.to_csv(buffer, header=False, index=False)
-        buffer.seek(0)
-        with conn.cursor() as cursor:
-            try:
-                cursor.copy_from(file=buffer, table=table_name, sep=",", null="")
-                conn.commit()
-            except (Exception, psycopg2.DatabaseError) as error:
-                print("Error: %s" % error)
+    # Write df to a table. The df column 'location' is written as a Geometry column
+    # with name 'location'
+    if 'location' in df.columns:
+        log.info(f'writing data to PostGIS table {table_name}')
+        eng = get_sqlalchemy_engine()
+        try:
+            df.to_sql(table_name, eng, dtype={'location': Geometry(geometry_type='POINT', srid=4326)}, \
+                      if_exists='append', index=False)
+        except Exception as error:
+            print("Error: %s" % error)
+    else:
+        log.info(f'writing data to table {table_name}')
+        with get_db_connection() as conn:
+            buffer = StringIO()
+            df.to_csv(buffer, header=False, index=False)
+            buffer.seek(0)
+            with conn.cursor() as cursor:
+                try:
+                    cursor.copy_from(file=buffer, table=table_name, sep=",", null="")
+                    conn.commit()
+                except (Exception, psycopg2.DatabaseError) as error:
+                    print("Error: %s" % error)
 
 
 def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):

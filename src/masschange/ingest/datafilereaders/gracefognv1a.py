@@ -2,7 +2,7 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 import numpy as np
-
+import geopandas
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
 from masschange.ingest.utils.lat_lon_from_xyz import computeLatLon
 
@@ -22,8 +22,8 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint),
+            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.longlong),
+            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=int),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
 
             AsciiDataFileReaderColumn(index=3, name='chisq', np_type=np.double),
@@ -52,10 +52,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double),
             AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8'),
 
-            # TODO: replace with PostGIS coordinates
-            # DerivedAsciiDataFileReaderColumn(name='lat', np_type=np.double),
-            # DerivedAsciiDataFileReaderColumn(name='lon', np_type=np.double)
-
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U32'),
         ]
 
     @classmethod
@@ -63,13 +60,11 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
         return cls.get_reference_epoch() + timedelta(seconds=row.rcv_time)
 
     @classmethod
-    def append_lat_lon(cls, df):
-        # TODO: add PostGIS coordinates instead of lat/lon
-        # df[['lat', 'lon']] = df.apply(cls.populate_lat_lon, axis=1, result_type='expand')
-        pass
+    def append_location(cls, df):
+        df['location'] = df.apply(cls.populate_location, axis=1, result_type='expand')
+        return df
 
     @classmethod
-    def populate_lat_lon(cls, row):
-        return computeLatLon(row.xpos, row.ypos, row.zpos)
-
-
+    def populate_location(cls, row):
+        lat, lon = computeLatLon(row.xpos, row.ypos, row.zpos)
+        return f'POINT( {lon:.4f}  {lat:.4f})'

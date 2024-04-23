@@ -16,3 +16,5 @@ dependencies:
 #    - psycopg2==2.9.9  # need to figure out how to get the python headers in RHEL8 so we can build from source
     - pytest
     - StrEnum==0.4.15
+    - GeoAlchemy2==0.14.7
+    - SQLAlchemy==2.0.29
