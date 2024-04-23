@@ -2,7 +2,6 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 import numpy as np
-import geopandas
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
 from masschange.ingest.utils.lat_lon_from_xyz import computeLatLon
 
