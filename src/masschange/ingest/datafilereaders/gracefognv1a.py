@@ -2,7 +2,6 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 import numpy as np
-
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
 from masschange.ingest.utils.lat_lon_from_xyz import computeLatLon
 
@@ -52,10 +51,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double),
             AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8'),
 
-            # TODO: replace with PostGIS coordinates
-            # DerivedAsciiDataFileReaderColumn(name='lat', np_type=np.double),
-            # DerivedAsciiDataFileReaderColumn(name='lon', np_type=np.double)
-
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U32'),
         ]
 
     @classmethod
@@ -63,13 +59,11 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
         return cls.get_reference_epoch() + timedelta(seconds=row.rcv_time)
 
     @classmethod
-    def append_lat_lon(cls, df):
-        # TODO: add PostGIS coordinates instead of lat/lon
-        # df[['lat', 'lon']] = df.apply(cls.populate_lat_lon, axis=1, result_type='expand')
-        pass
+    def append_location(cls, df):
+        df['location'] = df.apply(cls.populate_location, axis=1, result_type='expand')
 
     @classmethod
-    def populate_lat_lon(cls, row):
-        return computeLatLon(row.xpos, row.ypos, row.zpos)
-
-
+    def populate_location(cls, row)-> str:
+        lat, lon = computeLatLon(row.xpos, row.ypos, row.zpos)
+        # returns a string representation of POINT in WKT format
+        return f'POINT( {lon:.4f}  {lat:.4f})'
