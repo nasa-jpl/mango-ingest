@@ -138,6 +138,14 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def append_location(cls, df):
+        """
+        Append a location column to the data frame.
+
+        Parameters
+        ----------
+        df -  pd.DataFrame
+
+        """
         pass
 
     @classmethod
