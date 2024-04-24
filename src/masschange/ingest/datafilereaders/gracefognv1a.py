@@ -21,8 +21,8 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.longlong),
-            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=int),
+            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong),
+            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
 
             AsciiDataFileReaderColumn(index=3, name='chisq', np_type=np.double),
@@ -61,9 +61,9 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def append_location(cls, df):
         df['location'] = df.apply(cls.populate_location, axis=1, result_type='expand')
-        return df
 
     @classmethod
-    def populate_location(cls, row):
+    def populate_location(cls, row)-> str:
         lat, lon = computeLatLon(row.xpos, row.ypos, row.zpos)
+        # returns a string representation of POINT in WKT format
         return f'POINT( {lon:.4f}  {lat:.4f})'

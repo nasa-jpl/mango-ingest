@@ -32,10 +32,11 @@ Gravity Missions Analysis Tool data ingestion and API
 4. Install editable masschange package with `pip install -e /app/masschange`
 4. Run ingestion on GRACE-FO data location with `python ./masschange/ingest/datasets/gracefo/ingest.py --dataset GRACEFO_ACC1A --src path/to/input_data_root ` (add `--zipped` if data is in tarballs)
 
-- `update conda env`
+#### To update existing conda environment
 1. Edit ./environment.yml
 2. Activate conda env with `conda activate masschange`
 3. Update env with `conda env update --file ./environment.yml --prune`
+
 ### Tests
 
 Run functional and unit tests from repository root with 

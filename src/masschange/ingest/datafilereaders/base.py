@@ -122,7 +122,7 @@ class AsciiDataFileReader(DataFileReader):
 
         # TODO this is a temporary solution until we figure out a generic way to
         # to add geolocation to a dataset
-        df = cls.append_location(df)
+        cls.append_location(df)
 
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
@@ -138,7 +138,7 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def append_location(cls, df):
-        return df
+        pass
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
