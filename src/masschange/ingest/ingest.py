@@ -28,12 +28,15 @@ log = logging.getLogger()
 
 def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
     """
+    
     Parameters
     ----------
     src - the directory containing input files, identified by ACC1A_{YYYY-MM-DD}_{satellite_id}_04.txt
     dest - the destination parquet root directory
+    
     Returns
     -------
+    
     """
 
     log.info(f'ingesting {dataset.get_full_id()} data from {src}')
@@ -53,14 +56,18 @@ def get_zipped_input_iterable(root_dir: str,
     """
     Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
     filename_match_regex
+    
     N.B. THIS APPROACH MINIMIZES ADDITIONAL DISK USE BUT CANNOT BE USED WITH CONCURRENCY
+    
     Parameters
     ----------
     root_dir
     enclosing_filename_match_regex
     filename_match_regex
+    
     Returns
     -------
+    
     """
 
     for tar_fp in order_filepaths_by_filename(
@@ -173,3 +180,4 @@ if __name__ == '__main__':
         f'ingest of {args.dataset.get_full_id()} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)
+    
