@@ -49,7 +49,7 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
             name  VARCHAR UNIQUE ,
             label VARCHAR NOT NULL
             );
-    
+
             CREATE TABLE IF NOT EXISTS _meta_dataproducts_versions
             (
             id SERIAL PRIMARY KEY,
@@ -58,7 +58,7 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
             label VARCHAR NOT NULL,
             UNIQUE (_meta_dataproducts_id, name) 
             );
-    
+
             CREATE TABLE IF NOT EXISTS _meta_dataproducts_versions_instruments
             (
             _meta_dataproducts_versions_id INT REFERENCES _meta_dataproducts_versions (id) ON DELETE CASCADE,
@@ -68,7 +68,7 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
             last_updated TIMESTAMPTZ,
             PRIMARY KEY (_meta_dataproducts_versions_id, _meta_instruments_id)
             );
-    
+
         """
         cur.execute(sql)
         conn.commit()
@@ -83,7 +83,6 @@ def ensure_table_exists(dataset: TimeSeriesDataset, dataset_version: TimeSeriesD
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
     timestamp_column_name = dataset.TIMESTAMP_COLUMN_NAME
-   
     with get_db_connection() as conn, conn.cursor() as cur:
         try:
             sql = f"""
@@ -101,7 +100,6 @@ def ensure_table_exists(dataset: TimeSeriesDataset, dataset_version: TimeSeriesD
                 select AddGeometryColumn('{table_name}', 'location', 4326, 'POINT', 2 );    
                 """
                # cur.execute(geo_sql)
-
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
