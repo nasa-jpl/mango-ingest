@@ -91,13 +91,6 @@ def ensure_table_exists(dataset: TimeSeriesDataset, dataset_version: TimeSeriesD
             select set_chunk_time_interval('{table_name}', interval '24 hours');
             """
             cur.execute(sql)
-            # TODO: eventually, all datasets will need a geometry column
-            # For now, add it for GraceFOGnv1ADataset only
-            if dataset.id_suffix == 'GNV1A':
-                geo_sql = f"""
-                select AddGeometryColumn('{table_name}', 'location', 4326, 'POINT', 2 );    
-                """
-               # cur.execute(geo_sql)
             conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
