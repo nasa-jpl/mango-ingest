@@ -52,3 +52,4 @@ class GraceFOGnv1ADataset(TimeSeriesDataset):
             location geometry(Point,4326),
             timestamp timestamptz not null
         """
+    
