@@ -180,4 +180,3 @@ if __name__ == '__main__':
         f'ingest of {args.dataset.get_full_id()} from {args.src} completed in {get_human_readable_elapsed_since(start)}')
 
     exit(0)
-    
