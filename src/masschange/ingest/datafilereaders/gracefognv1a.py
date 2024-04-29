@@ -64,7 +64,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
         df['location'] = df.apply(cls.populate_location, axis=1, result_type='expand')
         # TODO: confirm that we can use ZPOS instead on lat to determine orbit direction
         # It is better to use zpos because it is already available in the dataframe
-        df['orbit_direction'] = cls.cals_orbit_derection(df['zpos'])
+        df['orbit_direction'] = cls.get_orbit_derection(df['zpos'])
 
 
     @classmethod
@@ -74,7 +74,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
         return f'POINT( {lon:.4f}  {lat:.4f})'
 
     @classmethod
-    def cals_orbit_derection(cls, coord_array) -> np.array:
+    def get_orbit_derection(cls, coord_array) -> np.array:
         """
             Determine orbit direction (ascending or descending) based of values in input coord_array:
             If next value is bigger or equal to the current value, the direction is ascending (‘A’),
@@ -89,7 +89,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             np.array of characters, 'A' for accending, 'D' for descending
 
             """
-        orbit_direction= np.where(np.diff(coord_array) >= 0, 'A', 'D')
+        orbit_direction= np.where(np.diff(coord_array) <= 0, 'A', 'D')
 
         # We can't calculate difference for the last element,
         # so assume that the direction of orbit for the last point
