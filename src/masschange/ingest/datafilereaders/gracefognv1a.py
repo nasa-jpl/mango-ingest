@@ -71,7 +71,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     def populate_location(cls, row)-> str:
         lat, lon = computeLatLon(row.xpos, row.ypos, row.zpos)
         # returns a string representation of POINT in WKT format
-        return f'POINT( {lon:.4f}  {lat:.4f})'
+        return f'POINT( {lon}  {lat})'
 
     @classmethod
     def get_orbit_derection(cls, coord_array) -> np.array:
