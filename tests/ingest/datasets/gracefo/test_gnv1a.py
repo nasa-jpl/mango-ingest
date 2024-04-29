@@ -15,7 +15,7 @@ class GraceFOGnv1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
                             float, float, float,
                             float, float, float,
                             float, str, str,
-                            datetime,
+                            str, datetime,
                             ]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
@@ -27,7 +27,7 @@ class GraceFOGnv1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          0.005298092495650053, 0.005876647308468819, 0.01492065656930208,
          0.01667117358522485, 2.754388273018549e-09, 1.572264764754594e-08,
          2.756986826335517e-11,   '00000000', '0101000020E61000008351499D80AA52C0499D8026C20652C0',
-         datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
+         'D', datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
          (738849600, 11, 'D',
          5.683535099029541, 1.428586006164551, 0,
          595972.4408544349, - 2209983.177703416, - 6491786.117647586,
@@ -36,7 +36,7 @@ class GraceFOGnv1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          0.005124685820192099, 0.005863454192876816, 0.01045407168567181,
          0.01725577728485153, 1.950082539892151e-09, 1.638214866571998e-08,
          1.95077305004121e-11,   '00000000', '0101000020E610000075029A081BBA52C01CEBE2361AAC51C0',
-         datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
+         'D', datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
           )
     ]
 
