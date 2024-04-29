@@ -50,6 +50,7 @@ class GraceFOGnv1ADataset(TimeSeriesDataset):
             qualflg VARCHAR(8) not null,
           
             location geometry(Point,4326),
+            orbit_direction CHAR not null,
             timestamp timestamptz not null
         """
     
