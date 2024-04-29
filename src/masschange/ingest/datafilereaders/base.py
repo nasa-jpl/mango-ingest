@@ -122,7 +122,7 @@ class AsciiDataFileReader(DataFileReader):
 
         # TODO this is a temporary solution until we figure out a generic way to
         # to add geolocation to a dataset
-        cls.append_location(df)
+        cls.append_location_fields(df)
 
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
@@ -137,9 +137,10 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    def append_location(cls, df):
+    def append_location_fields(cls, df):
         """
-        Append a location column to the data frame.
+        Append a location and orbit_direction (ascending or descending flag)
+        columns to the data frame.
 
         Parameters
         ----------
