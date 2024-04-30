@@ -135,7 +135,7 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: Ti
             refresh_continuous_aggregates(dataset, dataset_version, stream_id)
 
 
-def ensure_dataset(dataset: TimeSeriesDataset, stream_id: str, version_id: TimeSeriesDatasetVersion) -> None:
+def ensure_dataset(dataset: TimeSeriesDataset, version_id: TimeSeriesDatasetVersion, stream_id: str) -> None:
     ensure_table_exists(dataset, version_id, stream_id)
     ensure_continuous_aggregates(dataset, version_id, stream_id)
 
@@ -149,8 +149,7 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
         for dataset_version in dataset_cls.get_available_versions():
             for stream_id in dataset_cls.stream_ids:
                 log.info(f'Ensuring tables/caggs for {dataset.get_table_name(dataset_version, stream_id)}')
-                ensure_table_exists(dataset_cls(), dataset_version, stream_id)
-                ensure_continuous_aggregates(dataset_cls(), dataset_version, stream_id)
+                ensure_dataset(dataset_cls(), dataset_version, stream_id)
                 log.info(f'Updating metadata for {dataset.get_table_name(dataset_version, stream_id)}')
                 data_span = dataset.get_data_span(dataset_version, stream_id)
                 update_metadata(dataset, dataset_version, stream_id, data_span=data_span, populate_versions=populate_dataproducts_versions)
