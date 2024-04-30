@@ -489,6 +489,9 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
 
     def __init__(self, name: str, np_type: Union[Type, str], unit, description='', aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
+        if const_value is not None:
+            raise ValueError(f'it is not valid to instantiate a DerivedAsciiDataFileReaderColumn with a const value')
+
         super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
                          const_value=None)
 
