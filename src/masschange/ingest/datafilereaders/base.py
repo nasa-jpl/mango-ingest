@@ -436,8 +436,7 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     np_dtype: np.dtype
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: str = 'implement_me',
-                 description: str = "",
+    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: str, description: str = "",
                  aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
                  const_value: Optional[Any] = None):
         super().__init__(name, unit, description=description, aggregations=aggregations, const_value=const_value)
@@ -473,10 +472,11 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     """
     prod_flag_bit_index: int
 
-    def __init__(self, prod_flag_bit_index: int,
-                 name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
-        super().__init__(None, name, np_type, aggregations=aggregations, transform=transform, const_value=const_value)
+    def __init__(self, prod_flag_bit_index: int, name: str, np_type: Union[Type, str], unit, description='',
+                 aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
+                 const_value: Optional[Any] = None):
+        super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
+                         const_value=const_value)
         self.prod_flag_bit_index = prod_flag_bit_index
 
 
@@ -487,10 +487,10 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     but derived from data in the product file, possibly from different columns.
     """
 
-    def __init__(self,
-                 name: str, np_type: Union[Type, str],  aggregations: Collection[str] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None ):
-        super().__init__(None, name, np_type, aggregations=aggregations, transform=transform, const_value=None)
+    def __init__(self, name: str, np_type: Union[Type, str], unit, description='', aggregations: Collection[str] = None,
+                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
+        super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
+                         const_value=None)
 
 
 

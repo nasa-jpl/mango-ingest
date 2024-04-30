@@ -34,14 +34,18 @@ class AsciiDataFileReaderTestCase(unittest.TestCase):
             def get_input_column_defs(cls):
                 float_value_dtype = np.double
                 return [
-                    AsciiDataFileReaderColumn(index=0, name='variable_int_col', np_type=np.ulonglong),
-                    AsciiDataFileReaderColumn(index=1, name='const_int_col', np_type=np.uint, const_value=1),
-                    AsciiDataFileReaderColumn(index=2, name='const_char_col', np_type='U1', const_value='A'),
-                    AsciiDataFileReaderColumn(index=3, name='const_str_col', np_type='U4', const_value='ABCD'),
+                    AsciiDataFileReaderColumn(index=0, name='variable_int_col', np_type=np.ulonglong,
+                                              unit='implement_me'),
+                    AsciiDataFileReaderColumn(index=1, name='const_int_col', np_type=np.uint, unit='implement_me',
+                                              const_value=1),
+                    AsciiDataFileReaderColumn(index=2, name='const_char_col', np_type='U1', unit='implement_me',
+                                              const_value='A'),
+                    AsciiDataFileReaderColumn(index=3, name='const_str_col', np_type='U4', unit='implement_me',
+                                              const_value='ABCD'),
                     AsciiDataFileReaderColumn(index=4, name='const_float_col', np_type=float_value_dtype,
-                                              const_value=1.234),
+                                              unit='implement_me', const_value=1.234),
                     AsciiDataFileReaderColumn(index=5, name='const_scifloat_col', np_type=float_value_dtype,
-                                              const_value=23.45),
+                                              unit='implement_me', const_value=23.45),
                 ]
 
             @classmethod

@@ -21,38 +21,38 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
+            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=3, name='chisq', np_type=np.double),
-            AsciiDataFileReaderColumn(index=4, name='cov_mult', np_type=np.double),
-            AsciiDataFileReaderColumn(index=5, name='voltage', np_type=np.double),
+            AsciiDataFileReaderColumn(index=3, name='chisq', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=4, name='cov_mult', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=5, name='voltage', np_type=np.double, unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=6, name='xpos', np_type=np.double),
-            AsciiDataFileReaderColumn(index=7, name='ypos', np_type=np.double),
-            AsciiDataFileReaderColumn(index=8, name='zpos', np_type=np.double),
+            AsciiDataFileReaderColumn(index=6, name='xpos', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=7, name='ypos', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=8, name='zpos', np_type=np.double, unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=9, name='xpos_err', np_type=np.double),
-            AsciiDataFileReaderColumn(index=10, name='ypos_err', np_type=np.double),
-            AsciiDataFileReaderColumn(index=11, name='zpos_err', np_type=np.double),
+            AsciiDataFileReaderColumn(index=9, name='xpos_err', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=10, name='ypos_err', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=11, name='zpos_err', np_type=np.double, unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=12, name='xvel', np_type=np.double),
-            AsciiDataFileReaderColumn(index=13, name='yvel', np_type=np.double),
-            AsciiDataFileReaderColumn(index=14, name='zvel', np_type=np.double),
+            AsciiDataFileReaderColumn(index=12, name='xvel', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=13, name='yvel', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=14, name='zvel', np_type=np.double, unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=15, name='xvel_err', np_type=np.double),
-            AsciiDataFileReaderColumn(index=16, name='yvel_err', np_type=np.double),
-            AsciiDataFileReaderColumn(index=17, name='zvel_err', np_type=np.double),
+            AsciiDataFileReaderColumn(index=15, name='xvel_err', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=16, name='yvel_err', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=17, name='zvel_err', np_type=np.double, unit='implement_me'),
 
-            AsciiDataFileReaderColumn(index=18, name='timer_offset', np_type=np.double),
-            AsciiDataFileReaderColumn(index=19, name='time_offset_err', np_type=np.double),
-            AsciiDataFileReaderColumn(index=20, name='time_drift', np_type=np.double),
-            AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double),
-            AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8'),
+            AsciiDataFileReaderColumn(index=18, name='timer_offset', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=19, name='time_offset_err', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=20, name='time_drift', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8', unit='implement_me'),
 
-            DerivedAsciiDataFileReaderColumn(name='location', np_type='U32'),
-            DerivedAsciiDataFileReaderColumn(name='orbit_direction', np_type='U1')
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U32', unit='implement_me'),
+            DerivedAsciiDataFileReaderColumn(name='orbit_direction', np_type='U1', unit='implement_me')
         ]
 
     @classmethod
