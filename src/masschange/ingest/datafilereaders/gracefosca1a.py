@@ -39,22 +39,22 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
         #
         # For now, assume that these are constant columns
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
-            AsciiDataFileReaderColumn(index=3, name='sca_id', np_type=np.ubyte),
-            AsciiDataFileReaderColumn(index=4, name='sca_desig', np_type='U1'),
-            AsciiDataFileReaderColumn(index=5, name='quatangle', np_type=np.double),
-            AsciiDataFileReaderColumn(index=6, name='quaticoeff', np_type=np.double),
-            AsciiDataFileReaderColumn(index=7, name='quatjcoeff', np_type=np.double),
-            AsciiDataFileReaderColumn(index=8, name='quatkcoeff', np_type=np.double),
-            AsciiDataFileReaderColumn(index=9, name='nlocks', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=10, name='nstars', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=11, name='sca_confid', np_type=np.ubyte),
-            AsciiDataFileReaderColumn(index=12, name='sca_null1', np_type=int, const_value=0),
-            AsciiDataFileReaderColumn(index=13, name='sca_null2', np_type=int, const_value=0),
-            AsciiDataFileReaderColumn(index=14, name='sca_mode', np_type='U8'),
-            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8')
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=3, name='sca_id', np_type=np.ubyte, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=4, name='sca_desig', np_type='U1', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=5, name='quatangle', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=6, name='quaticoeff', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=7, name='quatjcoeff', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=8, name='quatkcoeff', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=9, name='nlocks', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=10, name='nstars', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=11, name='sca_confid', np_type=np.ubyte, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=12, name='sca_null1', np_type=int, unit='implement_me', const_value=0),
+            AsciiDataFileReaderColumn(index=13, name='sca_null2', np_type=int, unit='implement_me', const_value=0),
+            AsciiDataFileReaderColumn(index=14, name='sca_mode', np_type='U8', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit='implement_me')
         ]
 
     @classmethod

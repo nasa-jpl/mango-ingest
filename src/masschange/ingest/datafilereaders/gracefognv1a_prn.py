@@ -23,12 +23,12 @@ class GraceFOGnv1APrnDataFileReader(VariableDataClustersPerRowReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
 
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1'),
-            DerivedAsciiDataFileReaderColumn(name='prn_id', np_type=np.uint),
-            DerivedAsciiDataFileReaderColumn(name='el_prn', np_type=np.double),
-            DerivedAsciiDataFileReaderColumn(name='az_prn', np_type=np.double)
+            AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit='implement_me'),
+            DerivedAsciiDataFileReaderColumn(name='prn_id', np_type=np.uint, unit='implement_me'),
+            DerivedAsciiDataFileReaderColumn(name='el_prn', np_type=np.double, unit='implement_me'),
+            DerivedAsciiDataFileReaderColumn(name='az_prn', np_type=np.double, unit='implement_me')
         ]
 
     @classmethod

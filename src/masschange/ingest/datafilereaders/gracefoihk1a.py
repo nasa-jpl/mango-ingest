@@ -22,14 +22,14 @@ class GraceFOIhk1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', const_value='R'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1'),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8'),
-            AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1'),
-            AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.double),
-            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U2'),
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.double, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U2', unit='implement_me'),
         ]
 
     @classmethod

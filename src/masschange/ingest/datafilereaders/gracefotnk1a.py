@@ -24,22 +24,29 @@ class GraceFOTnk1ADataFileReader(DataFileWithProdFlagReader):
     # Use for reading row data
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong),
-            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', const_value='R'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1'),
-            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint),
-            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8'),
-            AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8'),
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit='implement_me'),
+            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8', unit='implement_me'),
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='tank_pres', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='reg_pres', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='skin_temp', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='skin_temp_r', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='adap_temp', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='boss_fixed', np_type=np.double),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='boss_sliding', np_type=np.double)
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='tank_pres', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='reg_pres', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='skin_temp', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='skin_temp_r', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='adap_temp', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='boss_fixed', np_type=np.double,
+                                                    unit='implement_me'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='boss_sliding', np_type=np.double,
+                                                    unit='implement_me')
             # prod_flag_bit_index = 7 is undefined
         ]
 
