@@ -436,12 +436,18 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     np_dtype: np.dtype
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
-        super().__init__(name, aggregations=aggregations, const_value=const_value)
+    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: str = 'implement_me',
+                 description: str = "",
+                 aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
+                 const_value: Optional[Any] = None):
+        super().__init__(name, unit, description=description, aggregations=aggregations, const_value=const_value)
         self.index = index
         self.np_dtype = np.dtype(np_type)
         self.transform = transform or self._no_op
+
+    @property
+    def python_type(self):
+        return type(self.np_dtype.type(0).item())
 
     @property
     def has_transform(self):
@@ -470,8 +476,7 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     def __init__(self, prod_flag_bit_index: int,
                  name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
-        super().__init__(None, name, np_type, aggregations=aggregations,
-                         transform=transform, const_value=const_value)
+        super().__init__(None, name, np_type, aggregations=aggregations, transform=transform, const_value=const_value)
         self.prod_flag_bit_index = prod_flag_bit_index
 
 
@@ -485,8 +490,7 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     def __init__(self,
                  name: str, np_type: Union[Type, str],  aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None ):
-        super().__init__(None, name, np_type, aggregations = aggregations,
-                 transform = transform, const_value = None)
+        super().__init__(None, name, np_type, aggregations=aggregations, transform=transform, const_value=None)
 
 
 
