@@ -161,7 +161,7 @@ class AsciiDataFileReader(DataFileReader):
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
             usecols=([col.index for col in column_defs if col.index is not None ]),
-            dtype=[(col.name, col.np_type) for col in column_defs if col.index is not None]
+            dtype=[(col.name, col.np_dtype) for col in column_defs if col.index is not None]
         )
 
         return data
@@ -202,7 +202,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         reg_columns = [col for col in cls.get_input_column_defs() if not
         isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
         for column in reg_columns:
-            values = np.array(raw_data_as_str[:, column.index]).astype(column.np_type)
+            values = np.array(raw_data_as_str[:, column.index]).astype(column.np_dtype)
             # Check const columns, do not add const columns to the DF
             if column.is_constant:
                 try:
@@ -244,7 +244,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
 
         for i, col in enumerate(prod_flag_col):
             # Use pd.array here to handle nullable int datatype pd.Int64Dtype()
-            df[col.name] = pd.array(prod_flag_data_expanded[:, i], dtype=col.np_type)
+            df[col.name] = pd.array(prod_flag_data_expanded[:, i], dtype=col.np_dtype)
 
     @classmethod
     def _get_prod_flag_column_position(cls) -> int:
@@ -325,7 +325,7 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
             usecols=([col.index for col in column_defs if col.name == counter_col_name]),
-            dtype=[(col.name, col.np_type) for col in column_defs if col.name == counter_col_name]
+            dtype=[(col.name, col.np_dtype) for col in column_defs if col.name == counter_col_name]
         )
         return int(np.max(data[counter_col_name]))
 
@@ -385,7 +385,7 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
 
         # convert to structured array, so we can use load_data_from_file from the parent class
         return np.core.records.fromarrays(reformat_array.transpose(),
-                         dtype=np.dtype([(col.name, col.np_type) for col in column_defs]))
+                                          dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
 
     @classmethod
     @abstractmethod
@@ -410,6 +410,8 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
         Return number of variables in data cluster
         """
         pass
+
+
 class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
@@ -419,7 +421,11 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
 
         name (str): the field name, (and the name to give the numpy column for the extracted data)
 
-        type (Type | str): the type, numpy dtype, or numpy dtype string representing the column type to extract with numpy
+        np_dtype (np.dtype): The numpy dtype to which extracted data will be cast.
+         Constructed from a Python type, numpy dtype, or numpy array-protocol type string.
+
+         See https://numpy.org/doc/stable/reference/arrays.dtypes.html ctrl+f "array-protocol type string" for further
+         details on the string aliases used by numpy.
 
         transform (Callable[[T], T]): a transform (or wrapper for series of transforms) to apply to the extracted values, if applicable
 
@@ -427,14 +433,14 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
     """
 
     index: int
-    np_type: Union[Type, str]
+    np_dtype: np.dtype
     transform: Callable[[Any], Any]
 
     def __init__(self, index: int, name: str, np_type: Union[Type, str], aggregations: Collection[str] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None):
         super().__init__(name, aggregations=aggregations, const_value=const_value)
         self.index = index
-        self.np_type = np_type
+        self.np_dtype = np.dtype(np_type)
         self.transform = transform or self._no_op
 
     @property
