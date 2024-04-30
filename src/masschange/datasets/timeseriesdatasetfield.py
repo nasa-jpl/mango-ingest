@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Set, Collection
+from datetime import datetime
 from typing import Union, Any, Dict, Type
 
 
@@ -39,7 +40,7 @@ class TimeSeriesDatasetField:
     @abstractmethod
     def python_type(self) -> Type:
         """Return the python type of the data provided by this field"""
-        pass
+        raise NotImplementedError(f'python_type has not been implemented for {self.__class__} with name {self.name}')
 
     @property
     def is_constant(self):
@@ -72,3 +73,21 @@ class TimeSeriesDatasetField:
             description['constant_value'] = self.const_value,
 
         return description
+
+
+class TimeSeriesDatasetTimestampField(TimeSeriesDatasetField):
+    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+                 const_value: Union[Any, None] = None):
+
+        if aggregations is not None:
+            raise ValueError(f'{self.__class__} cannot be instantiated with non-None aggregations arg')
+
+        if const_value is not None:
+            raise ValueError(f'{self.__class__} cannot be instantiated with non-None const_value arg')
+
+        super().__init__(name, unit, description)
+
+    @property
+    def python_type(self) -> Type:
+        return datetime
+

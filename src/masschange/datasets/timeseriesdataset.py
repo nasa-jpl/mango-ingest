@@ -9,7 +9,7 @@ import psycopg2
 from psycopg2 import extras
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField
+from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField, TimeSeriesDatasetTimestampField
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.db.utils import list_table_columns as list_db_table_columns
@@ -316,7 +316,7 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def get_available_fields(cls) -> Set[TimeSeriesDatasetField]:
-        timestamp_field = TimeSeriesDatasetField(cls.TIMESTAMP_COLUMN_NAME, 'n/a')
+        timestamp_field: TimeSeriesDatasetField = TimeSeriesDatasetTimestampField(cls.TIMESTAMP_COLUMN_NAME, 'n/a')
         return {timestamp_field}.union(cls.get_reader().get_fields())
 
     @classmethod
