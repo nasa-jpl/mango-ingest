@@ -243,7 +243,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
                          if isinstance(col, VariableSchemaAsciiDataFileReaderColumn)]
 
         for i, col in enumerate(prod_flag_col):
-            # Use pd.array here to handle nullable int datatype pd.Int64Dtype()
+            # Use pd.array here to handle nullable int datatype pd.Int64Dtype
             df[col.name] = pd.array(prod_flag_data_expanded[:, i], dtype=col.np_dtype)
 
     @classmethod
