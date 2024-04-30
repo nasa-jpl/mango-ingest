@@ -1,7 +1,6 @@
+from abc import abstractmethod
 from collections.abc import Set, Collection
-from typing import Union, Any, Dict
-
-from strenum import StrEnum
+from typing import Union, Any, Dict, Type
 
 
 class TimeSeriesDatasetField:
@@ -17,19 +16,30 @@ class TimeSeriesDatasetField:
     """
 
     name: str
+    description: str
+    unit: str
     const_value: Union[Any, None]
     aggregations: Set[str] = set()
 
     VALID_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
-    def __init__(self, name: str, aggregations: Collection[str] = None, const_value: Union[Any, None] = None):
+    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+                 const_value: Union[Any, None] = None):
         self.name = name.lower()
+        self.unit = unit
+        self.description = description
         self.const_value = const_value
 
         if aggregations is not None:
             if not all([agg in self.VALID_AGGREGATIONS for agg in aggregations]):
                 raise ValueError(f'aggregations arg must be subset of {self.VALID_AGGREGATIONS} (got {aggregations})')
             self.aggregations = set(aggregations)
+
+    @property
+    @abstractmethod
+    def python_type(self) -> Type:
+        """Return the python type of the data provided by this field"""
+        pass
 
     @property
     def is_constant(self):
@@ -52,7 +62,10 @@ class TimeSeriesDatasetField:
     def describe(self) -> Dict:
         description = {
             'name': self.name,
-            'supported_aggregations': sorted([agg.lower() for agg in self.aggregations])
+            'type': self.python_type.__name__,
+            'description': self.description,
+            'unit': self.unit,
+            'supported_aggregations': sorted([agg.lower() for agg in self.aggregations]),
         }
 
         if self.is_constant:

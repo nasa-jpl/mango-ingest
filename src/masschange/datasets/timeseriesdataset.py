@@ -316,7 +316,8 @@ class TimeSeriesDataset(ABC):
 
     @classmethod
     def get_available_fields(cls) -> Set[TimeSeriesDatasetField]:
-        return {TimeSeriesDatasetField(cls.TIMESTAMP_COLUMN_NAME)}.union(cls.get_reader().get_fields())
+        timestamp_field = TimeSeriesDatasetField(cls.TIMESTAMP_COLUMN_NAME, 'n/a')
+        return {timestamp_field}.union(cls.get_reader().get_fields())
 
     @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
