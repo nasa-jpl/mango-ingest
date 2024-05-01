@@ -15,6 +15,7 @@ class GraceFOAct1ADataset(TimeSeriesDataset):
     id_suffix = 'ACT1A'
     stream_ids = {'C', 'D'}
     time_series_interval = timedelta(milliseconds=100)
+    processing_level = '1A'
 
     @classmethod
     def _get_sql_table_schema(cls) -> str:
