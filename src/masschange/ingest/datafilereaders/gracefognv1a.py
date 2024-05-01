@@ -16,7 +16,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.noLRI\.tgz'
+        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL04\.ascii\.(LRI|noLRI)\.tgz'
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
