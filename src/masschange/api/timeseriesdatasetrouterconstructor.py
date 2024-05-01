@@ -25,8 +25,10 @@ def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
 
     @router.get('/versions/{dataset_version}/streams/{stream_id}', tags=[DatasetCls.mission.id, DatasetCls.get_full_id(), 'metadata'])
     async def describe_dataset_instance(dataset_version: DatasetVersionEnum, stream_id: StreamEnum):
+        description = DatasetCls.describe(exclude_available_versions=True)
         metadata = DatasetCls.get_metadata_properties(TimeSeriesDatasetVersion(dataset_version.value), stream_id.value)
-        return metadata
+        description.update(metadata)
+        return description
 
     @router.get('/versions/{dataset_version}/streams/{stream_id}/data', tags=[DatasetCls.mission.id, DatasetCls.get_full_id(), 'data'])
     async def get_data(
