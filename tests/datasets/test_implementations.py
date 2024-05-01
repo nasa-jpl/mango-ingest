@@ -12,6 +12,7 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
                 self.assertIsNotNone(implementation.id_suffix)
                 self.assertLess(0, len(implementation.stream_ids))
                 self.assertIsNotNone(implementation.time_series_interval)
+                self.assertIsNotNone(implementation.processing_level)
             except AttributeError as err:
                 raise NotImplementedError(str(err))
 

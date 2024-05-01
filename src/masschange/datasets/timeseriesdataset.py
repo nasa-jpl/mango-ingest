@@ -27,6 +27,7 @@ class TimeSeriesDataset(ABC):
     id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
     time_series_interval: timedelta
+    processing_level: str
 
     aggregation_step_factor: int = 5
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
@@ -51,6 +52,7 @@ class TimeSeriesDataset(ABC):
             'mission': cls.mission.id,
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
+            'processing_level': cls.processing_level,
             'available_versions': [str(version) for version in cls.get_available_versions()],
             'streams': [{
                 'id': id,
