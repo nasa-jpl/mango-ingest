@@ -23,6 +23,7 @@ log = logging.getLogger()
 
 class TimeSeriesDataset(ABC):
     # TODO: Document this class properly
+    description: str = ''
     mission: Type[Mission]
     id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     stream_ids: Set[str]
@@ -48,6 +49,7 @@ class TimeSeriesDataset(ABC):
         useful or necessary for querying it.
         """
         description = {
+            'description': cls.description,
             'mission': cls.mission.id,
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
