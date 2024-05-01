@@ -40,20 +40,18 @@ class TimeSeriesDataset(ABC):
         return f'{cls.mission.id}_{cls.id_suffix}'
 
     @classmethod
-    def describe(cls) -> Dict:
+    def describe(cls, exclude_available_versions: bool = False) -> Dict:
         """
-
         Returns
         -------
         An object which describes this dataset's attributes/configuration to an end-user, providing details which are
         useful or necessary for querying it.
         """
-        return {
+        description = {
             'mission': cls.mission.id,
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
             'processing_level': cls.processing_level,
-            'available_versions': [str(version) for version in cls.get_available_versions()],
             'streams': [{
                 'id': id,
                 # These are disabled for the time being, as they are slow
@@ -73,6 +71,12 @@ class TimeSeriesDataset(ABC):
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
             'query_result_limit': cls.query_result_limit
         }
+
+        # This includes a db call, and may not always be useful
+        if not exclude_available_versions:
+            description.update({'available_versions': [str(version) for version in cls.get_available_versions()]})
+
+        return description
 
     @classmethod
     def get_metadata_properties(cls, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> \
