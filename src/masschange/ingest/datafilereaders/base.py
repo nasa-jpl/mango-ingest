@@ -446,7 +446,14 @@ class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
 
     @property
     def python_type(self):
-        return type(self.np_dtype.type(0).item())
+        try:
+            # default case, where self.np_dtype is a native numpy dtype
+            resolved_type = type(self.np_dtype.type(0).item())
+        except AttributeError:
+            # edge case, where self.np_dtype is a pandas type (like nullable integer type Int64Dtype)
+            resolved_type = type(self.np_dtype.type(0))
+
+        return resolved_type
 
     @property
     def has_transform(self):
