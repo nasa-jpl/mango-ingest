@@ -1,3 +1,5 @@
+import os
+
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +20,12 @@ app.add_middleware(
 
 @app.get('/', include_in_schema=False)
 def view_documentation_message(request: Request):
-    root_url = str(request.url)[:-1] if str(request.url).endswith('//') else str(request.url)
+    api_host_override = os.environ.get('API_PROXY_HOST')
+    if api_host_override is not None:
+        root_url = f'{request.url.scheme}://{api_host_override}{request.url.path}'
+    else:
+        root_url = str(request.url)[:-1] if str(request.url).endswith('//') else str(request.url)
+
     documentation_url = f'{root_url}docs'
     return HTMLResponse(
         f'Welcome to the MassChange API!  View interactive documentation <a href="{documentation_url}">HERE</a>')
