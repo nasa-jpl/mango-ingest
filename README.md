@@ -10,6 +10,10 @@ Gravity Missions Analysis Tool data ingestion and API
   export TSDB_USER='postgres';
   export TSDB_PASSWORD='password';
   export TSDB_DATABASE='masschange';
+  
+  # optionally, for prod deployment behind a proxy server
+  export API_ROOT_PATH='/mango/api/'
+  export API_PROXY_HOST='***REMOVED***'
   ```
   
 
