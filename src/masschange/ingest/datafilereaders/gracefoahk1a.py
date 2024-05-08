@@ -2,6 +2,7 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 import numpy as np
+import pandas as pd
 
 from masschange.ingest.datafilereaders.base import  DataFileWithProdFlagReader, \
     AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
@@ -83,11 +84,11 @@ class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=24, name='minus_48V', np_type=np.double,
                                                     unit='implement_me'),
             # prod_flag_bit_index = 25 is undefined
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=26, name='icu_blk_nr', np_type=int,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=26, name='icu_blk_nr', np_type=pd.UInt32Dtype,
                                                     unit='implement_me'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=27, name='PPS_source', np_type=int,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=27, name='PPS_source', np_type=pd.UInt8Dtype,
                                                     unit='implement_me'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=28, name='Sync_Qual', np_type=int,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=28, name='Sync_Qual', np_type=pd.UInt8Dtype,
                                                     unit='implement_me'),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=29, name='statusflag', np_type='U32',
                                                     unit='implement_me'),

@@ -57,11 +57,11 @@ class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
                                                     unit='implement_me', aggregations=['MIN', 'MAX']),
 
             # TODO: assume that 'channel' is an integer number. Need to confirm
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name='CA_chan', np_type=pd.Int64Dtype,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name='CA_chan', np_type=pd.Int32Dtype,
                                                     unit='implement_me'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=10, name='L1_chan', np_type=pd.Int64Dtype,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=10, name='L1_chan', np_type=pd.Int32Dtype,
                                                     unit='implement_me'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='L2_chan', np_type=pd.Int64Dtype,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='L2_chan', np_type=pd.Int32Dtype,
                                                     unit='implement_me'),
 
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=12, name='K_phase', np_type=np.double,
@@ -75,9 +75,9 @@ class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
 
             # TODO: it is not clear from the description if these are double or int,
             # but in the sample file they are represented as int
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=14, name='K_SNR', np_type=pd.Int64Dtype,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=14, name='K_SNR', np_type=pd.Int32Dtype,
                                                     unit='implement_me'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=15, name='Ka_SNR', np_type=pd.Int64Dtype,
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=15, name='Ka_SNR', np_type=pd.Int32Dtype,
                                                     unit='implement_me')
         ]
 
