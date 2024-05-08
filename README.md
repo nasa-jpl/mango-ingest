@@ -3,10 +3,11 @@ Gravity Missions Analysis Tool data ingestion and API
 
 ## Prerequisites
 - a running TimescaleDB instance
+- [conda environment](./environment.yml') installed and activated
 - environment variables set
   ```bash
   export TSDB_HOST='localhost';
-  export TSDB_PORT='5433';
+  export TSDB_PORT='5432';
   export TSDB_USER='postgres';
   export TSDB_PASSWORD='password';
   export TSDB_DATABASE='masschange';
@@ -43,11 +44,22 @@ Gravity Missions Analysis Tool data ingestion and API
 
 ### Tests
 
+#### Ingest and dataset implementations
+
 Run functional and unit tests from repository root with 
 
 `PYTHONPATH='./src' && python -m unittest discover`
 
 A test database named `masschange_functional_tests` will be created, written to, and deleted during functional test execution.
+
+#### API tests
+
+API operational tests are provided by [starlette](https://fastapi.tiangolo.com/tutorial/testing/) and may be run from the repository root with 
+```bash
+pytest path/to/src/masschange/api/tests
+```
+
+
 
 ## Dockerized API Deployment (OUTDATED)
 
