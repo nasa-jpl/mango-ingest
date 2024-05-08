@@ -14,7 +14,7 @@ class GraceFOImu1ADataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'IMU1A'
     stream_ids = {'C', 'D'}
-    time_series_interval = timedelta(milliseconds=100)
+    time_series_interval = timedelta(seconds=1/24) # 8Hz, three gyros
     processing_level = '1A'
 
     @classmethod
