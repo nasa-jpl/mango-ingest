@@ -26,9 +26,9 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='second'),
             AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='nanosecond'),
-            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit='unitless'),
-            AsciiDataFileReaderColumn(index=3, name='prod_flag', np_type='U16', unit='bitfield'),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit='bitfield'),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=3, name='prod_flag', np_type='U16', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
 
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
