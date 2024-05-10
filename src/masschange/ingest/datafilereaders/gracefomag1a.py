@@ -35,26 +35,29 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
         #         valid_range: C,D
         #
         return [
-            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=3, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
-            AsciiDataFileReaderColumn(index=4, name='MfvX_RAW', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=5, name='MfvY_RAW', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=6, name='MfvZ_RAW', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=7, name='torque1A', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=8, name='torque2A', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=9, name='torque3A', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=10, name='torque1B', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=11, name='torque2B', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=12, name='torque3B', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=13, name='MF_BCalX', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=14, name='MF_BCalY', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=15, name='MF_BCalZ', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=16, name='torque_cal', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=17, name='qualflg', np_type='U8', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='ns'),
+            AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=3, name='time_ref', np_type='U1', unit=None, const_value='R'),
+            AsciiDataFileReaderColumn(index=4, name='MfvX_RAW', np_type=np.double, unit='microTesla'),
+            AsciiDataFileReaderColumn(index=5, name='MfvY_RAW', np_type=np.double, unit='microTesla'),
+            AsciiDataFileReaderColumn(index=6, name='MfvZ_RAW', np_type=np.double, unit='microTesla'),
+            AsciiDataFileReaderColumn(index=7, name='torque1A', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=8, name='torque2A', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=9, name='torque3A', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=10, name='torque1B', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=11, name='torque2B', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=12, name='torque3B', np_type=np.double, unit='mA'),
+            AsciiDataFileReaderColumn(index=13, name='MF_BCalX', np_type=np.double, unit=None),
+            AsciiDataFileReaderColumn(index=14, name='MF_BCalY', np_type=np.double, unit=None),
+            AsciiDataFileReaderColumn(index=15, name='MF_BCalZ', np_type=np.double, unit=None),
+            AsciiDataFileReaderColumn(index=16, name='torque_cal', np_type=np.double, unit=None),
+            AsciiDataFileReaderColumn(index=17, name='qualflg', np_type='U8', unit=None),
         ]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.time_intg, microseconds=row.time_frac)
+        # TODO: Pandas has timedelta that supports nanoseconds, but
+        # Postgres does not supports nanoseconds timestamp, so the timestamps will have microseconds precision
+        return cls.get_reference_epoch() + timedelta(seconds=row.time_intg, microseconds=row.time_frac/1000)
+

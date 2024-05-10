@@ -25,14 +25,15 @@ class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
     # Use for reading row data
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
+            AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32', unit=None),
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
+            # TODO: find units for the columns below
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='TFEEU_IF', np_type=np.double,
                                                     unit='implement_me'),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='TFEEU_REF', np_type=np.double,
@@ -85,13 +86,13 @@ class GraceFOAhk1ADataFileReader(DataFileWithProdFlagReader):
                                                     unit='implement_me'),
             # prod_flag_bit_index = 25 is undefined
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=26, name='icu_blk_nr', np_type=pd.UInt32Dtype,
-                                                    unit='implement_me'),
+                                                    unit=None),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=27, name='PPS_source', np_type=pd.UInt8Dtype,
-                                                    unit='implement_me'),
+                                                    unit=None),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=28, name='Sync_Qual', np_type=pd.UInt8Dtype,
-                                                    unit='implement_me'),
+                                                    unit=None),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=29, name='statusflag', np_type='U32',
-                                                    unit='implement_me'),
+                                                    unit=None),
             # prod_flag_bit_index = 30 is undefined
             # prod_flag_bit_index = 31 is undefined
         ]
