@@ -25,8 +25,8 @@ class GraceFOGps1ADataFileReader(DataFileWithProdFlagReader):
     # Use for reading row data
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='seconds'),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microseconds'),
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=3, name='prn_id', np_type='int',unit=None),
             AsciiDataFileReaderColumn(index=4, name='ant_id', np_type='int', unit=None),
