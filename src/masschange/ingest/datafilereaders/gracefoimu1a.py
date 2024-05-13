@@ -23,13 +23,13 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=4, name='gyro_id', np_type=np.ubyte, unit='implement_me'),  # valid_range: 1, 4
-            AsciiDataFileReaderColumn(index=5, name='FiltAng', np_type=np.double, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit='implement_me'),
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='gyro_id', np_type=np.ubyte, unit=None),  # valid_range: 1, 4
+            AsciiDataFileReaderColumn(index=5, name='FiltAng', np_type=np.double, unit='degree'),
+            AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit=None),
         ]
 
     @classmethod

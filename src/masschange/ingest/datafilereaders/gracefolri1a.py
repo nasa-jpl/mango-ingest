@@ -25,8 +25,8 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
     # Use for reading row data
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='second'),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='nanosecond'),
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='ns'),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=3, name='prod_flag', np_type='U16', unit=None),
             AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
@@ -50,7 +50,9 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+        # TODO: Pandas has timedelta that supports nanoseconds, but
+        # Postgres does not supports nanoseconds timestamp, so the timestamps will have microseconds precision
+        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac/1000)
 
     @classmethod
     def _get_first_prod_flag_data_column_position(cls) -> int:

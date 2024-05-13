@@ -22,27 +22,27 @@ class GraceFOAcc1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='implement_me'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='implement_me', const_value='R'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit='implement_me'),
-            AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32', unit='implement_me',
+            AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
+            AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32', unit=None,
                                       const_value='00000100000000000000000000111111'),
             # TODO: prod_flag should be a bit array - need to work out how to convert on load
-            AsciiDataFileReaderColumn(index=6, name='lin_accl_x', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=6, name='lin_accl_x', np_type=np.double, unit='m/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=7, name='lin_accl_y', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=7, name='lin_accl_y', np_type=np.double, unit='m/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=8, name='lin_accl_z', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=8, name='lin_accl_z', np_type=np.double, unit='m/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=9, name='ang_accl_x', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=9, name='ang_accl_x', np_type=np.double, unit='rad/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=10, name='ang_accl_y', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=10, name='ang_accl_y', np_type=np.double, unit='rad/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=11, name='ang_accl_z', np_type=np.double, unit='implement_me',
+            AsciiDataFileReaderColumn(index=11, name='ang_accl_z', np_type=np.double, unit='rad/s2',
                                       aggregations=['MIN', 'MAX']),
-            AsciiDataFileReaderColumn(index=12, name='icu_blk_nr', np_type=int, unit='implement_me')
+            AsciiDataFileReaderColumn(index=12, name='icu_blk_nr', np_type=int, unit=None)
         ]
 
     @classmethod
