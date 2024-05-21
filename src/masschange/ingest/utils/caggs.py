@@ -2,8 +2,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Collection, Set
 
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.utils.timespan import TimeSpan
 

@@ -7,7 +7,7 @@ from typing import Sequence, Type, Tuple, Dict, List
 import numpy as np
 
 from masschange.ingest import ingest
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
 from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader

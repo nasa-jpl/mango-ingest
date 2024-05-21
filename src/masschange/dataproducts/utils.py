@@ -2,9 +2,9 @@ import logging
 from collections.abc import Collection
 from typing import Type
 
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.utils.packaging import import_submodules
-from masschange.datasets import implementations as datasetimplementations
+from masschange.dataproducts import implementations as datasetimplementations
 
 log = logging.getLogger()
 

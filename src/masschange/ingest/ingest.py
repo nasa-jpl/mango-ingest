@@ -12,8 +12,8 @@ import pandas
 import pandas as pd
 import psycopg2
 
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.datasets.utils import resolve_dataset
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import resolve_dataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.caggs import refresh_continuous_aggregates

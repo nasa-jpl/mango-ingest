@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException, Query
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
 
 def construct_router(DatasetCls: Type[TimeSeriesDataProduct]) -> APIRouter:

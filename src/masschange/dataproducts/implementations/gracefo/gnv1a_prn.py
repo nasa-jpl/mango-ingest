@@ -3,7 +3,7 @@ from datetime import timedelta
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefognv1a_prn import GraceFOGnv1APrnDataFileReader
 from masschange.missions import GraceFO
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 
 
 class GraceFOGnv1APrnDataProduct(TimeSeriesDataProduct):

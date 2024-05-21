@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.implementations.gracefo.gnv1a_prn import GraceFOGnv1APrnDataProduct
+from masschange.dataproducts.implementations.gracefo.gnv1a_prn import GraceFOGnv1APrnDataProduct
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 

@@ -4,7 +4,7 @@ import unittest
 from typing import Sequence, Type, Tuple
 
 from masschange.ingest import ingest
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db import get_db_connection
 from tests.ingest.base import IngestTestCaseBase
 

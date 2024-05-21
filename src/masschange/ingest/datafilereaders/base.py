@@ -10,8 +10,8 @@ from typing import Dict, Any, Union, Type, Callable, Optional
 import numpy as np
 import pandas as pd
 
-from masschange.datasets.timeseriesdataproductfield import TimeSeriesDataProductField
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
 
 class DataFileReader(ABC):
@@ -105,7 +105,7 @@ class AsciiDataFileReader(DataFileReader):
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
-        # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most datasets.
+        # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most dataproducts.
         # If this is not the case, refactoring will be necessary.
         raw_data = cls._load_raw_data_from_file(filepath)
 
