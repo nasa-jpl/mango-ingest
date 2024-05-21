@@ -3,10 +3,10 @@ from datetime import timedelta
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefosca1a import GraceFOSca1ADataFileReader
 from masschange.missions import GraceFO
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 
 
-class GraceFOSca1ADataset(TimeSeriesDataset):
+class GraceFOSca1ADataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOSca1ADataFileReader()

@@ -12,7 +12,7 @@ import pandas
 import pandas as pd
 import psycopg2
 
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.datasets.utils import resolve_dataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
@@ -26,7 +26,7 @@ from masschange.utils.timespan import TimeSpan
 log = logging.getLogger()
 
 
-def run(dataset: TimeSeriesDataset, src: str, data_is_zipped: bool = True):
+def run(dataset: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
     """
 
     Parameters
@@ -85,7 +85,7 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 
-def delete_overlapping_data(dataset: TimeSeriesDataset, dataset_version, stream_id: str, data_temporal_span: TimeSpan):
+def delete_overlapping_data(dataset: TimeSeriesDataProduct, dataset_version, stream_id: str, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name(dataset_version, stream_id)
     with get_db_connection() as conn, conn.cursor() as cur:
         sql = f"""
@@ -117,7 +117,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(dataset: TimeSeriesDataset, src_filepath: str):
+def ingest_file_to_db(dataset: TimeSeriesDataProduct, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:

@@ -4,7 +4,7 @@ import unittest
 from typing import Sequence, Type, Tuple
 
 from masschange.ingest import ingest
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db import get_db_connection
 from tests.ingest.base import IngestTestCaseBase
 
@@ -16,7 +16,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
     Exists to allow efficient definition of regression tests for specific TimeSeriesDataset subclasses by inheriting
     from this base class and assigning values for the member variables.
     """
-    dataset_cls: Type[TimeSeriesDataset]
+    dataset_cls: Type[TimeSeriesDataProduct]
     expected_table_names: Sequence[str]
     expected_field_types: Sequence[Type]
     expected_table_row_counts: Sequence[int]

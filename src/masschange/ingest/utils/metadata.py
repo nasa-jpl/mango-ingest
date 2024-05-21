@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Union
 
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.utils.timespan import TimeSpan
 
 
-def update_metadata(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str,
+def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion, stream_id: str,
                     data_span: Union[TimeSpan, None] = None, populate_versions = False):
     if populate_versions:
         raise NotImplementedError(f'update_metadata() does not yet support populate_versions - go ahead and implement population of queries from available table names')

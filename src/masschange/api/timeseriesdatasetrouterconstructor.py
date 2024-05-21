@@ -7,11 +7,11 @@ from fastapi import APIRouter, HTTPException, Query
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
 
-def construct_router(DatasetCls: Type[TimeSeriesDataset]) -> APIRouter:
+def construct_router(DatasetCls: Type[TimeSeriesDataProduct]) -> APIRouter:
     router = APIRouter(prefix=f'/{DatasetCls.id_suffix}')
 
     StreamEnum = StrEnum('Stream', sorted(DatasetCls.stream_ids))

@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.implementations.gracefo.act1b import GraceFOAct1BDataset
+from masschange.datasets.implementations.gracefo.act1b import GraceFOAct1BDataProduct
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 class GraceFOAct1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
-    dataset_cls = GraceFOAct1BDataset
+    dataset_cls = GraceFOAct1BDataProduct
     expected_table_names = ['gracefo_act1b_04_c', 'gracefo_act1b_04_d']
     expected_field_types = [int, str, float, float, float, float, float, float, str, datetime]
     expected_table_row_counts = [100, 100]
