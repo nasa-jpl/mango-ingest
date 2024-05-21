@@ -36,7 +36,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
         # Prevent attempt to run ingest on abstract base class
         if cls is not DatasetIngestTestCaseBase:
-            ingest.run(dataset=cls.dataset_cls(), src=os.path.abspath('./tests/input_data'), data_is_zipped=True)
+            ingest.run(product=cls.dataset_cls(), src=os.path.abspath('./tests/input_data'), data_is_zipped=True)
 
     def test_has_expected_row_counts(self):
         self.skip_if_abstract()

@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Union
 
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.db import get_db_connection
 from masschange.utils.timespan import TimeSpan
 
 
-def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion, stream_id: str,
+def update_metadata(dataset: TimeSeriesDataset,
                     data_span: Union[TimeSpan, None] = None, populate_versions = False):
     if populate_versions:
         raise NotImplementedError(f'update_metadata() does not yet support populate_versions - go ahead and implement population of queries from available table names')
@@ -19,7 +18,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             VALUES (DEFAULT, %(name)s, %(label)s)
             ON CONFLICT DO NOTHING;
             """
-        cur.execute(sql, {'name': dataset.get_full_id(), 'label': dataset.get_full_id()})
+        cur.execute(sql, {'name': dataset.product.get_full_id(), 'label': dataset.product.get_full_id()})
         conn.commit()
 
     with get_db_connection() as conn, conn.cursor() as cur:
@@ -28,7 +27,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             VALUES (DEFAULT, %(name)s, %(label)s)
             ON CONFLICT DO NOTHING;
             """
-        cur.execute(sql, {'name': stream_id, 'label': stream_id})
+        cur.execute(sql, {'name': dataset.stream_id, 'label': dataset.stream_id})
         conn.commit()
 
     with get_db_connection() as conn, conn.cursor() as cur:
@@ -37,7 +36,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             FROM _meta_dataproducts
             WHERE name = %(name)s;
         """
-        cur.execute(sql, {'name': dataset.get_full_id()})
+        cur.execute(sql, {'name': dataset.product.get_full_id()})
         data_product_db_id = cur.fetchone()[0]
 
     with get_db_connection() as conn, conn.cursor() as cur:
@@ -46,7 +45,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             FROM _meta_instruments
             WHERE name = %(name)s;
         """
-        cur.execute(sql, {'name': stream_id})
+        cur.execute(sql, {'name': dataset.stream_id})
         instrument_db_id = cur.fetchone()[0]
 
     with get_db_connection() as conn, conn.cursor() as cur:
@@ -55,7 +54,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             VALUES (DEFAULT, %(dataproduct)s, %(name)s, %(label)s)
             ON CONFLICT DO NOTHING;
             """
-        cur.execute(sql, {'dataproduct': data_product_db_id, 'name': str(dataset_version), 'label': str(dataset_version)})
+        cur.execute(sql, {'dataproduct': data_product_db_id, 'name': str(dataset.version), 'label': str(dataset.version)})
 
     with get_db_connection() as conn, conn.cursor() as cur:
         sql = """
@@ -63,7 +62,7 @@ def update_metadata(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesD
             FROM _meta_dataproducts_versions
             WHERE _meta_dataproducts_id= %(dataproduct)s AND name = %(name)s;
         """
-        cur.execute(sql, {'dataproduct': data_product_db_id, 'name': str(dataset_version)})
+        cur.execute(sql, {'dataproduct': data_product_db_id, 'name': str(dataset.version)})
         dataproducts_versions_id = cur.fetchone()[0]
 
     with get_db_connection() as conn, conn.cursor() as cur:

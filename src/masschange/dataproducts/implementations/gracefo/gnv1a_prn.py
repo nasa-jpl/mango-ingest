@@ -18,7 +18,7 @@ class GraceFOGnv1APrnDataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def _get_sql_table_schema(cls) -> str:
+    def get_sql_table_schema(cls) -> str:
         return f"""
             rcv_time bigint not null,
             n_prns int not null,

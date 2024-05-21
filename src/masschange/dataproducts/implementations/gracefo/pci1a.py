@@ -18,7 +18,7 @@ class GraceFOPci1ADataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def _get_sql_table_schema(cls) -> str:
+    def get_sql_table_schema(cls) -> str:
         return f"""
             gps_time bigint not null,
             GRACEFO_id CHAR not null,
