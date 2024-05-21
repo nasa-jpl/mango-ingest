@@ -6,7 +6,7 @@ import psycopg2
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.utils import get_time_series_dataset_classes
+from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.db import get_db_connection
 from masschange.ingest.utils.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates
@@ -148,7 +148,7 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     ensure_database_exists(database_name)
     ensure_metadata_tables_exist(database_name)
 
-    for product_cls in get_time_series_dataset_classes():
+    for product_cls in get_time_series_dataproduct_classes():
         product = product_cls()
         for version in product_cls.get_available_versions():
             for stream_id in product_cls.stream_ids:

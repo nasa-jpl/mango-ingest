@@ -1,11 +1,11 @@
 import unittest
 
-from masschange.dataproducts.utils import get_time_series_dataset_classes
+from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
-        dataset_implementations = get_time_series_dataset_classes()
+        dataset_implementations = get_time_series_dataproduct_classes()
         for implementation in dataset_implementations:
             try:
                 self.assertIsNotNone(implementation.mission)
@@ -21,7 +21,7 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
             'stream_id',
             'dataset_version'
         }
-        dataset_implementations = get_time_series_dataset_classes()
+        dataset_implementations = get_time_series_dataproduct_classes()
         for implementation in dataset_implementations:
             for capture_group_name in mandatory_capture_group_names:
                 try:

@@ -9,13 +9,13 @@ from masschange.dataproducts import implementations as datasetimplementations
 log = logging.getLogger()
 
 
-def get_time_series_dataset_classes() -> Collection[Type[TimeSeriesDataProduct]]:
+def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProduct]]:
     import_submodules(datasetimplementations)
     return TimeSeriesDataProduct.__subclasses__()
 
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
-    datasets_by_name = {ds().get_full_id(): ds() for ds in get_time_series_dataset_classes()}
+    datasets_by_name = {ds().get_full_id(): ds() for ds in get_time_series_dataproduct_classes()}
     dataset = datasets_by_name.get(dataset_id)
     if dataset is not None:
         return dataset
