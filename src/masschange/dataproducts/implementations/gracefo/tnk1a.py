@@ -18,7 +18,7 @@ class GraceFOTnk1ADataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def _get_sql_table_schema(cls) -> str:
+    def get_sql_table_schema(cls) -> str:
         return f"""
             time_intg bigint not null,
             time_frac int not null,

@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 
 from masschange.dataproducts.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
+from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.ingest.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
@@ -14,21 +15,25 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
     input_dir = './tests/input_data/ingest/test_ingest/'
     expected_record_count = 20  # ten from each of two files
 
+    product = GraceFOAcc1ADataProduct()
+    version = TimeSeriesDatasetVersion('04')
+    stream_id = 'C'
+
     def setUp(self):
+        self.dataset = TimeSeriesDataset(self.product, self.version, self.stream_id)
         self.input_filepaths = [os.path.join(self.input_dir, fn) for fn in os.listdir(self.input_dir)]
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
-        dataset = GraceFOAcc1ADataProduct()
+
         previous_record_count = None
 
         for _ in range(self.ingest_repetitions):
             for fp in self.input_filepaths:
-                ingest_file_to_db(dataset, fp)
+                ingest_file_to_db(self.product, fp)
 
             current_record_count = len(
-                dataset.select(TimeSeriesDatasetVersion('04'), 'C', datetime(2000, 1, 1), datetime(2999, 1, 1),
-                               limit_data_span=False))
+                self.dataset.select(datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
             if previous_record_count is None:
                 previous_record_count = current_record_count
 
@@ -37,15 +42,12 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             previous_record_count = current_record_count
 
     def test_all_expected_data_present(self):
-        dataset = GraceFOAcc1ADataProduct()
 
         for _ in range(self.ingest_repetitions):
             for fp in self.input_filepaths:
-                ingest_file_to_db(dataset, fp)
+                ingest_file_to_db(self.product, fp)
 
-            record_count = len(
-                dataset.select(TimeSeriesDatasetVersion('04'), 'C', datetime(2000, 1, 1), datetime(2999, 1, 1),
-                               limit_data_span=False))
+            record_count = len(self.dataset.select(datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
 
             self.assertEqual(self.expected_record_count, record_count)
 

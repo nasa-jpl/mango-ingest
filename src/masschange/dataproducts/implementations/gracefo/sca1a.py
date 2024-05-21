@@ -18,7 +18,7 @@ class GraceFOSca1ADataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def _get_sql_table_schema(cls) -> str:
+    def get_sql_table_schema(cls) -> str:
         # NOTE: qualflag bit 7 = No ICU block number available for GRACE-FO,
         # so assume that icu_blk_nr could be NULL
         return f"""

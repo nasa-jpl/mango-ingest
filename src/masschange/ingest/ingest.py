@@ -13,6 +13,7 @@ import pandas as pd
 import psycopg2
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
@@ -26,7 +27,7 @@ from masschange.utils.timespan import TimeSpan
 log = logging.getLogger()
 
 
-def run(dataset: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
+def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
     """
 
     Parameters
@@ -39,15 +40,15 @@ def run(dataset: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
 
     """
 
-    log.info(f'ingesting {dataset.get_full_id()} data from {src}')
+    log.info(f'ingesting {product.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    reader = dataset.get_reader()
+    reader = product.get_reader()
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
     target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
         else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
     for fp in target_filepaths:
-        ingest_file_to_db(dataset, fp)
+        ingest_file_to_db(product, fp)
 
 
 def get_zipped_input_iterable(root_dir: str,
@@ -85,14 +86,14 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 
-def delete_overlapping_data(dataset: TimeSeriesDataProduct, dataset_version, stream_id: str, data_temporal_span: TimeSpan):
-    table_name = dataset.get_table_name(dataset_version, stream_id)
+def delete_overlapping_data(dataset: TimeSeriesDataset, data_temporal_span: TimeSpan):
+    table_name = dataset.get_table_name()
     with get_db_connection() as conn, conn.cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
-                WHERE   {dataset.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
-                    AND {dataset.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
+                WHERE   {dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
+                    AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
         cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
         conn.commit()
@@ -117,28 +118,28 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(dataset: TimeSeriesDataProduct, src_filepath: str):
+def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
-    reader = dataset.get_reader()
+
+    reader = product.get_reader()
+    dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_stream_id(src_filepath))
+
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
-    data_temporal_span = TimeSpan(begin=min(pd_df[dataset.TIMESTAMP_COLUMN_NAME]),
-                                  end=max(pd_df[dataset.TIMESTAMP_COLUMN_NAME]))
+    data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
+                                  end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
 
-    stream_id = reader.extract_stream_id(src_filepath)
-    dataset_version = reader.extract_dataset_version(src_filepath)
+    ensure_table_exists(dataset)
+    ensure_continuous_aggregates(dataset)
 
-    ensure_table_exists(dataset, dataset_version, stream_id)
-    ensure_continuous_aggregates(dataset, dataset_version, stream_id)
-
-    table_name = dataset.get_table_name(dataset_version, stream_id)
-    delete_overlapping_data(dataset, dataset_version, stream_id, data_temporal_span)
+    table_name = dataset.get_table_name()
+    delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset, dataset_version, stream_id)
-    update_metadata(dataset, dataset_version, stream_id, data_temporal_span, )
+    refresh_continuous_aggregates(dataset)
+    update_metadata(dataset, data_temporal_span)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
