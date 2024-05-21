@@ -19,19 +19,19 @@ missions_router = APIRouter(prefix='/missions')
 for mission in missions:
     mission_router = APIRouter(prefix=f'/{mission.id}')
 
-    mission_datasets_router = APIRouter(prefix='/datasets')
+    mission_data_products_router = APIRouter(prefix='/datasets')
 
-    mission_datasets = [dataset for dataset in get_time_series_dataproduct_classes() if dataset.mission == mission]
+    mission_data_products = [product() for product in get_time_series_dataproduct_classes() if product.mission == mission]
 
-    @mission_datasets_router.get('/', tags=['dataproducts', 'metadata'])
-    def get_available_datasets_for_mission():
-        return {'data': [ds.describe() for ds in sorted(mission_datasets, key=lambda ds: ds.id_suffix)]}
+    @mission_data_products_router.get('/', tags=['dataproducts', 'metadata'])
+    def get_available_data_products_for_mission():
+        return {'data': [product.describe() for product in sorted(mission_data_products, key=lambda product: product.id_suffix)]}
 
-    for dataset in mission_datasets:
-        dataset_router = construct_router(dataset)
-        mission_datasets_router.include_router(dataset_router)
+    for product in mission_data_products:
+        product_router = construct_router(product)
+        mission_data_products_router.include_router(product_router)
 
-    mission_router.include_router(mission_datasets_router)
+    mission_router.include_router(mission_data_products_router)
     missions_router.include_router(mission_router)
 
 
