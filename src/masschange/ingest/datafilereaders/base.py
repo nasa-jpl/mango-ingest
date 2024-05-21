@@ -10,7 +10,7 @@ from typing import Dict, Any, Union, Type, Callable, Optional
 import numpy as np
 import pandas as pd
 
-from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField
+from masschange.datasets.timeseriesdataproductfield import TimeSeriesDataProductField
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
 
@@ -69,7 +69,7 @@ class DataFileReader(ABC):
 
     @classmethod
     @abstractmethod
-    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
         """Return implementation-agnostic definitions for the fields ingested by the reader"""
         pass
 
@@ -183,7 +183,7 @@ class AsciiDataFileReader(DataFileReader):
                              f'expected: "{expected_value}", was: "{first_bad}"')
 
     @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
         return cls.get_input_column_defs()
 
 
@@ -302,7 +302,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         return prod_flag_expanded_data
 
     @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDatasetField]:
+    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
         return [col for col in cls.get_input_column_defs() if not col.is_constant]
 
 
@@ -412,7 +412,7 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
         pass
 
 
-class AsciiDataFileReaderColumn(TimeSeriesDatasetField):
+class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
 

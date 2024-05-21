@@ -9,7 +9,7 @@ import psycopg2
 from psycopg2 import extras
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.datasets.timeseriesdatasetfield import TimeSeriesDatasetField, TimeSeriesDatasetTimestampField
+from masschange.datasets.timeseriesdataproductfield import TimeSeriesDataProductField, TimeSeriesDataProductTimestampField
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.db.utils import list_table_columns as list_db_table_columns
@@ -159,7 +159,7 @@ class TimeSeriesDataProduct(ABC):
 
     @classmethod
     def select(cls, dataset_version, stream_id: str, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDatasetField] = None, aggregation_level: int = 0,
+               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = 0,
                limit_data_span: bool = True) -> List[Dict]:
         fields = fields or [f for f in cls.get_available_fields() if not f.is_constant]
         using_aggregations = aggregation_level > 0
@@ -247,7 +247,7 @@ class TimeSeriesDataProduct(ABC):
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
 
     @classmethod
-    def _validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDatasetField],
+    def _validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDataProductField],
                                    using_aggregations: bool) -> None:
         requested_fields = set(requested_fields)
         available_fields = {f for f in cls.get_available_fields() \
@@ -270,7 +270,7 @@ class TimeSeriesDataProduct(ABC):
             raise ValueError(msg)
 
     @classmethod
-    def _structure_results(cls, requested_fields: Collection[TimeSeriesDatasetField], using_aggregations: bool,
+    def _structure_results(cls, requested_fields: Collection[TimeSeriesDataProductField], using_aggregations: bool,
                            result: Dict) -> Dict:
         structured_result = {}
         for field in requested_fields:
@@ -323,8 +323,8 @@ class TimeSeriesDataProduct(ABC):
         pass
 
     @classmethod
-    def get_available_fields(cls) -> Set[TimeSeriesDatasetField]:
-        timestamp_field: TimeSeriesDatasetField = TimeSeriesDatasetTimestampField(cls.TIMESTAMP_COLUMN_NAME, 'n/a')
+    def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
+        timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME, 'n/a')
         return {timestamp_field}.union(cls.get_reader().get_fields())
 
     @classmethod

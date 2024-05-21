@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Union, Any, Dict, Type
 
 
-class TimeSeriesDatasetField:
+class TimeSeriesDataProductField:
     """
     An abstract class for encapsulating field information common to both reader and presentation/API.
 
@@ -75,7 +75,7 @@ class TimeSeriesDatasetField:
         return description
 
 
-class TimeSeriesDatasetTimestampField(TimeSeriesDatasetField):
+class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
     def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
 
