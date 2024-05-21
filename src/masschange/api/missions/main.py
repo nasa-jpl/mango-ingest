@@ -5,11 +5,11 @@ from fastapi import APIRouter
 from masschange.api.timeseriesdataproductrouterconstructor import construct_router
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.utils import get_time_series_dataset_classes
+from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.missions import Mission
 
 
-missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataset_classes()}
+missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataproduct_classes()}
 
 # Constructs routing for everything in the /missions/{id}/datasets/{id} tree
 # This isn't super-clean, but saves having an equivalent "vine" of two-line files to navigate through.
@@ -21,7 +21,7 @@ for mission in missions:
 
     mission_datasets_router = APIRouter(prefix='/datasets')
 
-    mission_datasets = [dataset for dataset in get_time_series_dataset_classes() if dataset.mission == mission]
+    mission_datasets = [dataset for dataset in get_time_series_dataproduct_classes() if dataset.mission == mission]
 
     @mission_datasets_router.get('/', tags=['dataproducts', 'metadata'])
     def get_available_datasets_for_mission():
