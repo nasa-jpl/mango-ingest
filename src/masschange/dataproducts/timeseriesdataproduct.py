@@ -9,8 +9,8 @@ import psycopg2
 from psycopg2 import extras
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.datasets.timeseriesdataproductfield import TimeSeriesDataProductField, TimeSeriesDataProductTimestampField
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, TimeSeriesDataProductTimestampField
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.db.utils import list_table_columns as list_db_table_columns
 from masschange.ingest.datafilereaders.base import DataFileReader

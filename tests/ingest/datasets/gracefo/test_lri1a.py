@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.implementations.gracefo.lri1a import GraceFOLri1ADataProduct
+from masschange.dataproducts.implementations.gracefo.lri1a import GraceFOLri1ADataProduct
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 from typing import Union
 

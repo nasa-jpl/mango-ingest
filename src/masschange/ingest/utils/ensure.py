@@ -3,9 +3,9 @@ import os
 
 import psycopg2
 
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.datasets.utils import get_time_series_dataset_classes
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.utils import get_time_series_dataset_classes
 from masschange.db import get_db_connection
 from masschange.ingest.utils.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates

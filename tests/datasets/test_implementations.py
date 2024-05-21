@@ -1,6 +1,6 @@
 import unittest
 
-from masschange.datasets.utils import get_time_series_dataset_classes
+from masschange.dataproducts.utils import get_time_series_dataset_classes
 
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):

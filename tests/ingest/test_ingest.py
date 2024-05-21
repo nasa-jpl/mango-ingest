@@ -2,8 +2,8 @@ import os
 import unittest
 from datetime import datetime
 
-from masschange.datasets.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
-from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
+from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.ingest.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
 

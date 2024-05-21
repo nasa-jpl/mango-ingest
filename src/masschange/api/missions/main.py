@@ -4,8 +4,8 @@ from fastapi import APIRouter
 
 from masschange.api.timeseriesdataproductrouterconstructor import construct_router
 
-from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.datasets.utils import get_time_series_dataset_classes
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_time_series_dataset_classes
 from masschange.missions import Mission
 
 
@@ -23,7 +23,7 @@ for mission in missions:
 
     mission_datasets = [dataset for dataset in get_time_series_dataset_classes() if dataset.mission == mission]
 
-    @mission_datasets_router.get('/', tags=['datasets', 'metadata'])
+    @mission_datasets_router.get('/', tags=['dataproducts', 'metadata'])
     def get_available_datasets_for_mission():
         return {'data': [ds.describe() for ds in sorted(mission_datasets, key=lambda ds: ds.id_suffix)]}
 
