@@ -1,11 +1,11 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.datasets.implementations.gracefo.gps1a import GraceFOGps1ADataset
+from masschange.datasets.implementations.gracefo.gps1a import GraceFOGps1ADataProduct
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 from typing import Union
 
 class GraceFOGps1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
-    dataset_cls = GraceFOGps1ADataset
+    dataset_cls = GraceFOGps1ADataProduct
     expected_table_names = ['gracefo_gps1a_04_c', 'gracefo_gps1a_04_d']
 
     expected_field_types = [int, int, str, int, int, str, str, datetime,

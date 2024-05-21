@@ -3,7 +3,7 @@ import os
 
 import psycopg2
 
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.datasets.utils import get_time_series_dataset_classes
 from masschange.db import get_db_connection
@@ -74,7 +74,7 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
         log.info(f'Ensured presence of dataset metadata tables!')
 
 
-def ensure_table_exists(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> None:
+def ensure_table_exists(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> None:
     """
     Ensure that the table for this dataset exists, creating and configuring the table if it does not.
     """
@@ -97,7 +97,7 @@ def ensure_table_exists(dataset: TimeSeriesDataset, dataset_version: TimeSeriesD
             pass
 
 
-def ensure_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion,
+def ensure_continuous_aggregates(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion,
                                  stream_id: str) -> None:
     """
     Ensure that the table for this dataset and stream_id's data exists, creating the table and all necessary views if
@@ -135,7 +135,7 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: Ti
             refresh_continuous_aggregates(dataset, dataset_version, stream_id)
 
 
-def ensure_dataset(dataset: TimeSeriesDataset, version_id: TimeSeriesDatasetVersion, stream_id: str) -> None:
+def ensure_dataset(dataset: TimeSeriesDataProduct, version_id: TimeSeriesDatasetVersion, stream_id: str) -> None:
     ensure_table_exists(dataset, version_id, stream_id)
     ensure_continuous_aggregates(dataset, version_id, stream_id)
 

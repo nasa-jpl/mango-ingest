@@ -2,7 +2,7 @@ import os
 import unittest
 from datetime import datetime
 
-from masschange.datasets.implementations.gracefo.acc1a import GraceFOAcc1ADataset
+from masschange.datasets.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.ingest.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
@@ -19,7 +19,7 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
-        dataset = GraceFOAcc1ADataset()
+        dataset = GraceFOAcc1ADataProduct()
         previous_record_count = None
 
         for _ in range(self.ingest_repetitions):
@@ -37,7 +37,7 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             previous_record_count = current_record_count
 
     def test_all_expected_data_present(self):
-        dataset = GraceFOAcc1ADataset()
+        dataset = GraceFOAcc1ADataProduct()
 
         for _ in range(self.ingest_repetitions):
             for fp in self.input_filepaths:

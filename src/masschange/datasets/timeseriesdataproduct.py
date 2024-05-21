@@ -21,7 +21,7 @@ from masschange.utils.timespan import TimeSpan
 log = logging.getLogger()
 
 
-class TimeSeriesDataset(ABC):
+class TimeSeriesDataProduct(ABC):
     # TODO: Document this class properly
     description: str = ''
     mission: Type[Mission]

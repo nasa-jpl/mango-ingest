@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Collection, Set
 
-from masschange.datasets.timeseriesdataset import TimeSeriesDataset
+from masschange.datasets.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.datasets.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.utils.timespan import TimeSpan
@@ -10,7 +10,7 @@ from masschange.utils.timespan import TimeSpan
 log = logging.getLogger()
 
 
-def get_extant_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> Set[str]:
+def get_extant_continuous_aggregates(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion, stream_id: str) -> Set[str]:
     with get_db_connection() as conn, conn.cursor() as cur:
         sql = f"""select table_name from information_schema.views where table_name like '{dataset.get_table_name(dataset_version, stream_id)}_%';"""
         cur.execute(sql)
@@ -30,7 +30,7 @@ def delete_caggs(table_names: Collection[str]):
 
 
 def get_continuous_aggregate_create_statements(
-        dataset: TimeSeriesDataset,
+        dataset: TimeSeriesDataProduct,
         dataset_version: TimeSeriesDatasetVersion,
         stream_id: str,
         aggregation_level: int) -> str:
@@ -67,7 +67,7 @@ def get_continuous_aggregate_create_statements(
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, dataset_version: TimeSeriesDatasetVersion, stream_id: str):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataProduct, dataset_version: TimeSeriesDatasetVersion, stream_id: str):
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name(dataset_version, stream_id)}')
     for aggregation_level in dataset.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(dataset_version, stream_id,
