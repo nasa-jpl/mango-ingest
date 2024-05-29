@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Collection
 from typing import Type
-
+from inspect import isabstract
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.utils.packaging import import_submodules
 from masschange.dataproducts import implementations as datasetimplementations
@@ -11,7 +11,9 @@ log = logging.getLogger()
 
 def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProduct]]:
     import_submodules(datasetimplementations)
-    return TimeSeriesDataProduct.__subclasses__()
+    # return only classes that are not abstract
+    return  [dataset for dataset in TimeSeriesDataProduct.__subclasses__() if not isabstract(dataset)]
+
 
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
