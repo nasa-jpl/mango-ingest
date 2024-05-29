@@ -11,9 +11,7 @@ log = logging.getLogger()
 
 def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProduct]]:
     import_submodules(datasetimplementations)
-    # return only classes that are not abstract
-    return  [dataset for dataset in TimeSeriesDataProduct.__subclasses__() if not isabstract(dataset)]
-
+    return TimeSeriesDataProduct.__subclasses__()
 
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
