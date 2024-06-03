@@ -14,7 +14,7 @@ class GraceFOGni1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'GNI1B'
     stream_ids = {'C', 'D'}
-    time_series_interval = timedelta(seconds=2)
+    time_series_interval = timedelta(seconds=1)
     processing_level = '1B'
 
     @classmethod
