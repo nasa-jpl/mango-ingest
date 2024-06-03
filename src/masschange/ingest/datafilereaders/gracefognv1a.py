@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
-from masschange.ingest.utils.lat_lon_from_xyz import computeLatLon
+from masschange.ingest.utils.geolocation import Geolocation
 
 class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
     @classmethod
@@ -51,7 +51,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double, unit='s/s'),
             AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8', unit=None),
 
-            DerivedAsciiDataFileReaderColumn(name='location', np_type='U32', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None),
             DerivedAsciiDataFileReaderColumn(name='orbit_direction', np_type='U1', unit=None)
         ]
 
@@ -60,40 +60,6 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
         return cls.get_reference_epoch() + timedelta(seconds=row.rcv_time)
 
     @classmethod
-    def append_location_fields(cls, df):
-        df['location'] = df.apply(cls.populate_location, axis=1, result_type='expand')
-        # TODO: confirm that we can use ZPOS instead on lat to determine orbit direction
-        # It is better to use zpos because it is already available in the dataframe
-        df['orbit_direction'] = cls.get_orbit_direction(df['zpos'])
+    def append_derived_fields(cls, df):
+        Geolocation.append_location_fields(df)
 
-
-    @classmethod
-    def populate_location(cls, row)-> str:
-        lat, lon = computeLatLon(row.xpos, row.ypos, row.zpos)
-        # returns a string representation of POINT in WKT format
-        return f'POINT( {lon}  {lat})'
-
-    @classmethod
-    def get_orbit_direction(cls, coord_array) -> np.array:
-        """
-            Determine orbit direction (ascending or descending) based of values in input coord_array:
-            If next value is bigger or equal to the current value, the direction is ascending (‘A’),
-            otherwise descending (‘D’)
-
-            Parameters
-            ----------
-            coord_array -  np.array of doubles representing vertical coordinates
-
-            Return
-            ----------
-            np.array of characters, 'A' for accending, 'D' for descending
-
-            """
-        orbit_direction= np.where(np.diff(coord_array) <= 0, 'A', 'D')
-
-        # We can't calculate difference for the last element,
-        # so assume that the direction of orbit for the last point
-        # is the same as for the previous point.
-        # Append one value to the end, the same as the last one
-
-        return np.append(orbit_direction, orbit_direction[-1])
