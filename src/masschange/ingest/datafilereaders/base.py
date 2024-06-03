@@ -120,9 +120,8 @@ class AsciiDataFileReader(DataFileReader):
         #  at all
         df = pd.DataFrame(raw_data)
 
-        # TODO this is a temporary solution until we figure out a generic way
-        # to add geolocation to a dataset
-        cls.append_location_fields(df)
+        # Append custom fields to the dataframe, if needed
+        cls.append_derived_fields(df)
 
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
@@ -137,10 +136,10 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    def append_location_fields(cls, df):
+    def append_derived_fields(cls, df):
         """
-        Append a location and orbit_direction (ascending or descending flag)
-        columns to the data frame.
+        Use this method to append fields that are not read directly from the product file,
+        for example, geolocation field
 
         Parameters
         ----------
