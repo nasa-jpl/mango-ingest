@@ -10,9 +10,13 @@ class TimeSeriesDataProductField:
 
     Attributes
         name (str): the field's name, as used in the database and presented via the API
+        description(str): a description which may be displayed in the presentation layer (API)
+        unit (str): the unit of measurement for the field's values
         const_value (Any | None): an optional value for the column, which is assumed to be constant across every datum '
         of a given data product, which is validated during ingestion
-        VALID_AGGREGATIONS (StrEnum): a set of enumerated aggregations which may
+        aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled.
+        is_derived (bool): True if this field is derived from (but not stored as a column in) the database,
+         i.e. location, which is derived from timestamp and the GNV data
 
     """
 
@@ -21,15 +25,17 @@ class TimeSeriesDataProductField:
     unit: str
     const_value: Union[Any, None]
     aggregations: Set[str] = set()
+    is_derived: bool  = False  # only True via subclass override
 
     VALID_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
     def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
-                 const_value: Union[Any, None] = None):
+                 const_value: Union[Any, None] = None, is_derived: bool = False):
         self.name = name.lower()
         self.unit = unit
         self.description = description
         self.const_value = const_value
+        self.is_derived = is_derived
 
         if aggregations is not None:
             if not all([agg in self.VALID_AGGREGATIONS for agg in aggregations]):
@@ -86,6 +92,23 @@ class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
             raise ValueError(f'{self.__class__} cannot be instantiated with non-None const_value arg')
 
         super().__init__(name, unit, description)
+
+    @property
+    def python_type(self) -> Type:
+        return datetime
+
+
+class TimeSeriesDataProductDerivedLocationField(TimeSeriesDataProductField):
+    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+                 const_value: Union[Any, None] = None):
+
+        if aggregations is not None:
+            raise ValueError(f'{self.__class__} cannot be instantiated with non-None aggregations arg')
+
+        if const_value is not None:
+            raise ValueError(f'{self.__class__} cannot be instantiated with non-None const_value arg')
+
+        super().__init__(name, unit, description, is_derived=True)
 
     @property
     def python_type(self) -> Type:
