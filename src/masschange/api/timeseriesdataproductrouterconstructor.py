@@ -52,7 +52,6 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     ):
         if dataset_version.value == ' ':
             raise HTTPException(400, "Come on bro, don't try to break it.  Check out https://github.com/pydantic/pydantic/discussions/7441 if you're that curious.")
-        #  ensure that timestamp column name is always present in query
         field_names = fields
         fields = set()
         dataset_fields_by_name = {field.name: field for field in product.get_available_fields()}
@@ -61,14 +60,23 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
                 fields.add(dataset_fields_by_name[field_name])
             except KeyError:
                 raise HTTPException(status_code=400, detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+
+        #  ensure that timestamp column name is always present in query
         fields.add(dataset_fields_by_name[product.TIMESTAMP_COLUMN_NAME])
 
+        resolve_location =  dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME)
         downsampling_level = int(math.log(downsampling_factor.value, product.aggregation_step_factor))
 
         try:
             query_start = datetime.now()
             dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), stream_id.name)
-            results = dataset.select(from_isotimestamp, to_isotimestamp, fields=fields, aggregation_level=downsampling_level)
+            results = dataset.select(
+                from_isotimestamp,
+                to_isotimestamp,
+                fields=fields,
+                aggregation_level=downsampling_level,
+                resolve_location=resolve_location
+            )
             query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
         except TooMuchDataRequestedError as err:
             raise HTTPException(status_code=400, detail=str(err))

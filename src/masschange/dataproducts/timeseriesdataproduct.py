@@ -2,22 +2,15 @@ import logging
 import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection, Sequence
-from datetime import datetime, timedelta
-from typing import List, Dict, Set, Type, Union
+from datetime import timedelta
+from typing import Dict, Set, Type
 
-import psycopg2
-from psycopg2 import extras
-
-from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductTimestampField
+    TimeSeriesDataProductTimestampField, TimeSeriesDataProductDerivedLocationField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
-from masschange.db.utils import list_table_columns as list_db_table_columns
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
-from masschange.utils.misc import get_human_readable_timedelta
-from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
@@ -35,7 +28,8 @@ class TimeSeriesDataProduct(ABC):
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
-    TIMESTAMP_COLUMN_NAME = 'timestamp'
+    TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
+    LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
 
     @classmethod
     def get_full_id(cls) -> str:
@@ -113,9 +107,23 @@ class TimeSeriesDataProduct(ABC):
                           result: Dict) -> Dict:
         structured_result = {}
         for field in requested_fields:
+            # timestamp should not be wrapped with the usual 'value': $value structure
             if field.name == cls.TIMESTAMP_COLUMN_NAME:
                 structured_result[field.name] = result[field.name]
 
+            # location, likewise, must be handled exceptionally
+            elif field.name == cls.LOCATION_COLUMN_NAME:
+                if field.is_derived:
+                    # for non-GNV, we want ta avoid wrapping with the usual 'value': $value format
+                    structured_result[cls.LOCATION_COLUMN_NAME] = result[cls.LOCATION_COLUMN_NAME]
+                else:
+                    # for GNV, the component lat/lon must be nested into a 'location' attribute
+                    structured_result[cls.LOCATION_COLUMN_NAME] = {
+                        'latitude': result.get('latitude'),
+                        'longitude': result.get('longitude')
+                    }
+
+            # normal fields, with aggregations
             elif using_aggregations and field.has_aggregations:
                 for column_name in field.aggregation_db_column_names:
                     agg_name = column_name.replace(f'{field.name}_', '', 1)
@@ -123,6 +131,7 @@ class TimeSeriesDataProduct(ABC):
                         structured_result[field.name] = {}
                     structured_result[field.name][agg_name] = result[column_name]
 
+            # normal fields, without aggregations
             else:
                 if field.name not in structured_result:
                     structured_result[field.name] = {}
@@ -149,7 +158,9 @@ class TimeSeriesDataProduct(ABC):
     def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
         timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
                                                                                           'n/a')
-        return {timestamp_field}.union(cls.get_reader().get_fields())
+        derived_location_field: TimeSeriesDataProductField = TimeSeriesDataProductDerivedLocationField(cls.LOCATION_COLUMN_NAME,
+                                                                                          'n/a')
+        return {timestamp_field, derived_location_field}.union(cls.get_reader().get_fields())
 
     @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:

@@ -1,12 +1,13 @@
 import logging
 from collections.abc import Collection
 from datetime import datetime
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Iterable
 
 import psycopg2
 from psycopg2 import extras
 
 from masschange.api.errors import TooMuchDataRequestedError
+from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
@@ -98,17 +99,46 @@ class TimeSeriesDataset:
     def _get_data_end(self) -> Union[datetime, None]:
         return self._get_data_span_stat('max')
 
+    @staticmethod
+    def _get_sql_select_columns_clause(column_names: Collection[str]):
+        """
+        Given a collection of column names, return a select clause to fetch those columns when querying SQL.
+        Processes special cases (in this case, just location) where some transformation must be applied between SQL-land
+        and Python-land.
+
+        This type of behaviour may end up being necessary for fields other than location.  If this is necessary, this
+        should be refactored, as this implementation is a stopgap approach.
+        """
+        column_names = list(set(column_names))  # deduplicate and store in indexable format
+        clause = ''
+        for idx, column_name in enumerate(column_names):
+            if column_name == TimeSeriesDataProduct.LOCATION_COLUMN_NAME:
+                clause += f"st_x({TimeSeriesDataProduct.LOCATION_COLUMN_NAME}) as longitude, st_y({TimeSeriesDataProduct.LOCATION_COLUMN_NAME}) as latitude"
+            else:
+                clause += column_name
+
+            if idx < len(column_names) - 1:
+                clause += ", "
+
+
+
+        return clause
+
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = 0,
-               limit_data_span: bool = True) -> List[Dict]:
-        fields = fields or [f for f in self.product.get_available_fields() if not f.is_constant]
+               limit_data_span: bool = True, resolve_location: bool = False) -> List[Dict]:
+        if fields is None:
+            fields = [f for f in self.product.get_available_fields() if not f.is_constant]
+
         using_aggregations = aggregation_level > 0
         self.product.validate_requested_fields(fields, using_aggregations=using_aggregations)
+
+        non_derived_fields = [f for f in fields if not f.is_derived]
         if not using_aggregations:
-            column_names = {field.name for field in fields}
+            column_names = {field.name for field in non_derived_fields}
         else:
             column_names = set()
-            for field in fields:
+            for field in non_derived_fields:
                 if field.has_aggregations:
                     column_names.update(field.aggregation_db_column_names)
                 else:
@@ -123,7 +153,7 @@ class TimeSeriesDataset:
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = self.get_table_or_view_name(aggregation_level)
-            select_columns_clause = ','.join(column_names)
+            select_columns_clause = self._get_sql_select_columns_clause(column_names)
 
             try:
                 sql = f"""
@@ -143,12 +173,21 @@ class TimeSeriesDataset:
                 logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
                 available_columns = list_db_table_columns(table_name)
                 missing_columns = {f.name for f in self.product.get_available_fields() if
-                                   f.name not in available_columns}
+                                   f.name not in available_columns and not f.is_derived}
                 raise ValueError(
                     f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
                 logging.error(f'query failed with {err}: {sql}')
                 raise Exception
+
+
+        try:
+            if resolve_location:
+                self.attach_lat_lon(from_dt, to_dt, results)
+        except psycopg2.Error as err:
+            log.error(f'Failed to resolve location data for {self.get_table_name()} over span ({from_dt}, {to_dt}) '
+                      f'due to {err}')
+
 
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
 
@@ -195,3 +234,50 @@ class TimeSeriesDataset:
             );
         """
         return sql
+
+    def attach_lat_lon(self, from_dt: datetime, to_dt: datetime, data: Iterable[Dict]) -> None:
+        """
+        Assign approximate locations to a set of results from TimeSeriesDataset.select(), using ingested GNV data to map
+        datum timestamps to a lat/lon.  The format is 'location': {'latitude': $value, 'longitude': $value}
+        The maximal error will be equal to +/- the satellite's movement in one second (i.e. half the temporal resolution
+        of the GNV dataset).
+        A value of None will be assigned to input data for which there is no GNV data available.
+        """
+        gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), self.version, self.stream_id)
+        gnv_field_names = {gnv_dataset.product.TIMESTAMP_COLUMN_NAME, 'location'}
+        gnv_fields = [f for f in gnv_dataset.product.get_available_fields() if f.name in gnv_field_names]
+
+        # Need to ensure that the GNV data span fully encloses the input data span
+        gnv_from_dt = from_dt - GraceFOGnv1ADataProduct.time_series_interval
+        gnv_to_dt = to_dt + GraceFOGnv1ADataProduct.time_series_interval
+        gnv_data = gnv_dataset.select(gnv_from_dt, gnv_to_dt, gnv_fields)
+
+        data_iter = iter(data)
+        geo_iter = iter(gnv_data)
+
+        data_el = next(data_iter)
+        gnv_pair_begin = None
+        gnv_pair_end = next(geo_iter)
+        try:
+            while True:  # iterate until a StopIteration
+                gnv_pair_begin = gnv_pair_end
+                gnv_pair_end = next(geo_iter)
+
+                gnv_begin_ts = gnv_pair_begin[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
+                gnv_end_ts = gnv_pair_end[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
+                el_ts = data_el[self.product.TIMESTAMP_COLUMN_NAME]
+
+                # for each datum falling within the timespan bounded by the gnv pair, assign it the location of
+                #  the closest bounding gnv record
+                while (gnv_begin_ts <= el_ts <= gnv_end_ts):
+                    if abs(el_ts - gnv_begin_ts) <= abs(el_ts - gnv_end_ts):
+                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_begin[GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
+                    else:
+                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_end[GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
+
+                    data_el = next(data_iter)
+        except StopIteration:
+            pass
+
+        while (data_el := next(data_iter, None)) is not None:
+            data_el[self.product.LOCATION_COLUMN_NAME] = None
