@@ -64,7 +64,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
         #  ensure that timestamp column name is always present in query
         fields.add(dataset_fields_by_name[product.TIMESTAMP_COLUMN_NAME])
 
-        resolve_location =  dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME)
+        resolve_location =  dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME) in fields
         downsampling_level = int(math.log(downsampling_factor.value, product.aggregation_step_factor))
 
         try:
