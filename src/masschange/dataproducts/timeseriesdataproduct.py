@@ -159,7 +159,7 @@ class TimeSeriesDataProduct(ABC):
         timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
                                                                                           'n/a')
         derived_location_field: TimeSeriesDataProductField = TimeSeriesDataProductDerivedLocationField(cls.LOCATION_COLUMN_NAME,
-                                                                                          'n/a')
+                                                                                          'Latitude/Longitude (EPSG:4326)')
         return {timestamp_field, derived_location_field}.union(cls.get_reader().get_fields())
 
     @classmethod
