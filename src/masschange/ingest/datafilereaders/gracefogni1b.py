@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
-from masschange.ingest.utils.lat_lon_from_xyz import computeLatLon
 
 class GraceFOGni1BDataFileReader(AsciiDataFileReader):
     @classmethod
