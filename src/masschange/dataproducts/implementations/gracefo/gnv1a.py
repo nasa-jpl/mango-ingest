@@ -1,5 +1,8 @@
 from datetime import timedelta
+from typing import Set
 
+from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
+    TimeSeriesDataProductTimestampField
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefognv1a import GraceFOGnv1ADataFileReader
 from masschange.missions import GraceFO
@@ -16,6 +19,15 @@ class GraceFOGnv1ADataProduct(TimeSeriesDataProduct):
     stream_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=2)
     processing_level = '1A'
+
+    @classmethod
+    def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
+        timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
+                                                                                          'n/a')
+        # TimeSeriesDataProductField is used here in contrast to non-GNV products (which use
+        # TimeSeriesDataProductDerivedLocationField), because in this case the location field is not derived1.
+        location_field: TimeSeriesDataProductField = TimeSeriesDataProductField(cls.LOCATION_COLUMN_NAME, 'n/a')
+        return {timestamp_field, location_field}.union(cls.get_reader().get_fields())
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
