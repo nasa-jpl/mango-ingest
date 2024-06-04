@@ -112,5 +112,5 @@ class TimeSeriesDataProductDerivedLocationField(TimeSeriesDataProductField):
 
     @property
     def python_type(self) -> Type:
-        return datetime
+        return dict
 
