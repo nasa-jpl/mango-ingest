@@ -130,10 +130,11 @@ class TimeSeriesDataset:
         if fields is None:
             fields = [f for f in self.product.get_available_fields() if not f.is_constant]
 
-        using_aggregations = aggregation_level > 0
-        self.product.validate_requested_fields(fields, using_aggregations=using_aggregations)
-
         non_derived_fields = [f for f in fields if not f.is_derived]
+
+        using_aggregations = aggregation_level > 0
+        self.product.validate_requested_fields(non_derived_fields, using_aggregations=using_aggregations)
+
         if not using_aggregations:
             column_names = {field.name for field in non_derived_fields}
         else:
