@@ -1,10 +1,10 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Set, Collection
 from datetime import datetime
 from typing import Union, Any, Dict, Type
 
 
-class TimeSeriesDataProductField:
+class TimeSeriesDataProductField(ABC):
     """
     An abstract class for encapsulating field information common to both reader and presentation/API.
 
@@ -98,6 +98,12 @@ class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
         return datetime
 
 
+class GraceFOGnv1ALocationField(TimeSeriesDataProductField):
+    @property
+    def python_type(self) -> Type:
+        return dict
+
+
 class TimeSeriesDataProductDerivedLocationField(TimeSeriesDataProductField):
     def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
@@ -113,4 +119,3 @@ class TimeSeriesDataProductDerivedLocationField(TimeSeriesDataProductField):
     @property
     def python_type(self) -> Type:
         return dict
-
