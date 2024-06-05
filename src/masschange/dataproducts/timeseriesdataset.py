@@ -152,6 +152,15 @@ class TimeSeriesDataset:
             raise TooMuchDataRequestedError(
                 f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
+        # TODO: Implement GNV1A aggregation, and derive a GNV1A aggregation factor to use, automatically.  Then use the
+        #  max available aggregation factor for GNV1A to determine whether the following check triggers
+        max_location_query_temporal_span = self.product.query_result_limit * self.product.time_series_interval
+        if resolve_location and requested_temporal_span > max_location_query_temporal_span:
+            raise TooMuchDataRequestedError(
+                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum '
+                f'allowed by server when requesting field "{self.product.LOCATION_COLUMN_NAME}" '
+                f'({get_human_readable_timedelta(max_location_query_temporal_span)})')
+
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = self.get_table_or_view_name(aggregation_level)
             select_columns_clause = self._get_sql_select_columns_clause(column_names)
