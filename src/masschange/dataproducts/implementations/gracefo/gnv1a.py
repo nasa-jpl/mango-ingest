@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Set
 
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductTimestampField
+    TimeSeriesDataProductTimestampField, GraceFOGnv1ALocationField
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefognv1a import GraceFOGnv1ADataFileReader
 from masschange.missions import GraceFO
@@ -26,7 +26,7 @@ class GraceFOGnv1ADataProduct(TimeSeriesDataProduct):
                                                                                           'n/a')
         # TimeSeriesDataProductField is used here in contrast to non-GNV products (which use
         # TimeSeriesDataProductDerivedLocationField), because in this case the location field is not derived1.
-        location_field: TimeSeriesDataProductField = TimeSeriesDataProductField(cls.LOCATION_COLUMN_NAME, 'n/a')
+        location_field: TimeSeriesDataProductField = GraceFOGnv1ALocationField(cls.LOCATION_COLUMN_NAME, 'n/a')
         return {timestamp_field, location_field}.union(cls.get_reader().get_fields())
 
     @classmethod
