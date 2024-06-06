@@ -1,0 +1,288 @@
+header:
+  dimensions:
+    num_records: 864078
+  global_attributes:
+    acknowledgement: GRACE-FO is a joint mission of the US National Aeronautics and Space Administration and the German Research Center for Geosciences.  Use the digital object identifier provided in the id attribute when citing this data.  See https://podaac.jpl.nasa.gov/CitingPODAAC
+    conventions: CF-1.6, ACDD-1.3, ISO 8601
+    creator_email: gracefo@podaac.jpl.nasa.gov
+    creator_institution: NASA/JPL
+    creator_name: GRACE Follow-On Science Data System
+    creator_type: group
+    creator_url: http://gracefo.jpl.nasa.gov
+    date_created: 2023-06-02T03:55:36Z
+    date_issued: 2023-06-24T00:35:34Z
+    history:
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-05-31_C_NYA_738844840.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 05:48:43 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738867100.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 09:01:03 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738880720.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 12:17:28 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738892180.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 15:23:51 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738903640.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 18:25:20 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738914980.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-01 21:42:09 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738926320.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-02 00:38:55 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+      - "INPUT FILE NAME               : AHK1A<-AHK1A_2023-06-01_C_NYA_738930760.pass"
+      - "INPUT FILE CREATION TIME (UTC): AHK1A<-2023-06-02 03:55:19 by operator"
+      - "INPUT FILE SOFTWARE VERSION   : AHK1A<-V04.10.2020-11-09-52-g1083"
+      - "INPUT FILE BUILDTIME TAG      : AHK1A<-12-13_12:41:31_PST"
+    id: 10.5067/GFJPL-L1A04
+    institution: NASA/JPL
+    instrument: ACC
+    instrument_vocabulary: NASA Global Change Master Directory instrument keywords
+    keywords: GRACE-FO, ACC
+    keywords_vocabulary: NASA Global Change Master Directory (GCMD) Science Keywords
+    license: https://science.nasa.gov/earth-science/earth-science-data/data-information-policy
+    naming_authority: org.doi.dx
+    platform: GRACE C
+    platform_vocabulary: NASA Global Change Master Directory platform keywords
+    processing_level: 1A
+    product_version: 04
+    program: NASA Earth Systematic Missions Program
+    project: NASA Gravity Recovery And Climate Experiment Follow-On (GRACE-FO)
+    publisher_email: podaac@jpl.nasa.gov
+    publisher_institution: NASA/JPL
+    publisher_name: Physical Oceanography Distributed Active Archive Center
+    publisher_type: group
+    publisher_url: http://podaac.jpl.nasa.gov
+    references: https://podaac.jpl.nasa.gov/gravity/gracefo-documentation
+    source: Accelerometer housekeeping data from GRACE C
+    summary: ACC housekeeping data
+    time_coverage_start: 2023-06-01T00:00:00.00
+    time_coverage_stop: 2023-06-01T23:59:59.96
+    title: GRACE-FO Level-1A Accelerometer Housekeeping Data
+  non-standard_attributes:
+    epoch_time: 2000-01-01T12:00:00.00
+    software_build_time: 2021-07-16T15:25:33-07:00
+    software_version: V04.10.2020-11-09-11-gb50e
+    start_time_epoch_secs: 738849600.0077389
+    stop_time_epoch_secs: 738935999.9626369
+  variables:
+    - rcvtime_intg:
+        comment: 1st column
+        coverage_content_type: referenceInformation
+        long_name: Integer portion of time, in seconds past 12:00:00 noon of January 1, 2000 in OBC Time
+        units: seconds
+    - rcvtime_frac:
+        comment: 2nd column
+        coverage_content_type: referenceInformation
+        long_name: Fractional portion of time tag, in microseconds
+        units: microseconds
+        valid_range: 0,999999
+    - time_ref:
+        comment: 3rd column
+        coverage_content_type: referenceInformation
+        long_name: Time reference frame
+        units: char
+        value_meanings:
+          - R = Receiver, OBC, or LRI time
+          - G = GPS time
+    - GRACEFO_id:
+        comment: 4th column
+        coverage_content_type: referenceInformation
+        long_name: GRACE-FO satellite identifier
+        units: char
+        valid_range: C,D
+        value_meanings:
+          - C = GRACE-FO 1 (GRACE C)
+          - D = GRACE-FO 2 (GRACE D)
+    - qualflg:
+        comment: 5th column
+        coverage_content_type: qualityInformation
+        flag_masks: 1b, 2b, 4b, 8b, 16b, 32b, 64b, 128b
+        flag_meanings:
+          - bit 0 = 0 - Receiver Time, 1 - Spacecraft elapsed time
+          - bit 1 = 0 - Timing pulse sync, 1 - No Timing pulse sync
+          - bit 2 = Not defined
+          - bit 3 = Not defined
+          - bit 4 = ACC Mode. 0 - Normal range mode, 1 - Large range mode
+          - bit 5 = IPU nav/timing packet received
+          - bit 6 = No OBC-to-Receiver time mapping
+          - bit 7 = No ICU block number available for GRACE-FO
+        long_name: Data quality flag
+    - prod_flag:
+        bit_masks: !<!> "[1b, 2b, 4b, 8b, 16b, 32b, 64b, 128b, 256b, 512b, 1024b, 2048b, 4096b, 8192b, 16384b, 32768b, 65536b, 131072b, 262144b, 524288b, 1048576b, 2097152b, 4194304b, 8388608b, 1677216b, 33554432b, 67108864b, 134217728b, 268435456b, 536870912b]"
+        bit_meanings:
+          - bit 0 = TFEEU_IF
+          - bit 1 = TFEEU_REF
+          - bit 2 = TFEEU_X
+          - bit 3 = TFEEU_YZ
+          - bit 4 = analog_GND
+          - bit 5 = +3.3V
+          - bit 6 = Vp
+          - bit 7 = MES_Vd
+          - bit 8 = MES_DET_X1
+          - bit 9 = MES_DET_X2
+          - bit 10 = MES_DET_X3
+          - bit 11 = MES_DET_Y1
+          - bit 12 = MES_DET_Y2
+          - bit 13 = MES_DET_Z1
+          - bit 14 = TSU_Y+
+          - bit 15 = TICUN
+          - bit 16 = TSU_Y-
+          - bit 17 = TSU_Z+
+          - bit 18 = TSU_Z-
+          - bit 19 = +5V
+          - bit 20 = TICUR
+          - bit 21 = +15V
+          - bit 22 = -15V
+          - bit 23 = +48V
+          - bit 24 = -48V
+          - bit 25 = Not defined
+          - bit 26 = ICU block number
+          - bit 27 = PPS Source
+          - bit 28 = Sync Quality Index
+          - bit 29 = Status flag
+          - bits 30-31 = Not defined
+        comment: 6th column
+        coverage_content_type: referenceInformation
+        long_name: Product flag, if bit set to 1, value is present in record, bit 0 is rightmost
+    - TFEEU_IF:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TFEEU_REF:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TFEEU_X:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TFEEU_YZ:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - analog_GND:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - +3.3V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - Vp:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_Vd:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_X1:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_X2:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_X3:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_Y1:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_Y2:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - MES_DET_Z1:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TSU_Y+:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TICUN:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TSU_Y-:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TSU_Z+:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TSU Z-:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - +5V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - TICUR:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - +15V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - -15V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - +48V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - -48V:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: physicalMeasurement
+    - status:
+        comment: next column, if prod_flag bit set
+        long_name: Not defined for GRACE-FO
+    - icu_blk_nr:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: referenceInformation
+        long_name: ICU block number. Assigned with the millisecond of the day of the timestamp for GRACE-FO.
+    - PPS_source:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: referenceInformation
+        long_name: PPS source
+        valid_range: 0, 5
+        value_meanings:
+          - 0 - IN SYNC WITH GPS
+          - 1 - OUT OF SYNC
+          - 2 - SYNC IN PROGRESS BAD PPS
+          - 3 - SYNC IN PROGRESS GOOD PPS
+          - 4 - SYNC TO GROUND UTC IN PROGRESS
+          - 5 - IN SYNC WITH GROUND UTC
+    - Sync_Qual:
+        comment: next column, if prod_flag bit set
+        coverage_content_type: qualityInformation
+        long_name: Sync Quality Index
+        valid_range: 0, 3
+        value_meanings:
+          - 0 - PPS RECEIVED TIME PACKET RECEIVED
+          - 1 - PPS NOT RECEIVED TIME PACKET RECEIVED
+          - 2 - PPS RECEIVED TIME PACKET NOT RECEIVED
+          - 3 - PPS NOT RECEIVED TIME PACKET NOT RECEIVED
+    - statusflag:
+        bit_masks: !<!> "[1b, 2b, 4b, 8b, 16b, 32b, 64b, 128b, 256b, 512b, 1024b, 2048b, 4096b, 8192b, 16384b, 32768b, 65536b, 131072b, 262144b]"
+        bit_meanings:
+          - bit 0 = Test registers. 0 - Test ADC registers function is enabled, 1 - Test ADC registers function is disabled
+          - bit 1 = Status, Vp. 0 - Vp 10V, 1 - Vp 40V
+          - bit 2 = Status, Vd. 0 - Vd 5Vrms, 1 - Vp 1.25Vrms
+          - bit 3 = Flag, SCI_ACC_X. 0 - ADC is synchronised, 1 - Time-out is detected
+          - bit 4 = Flag, SCI_ACC_Y
+          - bit 5 = Flag, SCI_ACC_Z
+          - bit 6 = Flag, SCI_ACC_Phi
+          - bit 7 = Flag, SCI_ACC_Theta
+          - bit 8 = Flag, SCI_ACC_Psi
+          - bit 9 = Flag, SCI_VP
+          - bit 10 = Flag, SCI_MUX1
+          - bit 11 = Flag, SCI_MUX2
+          - bit 12 = Flag, SCI_MUX3
+          - bit 13 = Flag, test registers. Shows when the ADC registers check has proceeded. 0 - ADC bit registers are NOT tested, 1 - ADC registers are tested
+          - bit 14 = Flag, validity of registers. 0 - All the ADC registers are identical to the initial value, 1 - At least one of the ADC registers is corrupt
+          - bit 15 = GWT. 0 - The stops are connected, 1 - The stops are NOT connected
+          - bit 16 = Event Report Generation. 0 - Event Report Generation function is disabled, 1 - Event Report Generation function is enabled
+          - bit 17 = PPS Channel. 0 - PPS A, 1 - PPS B
+          - bit 18 = Uart Channel. 0 - Uart A, 1 - Uart B
+          - bits 19-31 = Not defined
+        comment: next column, if prod_flag bit set
+        coverage_content_type: qualityInformation
+        long_name: Status flag
+# End of YAML header
