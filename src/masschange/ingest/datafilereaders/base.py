@@ -10,6 +10,7 @@ from typing import Dict, Any, Union, Type, Callable, Optional
 import numpy as np
 import pandas as pd
 
+from masschange.ingest.errors import EmptyProductException
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
@@ -108,6 +109,8 @@ class AsciiDataFileReader(DataFileReader):
         # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most dataproducts.
         # If this is not the case, refactoring will be necessary.
         raw_data = cls._load_raw_data_from_file(filepath)
+        if raw_data.size == 0:
+            raise EmptyProductException(f'{filepath} seems to have no data...')
 
         try:
             constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
@@ -193,6 +196,8 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
 
         # get raw data as 2D array of strings
         raw_data_as_str = cls._load_raw_data_from_file(filepath)
+        if raw_data_as_str.size == 0:
+            raise EmptyProductException(f'{filepath} seems to have no data...')
 
         # create an empty data frame
         df = pd.DataFrame()

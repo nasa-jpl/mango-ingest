@@ -23,6 +23,7 @@ from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, ord
 from masschange.ingest.utils.metadata import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
+from masschange.ingest.errors import EmptyProductException
 
 log = logging.getLogger()
 
@@ -48,8 +49,10 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
     target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
         else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
     for fp in target_filepaths:
-        ingest_file_to_db(product, fp)
-
+        try:
+            ingest_file_to_db(product, fp)
+        except EmptyProductException as e:
+            log.warning(f'{e} Skipping ingestion of the file...')
 
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,

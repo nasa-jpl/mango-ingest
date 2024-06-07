@@ -1,0 +1,121 @@
+header:
+  dimensions:
+    num_records: 0
+  global_attributes:
+    acknowledgement: GRACE-FO is a joint mission of the US National Aeronautics and Space Administration and the German Research Center for Geosciences.  Use the digital object identifier provided in the id attribute when citing this data.  See https://podaac.jpl.nasa.gov/CitingPODAAC
+    conventions: CF-1.6, ACDD-1.3, ISO 8601
+    creator_email: gracefo@podaac.jpl.nasa.gov
+    creator_institution: NASA/JPL
+    creator_name: GRACE Follow-On Science Data System
+    creator_type: group
+    creator_url: http://gracefo.jpl.nasa.gov
+    date_created: 2024-04-22T17:01:05Z
+    date_issued: 2024-04-23T17:11:25Z
+    history:
+      []
+    id: 10.5067/GFJPL-L1B04
+    institution: NASA/JPL
+    instrument: ACC
+    instrument_vocabulary: NASA Global Change Master Directory instrument keywords
+    keywords: GRACE-FO, ACC
+    keywords_vocabulary: NASA Global Change Master Directory (GCMD) Science Keywords
+    license: https://science.nasa.gov/earth-science/earth-science-data/data-information-policy
+    naming_authority: org.doi.dx
+    platform: GRACE D
+    platform_vocabulary: NASA Global Change Master Directory platform keywords
+    processing_level: 1B
+    product_version: 04
+    program: NASA Earth Systematic Missions Program
+    project: NASA Gravity Recovery And Climate Experiment Follow-On (GRACE-FO)
+    publisher_email: podaac@jpl.nasa.gov
+    publisher_institution: NASA/JPL
+    publisher_name: Physical Oceanography Distributed Active Archive Center
+    publisher_type: group
+    publisher_url: http://podaac.jpl.nasa.gov
+    references: https://podaac.jpl.nasa.gov/gravity/gracefo-documentation
+    source: Transformed Accelerometer data for GRACE D
+    summary: Transformed 1-Hz linear and angular accelerations of the ACC proof mass in SRF
+    time_coverage_start: 2000-01-01T12:00:00.00
+    time_coverage_stop: 2000-01-01T12:00:00.00
+    title: GRACE-FO Level-1B Transformed Accelerometer Data
+  non-standard_attributes:
+    epoch_time: 2000-01-01T12:00:00.00
+    software_build_time: 2023-06-21T17:10:46 UTC
+    software_version: V04.10.2020-11-09-77-gc5e91-dirty
+    start_time_epoch_secs: 0
+    stop_time_epoch_secs: 0
+  variables:
+    - gps_time:
+        comment: 1st column
+        coverage_content_type: referenceInformation
+        long_name: Continuous seconds past 01-Jan-2000 11:59:47 UTC
+        units: second
+    - GRACEFO_id:
+        comment: 2nd column
+        coverage_content_type: referenceInformation
+        long_name: GRACE-FO satellite identifier
+        units: char
+        valid_range: C,D
+        value_meanings:
+          - C = GRACE-FO 1 (GRACE C)
+          - D = GRACE-FO 2 (GRACE D)
+    - lin_accl_x:
+        comment: 3rd column
+        coverage_content_type: physicalMeasurement
+        long_name: Linear acceleration along X-axis
+        units: m/s2
+    - lin_accl_y:
+        comment: 4th column
+        coverage_content_type: physicalMeasurement
+        long_name: Linear acceleration along Y-axis
+        units: m/s2
+    - lin_accl_z:
+        comment: 5th column
+        coverage_content_type: physicalMeasurement
+        long_name: Linear acceleration along Z-axis
+        units: m/s2
+    - ang_accl_x:
+        comment: 6th column
+        coverage_content_type: physicalMeasurement
+        long_name: Angular acceleration about X-axis, 0 for ACT1B
+        units: rad/s2
+    - ang_accl_y:
+        comment: 7th column
+        coverage_content_type: physicalMeasurement
+        long_name: Angular acceleration about Y-axis, 0 for ACT1B
+        units: rad/s2
+    - ang_accl_z:
+        comment: 8th column
+        coverage_content_type: physicalMeasurement
+        long_name: Angular acceleration about Z-axis, 0 for ACT1B
+        units: rad/s2
+    - acl_x_res:
+        comment: 9th column
+        coverage_content_type: modelResult
+        long_name: Residual of lin_accl_x from non-CRN-filtered value
+        units: m/s2
+    - acl_y_res:
+        comment: 10th column
+        coverage_content_type: modelResult
+        long_name: Residual of lin_accl_y from non-CRN-filtered value
+        units: m/s2
+    - acl_z_res:
+        comment: 11th column
+        coverage_content_type: modelResult
+        long_name: Residual of lin_accl_z from non-CRN-filtered value
+        units: m/s2
+    - qualflg:
+        comment: 12th column
+        coverage_content_type: qualityInformation
+        flag_masks: 1b, 2b, 4b, 8b, 16b, 32b, 64b, 128b
+        flag_meanings:
+          - bit 0 = Vp (proof mass voltage) out of nominal range
+          - bit 1 = Not defined
+          - bit 2 = At least one of acl_x_res, acl_y_res, and acl_z_res is > 10 microns/s^2
+          - bit 3 = Extrapolated CLK1B clock offset value used for data point > 5 s from center of CRN filter window
+          - bit 4 = Extrapolated CLK1B clock offset value used for data point <= 5 s from center of CRN filter window
+          - bit 5 = Interpolated data point (due to gap) exists > 15 s from center of CRN filter window
+          - bit 6 = Interpolated data point (due to gap) exists > 5 s but < 15 s from center of CRN filter window
+          - bit 7 = Interpolated data point (due to gap) exists < 5 s from center of CRN filter window
+        long_name: Data quality flag
+# End of YAML header
