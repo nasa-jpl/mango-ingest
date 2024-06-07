@@ -4,7 +4,7 @@ import os
 from masschange.ingest import ingest
 from tests.ingest.base import IngestTestCaseBase
 from masschange.ingest.ingest import ingest_file_to_db
-from masschange.ingest.utils.exception import EmptyProductException
+from masschange.ingest.errors import EmptyProductException
 from masschange.dataproducts.implementations.gracefo.act1b import GraceFOAct1BDataProduct
 from masschange.dataproducts.implementations.gracefo.ahk1a import GraceFOAhk1ADataProduct
 from masschange.ingest.datafilereaders.gracefoact1b import GraceFOAct1BDataFileReader

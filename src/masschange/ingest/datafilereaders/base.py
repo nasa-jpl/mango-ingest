@@ -10,7 +10,7 @@ from typing import Dict, Any, Union, Type, Callable, Optional
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.utils.exception import EmptyProductException
+from masschange.ingest.errors import EmptyProductException
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 

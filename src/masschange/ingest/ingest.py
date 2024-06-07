@@ -23,7 +23,7 @@ from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, ord
 from masschange.ingest.utils.metadata import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
-from masschange.ingest.utils.exception import EmptyProductException
+from masschange.ingest.errors import EmptyProductException
 
 log = logging.getLogger()
 
