@@ -306,10 +306,6 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         prod_flag_expanded_data[np.where(prod_flag == 1)] = prod_flag_data
         return prod_flag_expanded_data
 
-    @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
-        return [col for col in cls.get_input_column_defs() if not col.is_constant]
-
 class ReportFileReader(AsciiDataFileReader):
     """
     Base reader for report files
