@@ -262,13 +262,14 @@ class TimeSeriesDataset:
         gnv_to_dt = to_dt + GraceFOGnv1ADataProduct.time_series_interval
         gnv_data = gnv_dataset.select(gnv_from_dt, gnv_to_dt, gnv_fields)
 
-        data_iter = iter(data)
-        geo_iter = iter(gnv_data)
-
-        data_el = next(data_iter)
-        gnv_pair_begin = None
-        gnv_pair_end = next(geo_iter)
         try:
+            data_iter = iter(data)
+            geo_iter = iter(gnv_data)
+
+            data_el = next(data_iter)
+            gnv_pair_begin = None
+            gnv_pair_end = next(geo_iter)
+
             while True:  # iterate until a StopIteration
                 gnv_pair_begin = gnv_pair_end
                 gnv_pair_end = next(geo_iter)
