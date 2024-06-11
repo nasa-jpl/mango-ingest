@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
+from masschange.ingest.utils.aggregations import NestedAggregation
 from masschange.ingest.utils.geolocation import Geolocation
 
 class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
@@ -51,7 +52,7 @@ class GraceFOGnv1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=21, name='err_drift', np_type=np.double, unit='s/s'),
             AsciiDataFileReaderColumn(index=22, name='qualflg', np_type='U8', unit=None),
 
-            DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None, aggregations=[NestedAggregation(['st_collect', 'st_centroid'])]),
             DerivedAsciiDataFileReaderColumn(name='orbit_direction', np_type='U1', unit=None)
         ]
 
