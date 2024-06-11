@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from collections.abc import Set, Collection
+from collections.abc import Collection
 from datetime import datetime
-from typing import Union, Any, Dict, Type
+from typing import Union, Any, Dict, Type, Set
+
+from masschange.ingest.utils.aggregations import Aggregation, TrivialAggregation
 
 
 class TimeSeriesDataProductField(ABC):
@@ -24,23 +26,34 @@ class TimeSeriesDataProductField(ABC):
     description: str
     unit: str
     const_value: Union[Any, None]
-    aggregations: Set[str] = set()
+    aggregations: Set[Aggregation]
     is_derived: bool  = False  # only True via subclass override
 
-    VALID_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
+    VALID_BASIC_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
-    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[Union[str, Aggregation]] = None,
                  const_value: Union[Any, None] = None, is_derived: bool = False):
         self.name = name.lower()
         self.unit = unit
         self.description = description
         self.const_value = const_value
         self.is_derived = is_derived
+        self.aggregations = set()
 
         if aggregations is not None:
-            if not all([agg in self.VALID_AGGREGATIONS for agg in aggregations]):
-                raise ValueError(f'aggregations arg must be subset of {self.VALID_AGGREGATIONS} (got {aggregations})')
-            self.aggregations = set(aggregations)
+            string_typed_aggregations = [agg for agg in aggregations if isinstance(agg, str)]
+            if not all([agg in self.VALID_BASIC_AGGREGATIONS for agg in string_typed_aggregations]):
+                raise ValueError(f'str-typed elements of aggregations arg must be subset of {self.VALID_BASIC_AGGREGATIONS} (got {aggregations}, including str-typed elements {string_typed_aggregations})')
+
+            for agg in aggregations:
+                if isinstance(agg, Aggregation):
+                    self.aggregations.add(agg)
+                elif isinstance(agg, str):
+                    # included for simple/legacy declaration of aggregations
+                    self.aggregations.add(TrivialAggregation(agg))
+                else:
+                    raise ValueError(
+                        f'elements of aggregations arg must be either type str or Aggregation (got {agg})')
 
     @property
     @abstractmethod
@@ -58,7 +71,8 @@ class TimeSeriesDataProductField(ABC):
 
     @property
     def aggregation_db_column_names(self) -> Set[str]:
-        return {f'{self.name}_{agg.lower()}' for agg in self.aggregations}
+        # TODO: Excise calls to this function
+        return {agg.get_aggregated_name(self.name) for agg in self.aggregations}
 
     def __hash__(self):
         return self.name.__hash__()
@@ -72,7 +86,7 @@ class TimeSeriesDataProductField(ABC):
             'type': self.python_type.__name__,
             'description': self.description,
             'unit': self.unit,
-            'supported_aggregations': sorted([agg.lower() for agg in self.aggregations]),
+            'supported_aggregations': sorted([agg.get_aggregated_name(self.name) for agg in self.aggregations]),
         }
 
         if self.is_constant:
