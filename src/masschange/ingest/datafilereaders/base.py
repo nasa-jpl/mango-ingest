@@ -4,7 +4,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Union, Type, Callable, Optional
 
 import numpy as np
@@ -163,7 +163,8 @@ class AsciiDataFileReader(DataFileReader):
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
             usecols=([col.index for col in column_defs if col.index is not None ]),
-            dtype=[(col.name, col.np_dtype) for col in column_defs if col.index is not None]
+            dtype=[(col.name, col.np_dtype) for col in column_defs if col.index is not None],
+            ndmin = 1 # set to 1 to prevent returning a single row as a list instead of array
         )
 
         return data
@@ -305,9 +306,60 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         prod_flag_expanded_data[np.where(prod_flag == 1)] = prod_flag_data
         return prod_flag_expanded_data
 
+class ReportFileReader(AsciiDataFileReader):
+    """
+    Base reader for report files
+    """
+
     @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
-        return [col for col in cls.get_input_column_defs() if not col.is_constant]
+    def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
+        """
+        All report files have 19 standard colunms, which are defined here.
+        Some report files have additional columns, which will be defined
+        in the get_rpt_custom_input_column_defs() method of a child classes.
+        """
+
+        # Note: name of the columns are from the GMAT tool,
+        # except instead of 'camel case' we use low case separated by underscore.
+
+        standard_columns = [
+            AsciiDataFileReaderColumn(index=0, name='file_name', np_type='U32', unit=None),
+            AsciiDataFileReaderColumn(index=1, name='file_tag', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=2, name='process_ttag', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=3, name='first_data_point_t_tag', np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=4, name='last_data_point_t_tag',  np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=5, name='n_recs', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=6, name='time_gap_avg', np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=7, name='time_gap_var', np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=8, name='time_gap_min', np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=9, name='time_gap_max', np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=10, name='n_qual_bits', np_type=np.ubyte,  unit=None),
+            AsciiDataFileReaderColumn(index=11, name='bit_count_0', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=12, name='bit_count_1', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=13, name='bit_count_2', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=14, name='bit_count_3', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=15, name='bit_count_4', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=16, name='bit_count_5', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=17, name='bit_count_6', np_type=np.byte, unit=None),
+            AsciiDataFileReaderColumn(index=18, name='bit_count_7', np_type=np.byte, unit=None)
+            ]
+        return standard_columns + cls.get_rpt_custom_input_column_defs()
+
+    @classmethod
+    def get_rpt_custom_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
+        """
+        Return definition of additional columns (if any) specific for a particular product type.
+        Overwrite this method in a child class if a data type has additional report columns'''
+        """
+        return []
+
+    @classmethod
+    def populate_timestamp(cls, row) -> datetime:
+        return cls.get_reference_epoch() + timedelta(seconds=row.file_tag)
+
+    @classmethod
+    def get_header_line_count(cls, filename: str) -> int:
+        return 0
 
 
 class VariableDataClustersPerRowReader(AsciiDataFileReader):
