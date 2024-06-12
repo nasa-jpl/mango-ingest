@@ -9,7 +9,8 @@ from psycopg2 import extras
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
+from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
+    TimeSeriesDataProductDerivedLocationField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.db.utils import list_table_columns as list_db_table_columns
@@ -120,15 +121,19 @@ class TimeSeriesDataset:
             if idx < len(column_names) - 1:
                 clause += ", "
 
-
-
         return clause
 
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = 0,
                limit_data_span: bool = True, resolve_location: bool = False) -> List[Dict]:
         if fields is None:
-            fields = [f for f in self.product.get_available_fields() if not f.is_constant]
+            fields = {f for f in self.product.get_available_fields() if not f.is_constant and not f.is_derived}
+            if resolve_location:
+                try:
+                    derived_location_field = next(f for f in fields if isinstance(f, TimeSeriesDataProductDerivedLocationField))
+                    fields.add(derived_location_field)
+                except StopIteration:
+                    pass
 
         non_derived_fields = [f for f in fields if not f.is_derived]
 
@@ -190,14 +195,12 @@ class TimeSeriesDataset:
                 logging.error(f'query failed with {err}: {sql}')
                 raise Exception
 
-
         try:
             if resolve_location:
                 self.attach_lat_lon(from_dt, to_dt, results)
         except psycopg2.Error as err:
             log.error(f'Failed to resolve location data for {self.get_table_name()} over span ({from_dt}, {to_dt}) '
                       f'due to {err}')
-
 
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
 
@@ -282,9 +285,11 @@ class TimeSeriesDataset:
                 #  the closest bounding gnv record
                 while (gnv_begin_ts <= el_ts <= gnv_end_ts):
                     if abs(el_ts - gnv_begin_ts) <= abs(el_ts - gnv_end_ts):
-                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_begin[GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
+                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_begin[
+                            GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
                     else:
-                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_end[GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
+                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_end[
+                            GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
 
                     data_el = next(data_iter)
         except StopIteration:
