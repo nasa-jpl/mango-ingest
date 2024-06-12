@@ -3,9 +3,7 @@ import os
 
 import psycopg2
 
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.db import get_db_connection
 from masschange.ingest.utils.caggs import get_extant_continuous_aggregates, delete_caggs, \
@@ -153,10 +151,10 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
         for version in product_cls.get_available_versions():
             for stream_id in product_cls.stream_ids:
                 dataset = TimeSeriesDataset(product, version, stream_id)
-                log.info(f'Ensuring tables/caggs for {product.get_table_name(version, stream_id)}')
+                log.info(f'Ensuring tables/caggs for {dataset.get_table_name()}')
                 ensure_dataset(dataset)
-                log.info(f'Updating metadata for {product.get_table_name(version, stream_id)}')
-                data_span = product.get_data_span(version, stream_id)
+                log.info(f'Updating metadata for {dataset.get_table_name()}')
+                data_span = dataset.get_data_span()
                 update_metadata(dataset, data_span=data_span, populate_versions=populate_dataproducts_versions)
 
 
