@@ -1,4 +1,5 @@
 import logging
+import math
 from collections.abc import Collection
 from datetime import datetime
 from typing import List, Dict, Union, Iterable
@@ -124,8 +125,11 @@ class TimeSeriesDataset:
         return clause
 
     def select(self, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = 0,
+               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
                limit_data_span: bool = True, resolve_location: bool = False) -> List[Dict]:
+        if aggregation_level is None:
+            aggregation_level = self._get_minimum_aggregation_level(from_dt, to_dt)
+
         if fields is None:
             fields = {f for f in self.product.get_available_fields() if not f.is_constant and not f.is_derived}
             if resolve_location:
@@ -156,15 +160,6 @@ class TimeSeriesDataset:
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
             raise TooMuchDataRequestedError(
                 f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
-
-        # TODO: Implement GNV1A aggregation, and derive a GNV1A aggregation factor to use, automatically.  Then use the
-        #  max available aggregation factor for GNV1A to determine whether the following check triggers
-        max_location_query_temporal_span = self.product.query_result_limit * self.product.time_series_interval
-        if resolve_location and requested_temporal_span > max_location_query_temporal_span:
-            raise TooMuchDataRequestedError(
-                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum '
-                f'allowed by server when requesting field "{self.product.LOCATION_COLUMN_NAME}" '
-                f'({get_human_readable_timedelta(max_location_query_temporal_span)})')
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = self.get_table_or_view_name(aggregation_level)
@@ -297,3 +292,14 @@ class TimeSeriesDataset:
 
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
+
+    def _get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime):
+        """
+        Given a query span, return the lowest aggregation level required to limit the result to the product's query
+        result limit
+        """
+        span_duration = to_dt - from_dt
+        full_res_data_count = span_duration / self.product.time_series_interval
+        min_downsampling_factor = full_res_data_count / self.product.query_result_limit
+        downsampling_level = math.ceil(math.log(min_downsampling_factor, self.product.aggregation_step_factor))
+        return max(downsampling_level, 0)
