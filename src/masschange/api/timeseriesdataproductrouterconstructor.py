@@ -47,7 +47,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
             from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0),
             to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1),
 
-            fields: Annotated[List[str], Query()] = sorted(f.name for f in product.get_available_fields() if not f.is_constant),
+            fields: Annotated[List[str], Query()] = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field),
             downsampling_factor: DownsamplingFactorEnum = DownsamplingFactorEnum['1']
     ):
         if dataset_version.value == ' ':

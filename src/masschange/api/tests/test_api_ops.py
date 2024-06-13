@@ -43,11 +43,16 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     if content['data_count'] > 0:
         sample_datum = content['data'][0]
         assert ds.product.TIMESTAMP_COLUMN_NAME in sample_datum
-        for field in ds.product.get_reader().get_fields():
+        for field in ds.product.get_available_fields():
             if field.is_constant:
                 # const-valued fields are not served in responses by default.  This may be toggleable in future via a qparam
                 continue
-            assert field.name in sample_datum
+
+            if field.is_lookup_field:
+                # lookup fields should not be present unless explicitly requested (which is tested in other test cases)
+                assert field.name not in sample_datum
+            else:
+                assert field.name in sample_datum
 
 
 def test_location_lookup():
@@ -80,8 +85,6 @@ def test_location_lookup():
     assert -180.0 <= longitude <= 180.0
 
 
-
-
 def test_downsampled_location_lookup():
     product = GraceFOAcc1ADataProduct()
     dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
@@ -110,9 +113,9 @@ def test_downsampled_location_lookup():
     downsampled_bucket_interval = timedelta(seconds=downsampled_content['nominal_data_interval_seconds'])
     bucket_start = datetime.fromisoformat(downsampled_datum['timestamp'])
     bucket_end = bucket_start + downsampled_bucket_interval
-    full_res_data = [d for d in full_res_content['data'] if bucket_start <= datetime.fromisoformat(d['timestamp']) < bucket_end]
-    
-    
+    full_res_data = [d for d in full_res_content['data'] if
+                     bucket_start <= datetime.fromisoformat(d['timestamp']) < bucket_end]
+
     # Crude check that downsampled location is at least within the bounding box encompassing its constituent points
     full_res_min_latitude = min(d['location']['latitude'] for d in full_res_data)
     full_res_max_latitude = max(d['location']['latitude'] for d in full_res_data)
