@@ -85,7 +85,11 @@ class TimeSeriesDataProduct(ABC):
         requested_fields = set(requested_fields)
         available_fields = {f for f in cls.get_available_fields() \
                             if (
-                                    f.has_aggregations or f.name == cls.TIMESTAMP_COLUMN_NAME or not using_aggregations) and not f.is_constant}
+                                not using_aggregations
+                                or f.has_aggregations
+                                or f.is_lookup_field
+                                or f.name == cls.TIMESTAMP_COLUMN_NAME
+                            ) and not f.is_constant}
         if not all([f in available_fields for f in requested_fields]):
             available_field_names = [f.name for f in available_fields]
             # requested fields which aren't available for selection

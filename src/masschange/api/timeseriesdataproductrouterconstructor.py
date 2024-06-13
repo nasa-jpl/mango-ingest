@@ -64,7 +64,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
                 # when downsampling, only pick valid aggregable fields
                 # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
                 # fields value, which would be a loss since it significantly improves the docs
-                if not using_aggregations or field.has_aggregations:
+                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
                     fields.add(field)
             except KeyError:
                 raise HTTPException(status_code=400, detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
