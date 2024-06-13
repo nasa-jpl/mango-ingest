@@ -78,3 +78,45 @@ def test_location_lookup():
     assert isinstance(longitude, float)
     assert -90.0 <= latitude <= 90.0
     assert -180.0 <= longitude <= 180.0
+
+
+
+
+def test_downsampled_location_lookup():
+    product = GraceFOAcc1ADataProduct()
+    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset_data_span = dataset.get_data_span()
+
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_data_span = gnv_dataset.get_data_span()
+
+    assert dataset_data_span is not None
+    assert gnv_data_span is not None
+
+    test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
+    test_span_end = test_span_begin + timedelta(minutes=1)
+    full_res_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
+    full_res_response = client.get(full_res_path)
+    assert full_res_response.status_code == 200
+    full_res_content = full_res_response.json()
+
+    downsampling_factor = dataset.product.get_available_downsampling_factors()[2]
+    downsampled_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location&downsampling_factor={downsampling_factor}'
+    downsampled_response = client.get(downsampled_path)
+    assert downsampled_response.status_code == 200
+    downsampled_content = downsampled_response.json()
+
+    downsampled_datum = downsampled_content['data'][1]
+    downsampled_bucket_interval = timedelta(seconds=downsampled_content['nominal_data_interval_seconds'])
+    bucket_start = datetime.fromisoformat(downsampled_datum['timestamp'])
+    bucket_end = bucket_start + downsampled_bucket_interval
+    full_res_data = [d for d in full_res_content['data'] if bucket_start <= datetime.fromisoformat(d['timestamp']) < bucket_end]
+    
+    
+    # Crude check that downsampled location is at least within the bounding box encompassing its constituent points
+    full_res_min_latitude = min(d['location']['latitude'] for d in full_res_data)
+    full_res_max_latitude = max(d['location']['latitude'] for d in full_res_data)
+    full_res_min_longitude = min(d['location']['longitude'] for d in full_res_data)
+    full_res_max_longitude = max(d['location']['longitude'] for d in full_res_data)
+    assert full_res_min_latitude <= downsampled_datum['location']['latitude'] <= full_res_max_latitude
+    assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
