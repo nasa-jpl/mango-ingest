@@ -21,12 +21,6 @@ class GraceFOGnv1ADataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
-        timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
-                                                                                          'n/a')
-        return {timestamp_field}.union(cls.get_reader().get_fields())
-
-    @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
             rcv_time bigint not null,
