@@ -130,8 +130,13 @@ class TimeSeriesDataset:
         if aggregation_level is None:
             aggregation_level = self._get_minimum_aggregation_level(from_dt, to_dt)
 
+        using_aggregations = aggregation_level > 0
+
         if fields is None:
-            fields = {f for f in self.product.get_available_fields() if not f.is_constant and not f.is_derived}
+            fields = {f for f in self.product.get_available_fields() \
+                      if not f.is_constant \
+                      and not f.is_lookup_field \
+                      and (f.has_aggregations or not using_aggregations)}
             if resolve_location:
                 try:
                     location_lookup_field = next(f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
