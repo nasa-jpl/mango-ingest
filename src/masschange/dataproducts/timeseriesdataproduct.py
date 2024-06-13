@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Dict, Set, Type
 
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductTimestampField, TimeSeriesDataProductDerivedLocationField
+    TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import DataFileReader
@@ -163,9 +163,9 @@ class TimeSeriesDataProduct(ABC):
         if cls.LOCATION_COLUMN_NAME not in [field.name for field in cls.get_reader().get_fields()]:
             # GNV products have an inherent location field.  Other products require the addition of a field for the
             # query-time location lookup sourced from the GNV data
-            lookup_location_field: TimeSeriesDataProductField = TimeSeriesDataProductDerivedLocationField(cls.LOCATION_COLUMN_NAME,
+            location_lookup_field: TimeSeriesDataProductField = TimeSeriesDataProductLocationLookupField(cls.LOCATION_COLUMN_NAME,
                                                                                               'Latitude/Longitude (EPSG:4326)')
-            special_fields.add(lookup_location_field)
+            special_fields.add(location_lookup_field)
 
         return special_fields.union(cls.get_reader().get_fields())
 

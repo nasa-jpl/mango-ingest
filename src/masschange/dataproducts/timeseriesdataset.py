@@ -10,7 +10,7 @@ from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductDerivedLocationField
+    TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
 from masschange.db.utils import list_table_columns as list_db_table_columns
@@ -130,8 +130,8 @@ class TimeSeriesDataset:
             fields = {f for f in self.product.get_available_fields() if not f.is_constant and not f.is_derived}
             if resolve_location:
                 try:
-                    derived_location_field = next(f for f in fields if isinstance(f, TimeSeriesDataProductDerivedLocationField))
-                    fields.add(derived_location_field)
+                    location_lookup_field = next(f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
+                    fields.add(location_lookup_field)
                 except StopIteration:
                     pass
 
