@@ -158,9 +158,16 @@ class TimeSeriesDataProduct(ABC):
     def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
         timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
                                                                                           'n/a')
-        derived_location_field: TimeSeriesDataProductField = TimeSeriesDataProductDerivedLocationField(cls.LOCATION_COLUMN_NAME,
-                                                                                          'Latitude/Longitude (EPSG:4326)')
-        return {timestamp_field, derived_location_field}.union(cls.get_reader().get_fields())
+
+        special_fields = {timestamp_field}
+        if cls.LOCATION_COLUMN_NAME not in [field.name for field in cls.get_reader().get_fields()]:
+            # GNV products have an inherent location field.  Other products require the addition of a field for the
+            # query-time location lookup sourced from the GNV data
+            lookup_location_field: TimeSeriesDataProductField = TimeSeriesDataProductDerivedLocationField(cls.LOCATION_COLUMN_NAME,
+                                                                                              'Latitude/Longitude (EPSG:4326)')
+            special_fields.add(lookup_location_field)
+
+        return special_fields.union(cls.get_reader().get_fields())
 
     @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
