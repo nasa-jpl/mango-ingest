@@ -17,8 +17,8 @@ class TimeSeriesDataProductField(ABC):
         const_value (Any | None): an optional value for the column, which is assumed to be constant across every datum '
         of a given data product, which is validated during ingestion
         aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled.
-        is_derived (bool): True if this field is derived from (but not stored as a column in) the database,
-         i.e. location, which is derived from timestamp and the GNV data
+        is_lookup_field (bool): True if this field resolved at query-time from a source other than the dataset table,
+         i.e. location, which is resolved from the GNV data using the timestamp
 
     """
 
@@ -27,18 +27,18 @@ class TimeSeriesDataProductField(ABC):
     unit: str
     const_value: Union[Any, None]
     aggregations: Set[Aggregation]
-    is_derived: bool = False  # only True via subclass override
+    is_lookup_field: bool = False  # only True via subclass override
 
     VALID_BASIC_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
     def __init__(self, name: str, unit: str, description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None,
-                 const_value: Union[Any, None] = None, is_derived: bool = False):
+                 const_value: Union[Any, None] = None, is_lookup_field: bool = False):
         self.name = name.lower()
         self.unit = unit
         self.description = description
         self.const_value = const_value
-        self.is_derived = is_derived
+        self.is_lookup_field = is_lookup_field
         self.aggregations = set()
 
         if aggregations is not None:
@@ -126,7 +126,7 @@ class TimeSeriesDataProductLocationLookupField(TimeSeriesDataProductField):
         if const_value is not None:
             raise ValueError(f'{self.__class__} cannot be instantiated with non-None const_value arg')
 
-        super().__init__(name, unit, description, is_derived=True)
+        super().__init__(name, unit, description, is_lookup_field=True)
 
     @property
     def python_type(self) -> Type:

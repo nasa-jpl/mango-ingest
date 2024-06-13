@@ -139,16 +139,15 @@ class TimeSeriesDataset:
                 except StopIteration:
                     pass
 
-        non_derived_fields = [f for f in fields if not f.is_derived]
+        non_lookup_fields = [f for f in fields if not f.is_lookup_field]
 
-        using_aggregations = aggregation_level > 0
-        self.product.validate_requested_fields(non_derived_fields, using_aggregations=using_aggregations)
+        self.product.validate_requested_fields(non_lookup_fields, using_aggregations=using_aggregations)
 
         if not using_aggregations:
-            column_names = {field.name for field in non_derived_fields}
+            column_names = {field.name for field in non_lookup_fields}
         else:
             column_names = set()
-            for field in non_derived_fields:
+            for field in non_lookup_fields:
                 if field.has_aggregations:
                     column_names.update(field.aggregation_db_column_names)
                 else:
@@ -183,7 +182,7 @@ class TimeSeriesDataset:
                 logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
                 available_columns = list_db_table_columns(table_name)
                 missing_columns = {f.name for f in self.product.get_available_fields() if
-                                   f.name not in available_columns and not f.is_derived}
+                                   f.name not in available_columns and not f.is_lookup_field}
                 raise ValueError(
                     f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:

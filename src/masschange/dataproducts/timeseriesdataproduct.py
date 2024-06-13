@@ -113,7 +113,7 @@ class TimeSeriesDataProduct(ABC):
 
             # location, likewise, must be handled exceptionally
             elif field.name == cls.LOCATION_COLUMN_NAME:
-                if field.is_derived:
+                if field.is_lookup_field:
                     # for non-GNV, we want ta avoid wrapping with the usual 'value': $value format
                     structured_result[cls.LOCATION_COLUMN_NAME] = result[cls.LOCATION_COLUMN_NAME]
                 else:
