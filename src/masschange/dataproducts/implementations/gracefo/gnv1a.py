@@ -1,8 +1,4 @@
 from datetime import timedelta
-from typing import Set
-
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductTimestampField, GraceFOGnv1ALocationField
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.ingest.datafilereaders.gracefognv1a import GraceFOGnv1ADataFileReader
 from masschange.missions import GraceFO

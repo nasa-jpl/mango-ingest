@@ -27,11 +27,12 @@ class TimeSeriesDataProductField(ABC):
     unit: str
     const_value: Union[Any, None]
     aggregations: Set[Aggregation]
-    is_derived: bool  = False  # only True via subclass override
+    is_derived: bool = False  # only True via subclass override
 
     VALID_BASIC_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
 
-    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[Union[str, Aggregation]] = None,
+    def __init__(self, name: str, unit: str, description: str = "",
+                 aggregations: Collection[Union[str, Aggregation]] = None,
                  const_value: Union[Any, None] = None, is_derived: bool = False):
         self.name = name.lower()
         self.unit = unit
@@ -43,7 +44,8 @@ class TimeSeriesDataProductField(ABC):
         if aggregations is not None:
             string_typed_aggregations = [agg for agg in aggregations if isinstance(agg, str)]
             if not all([agg in self.VALID_BASIC_AGGREGATIONS for agg in string_typed_aggregations]):
-                raise ValueError(f'str-typed elements of aggregations arg must be subset of {self.VALID_BASIC_AGGREGATIONS} (got {aggregations}, including str-typed elements {string_typed_aggregations})')
+                raise ValueError(
+                    f'str-typed elements of aggregations arg must be subset of {self.VALID_BASIC_AGGREGATIONS} (got {aggregations}, including str-typed elements {string_typed_aggregations})')
 
             for agg in aggregations:
                 if isinstance(agg, Aggregation):
@@ -112,13 +114,9 @@ class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
         return datetime
 
 
-class GraceFOGnv1ALocationField(TimeSeriesDataProductField):
-    @property
-    def python_type(self) -> Type:
-        return dict
+class TimeSeriesDataProductLocationLookupField(TimeSeriesDataProductField):
+    """Location field which is dynamically resolved at query-time, loading values from the GNV data tables."""
 
-
-class TimeSeriesDataProductDerivedLocationField(TimeSeriesDataProductField):
     def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
 
