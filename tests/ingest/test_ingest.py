@@ -1,6 +1,6 @@
 import os
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from masschange.dataproducts.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
@@ -32,8 +32,10 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             for fp in self.input_filepaths:
                 ingest_file_to_db(self.product, fp)
 
-            current_record_count = len(
-                self.dataset.select(datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
+            current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
+                                                           datetime(2999, 1, 1, tzinfo=timezone.utc),
+                                                           aggregation_level=0,
+                                                           limit_data_span=False))
             if previous_record_count is None:
                 previous_record_count = current_record_count
 
@@ -47,7 +49,10 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
             for fp in self.input_filepaths:
                 ingest_file_to_db(self.product, fp)
 
-            record_count = len(self.dataset.select(datetime(2000, 1, 1), datetime(2999, 1, 1), limit_data_span=False))
+            record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
+                                                   datetime(2999, 1, 1, tzinfo=timezone.utc),
+                                                   aggregation_level=0,
+                                                   limit_data_span=False))
 
             self.assertEqual(self.expected_record_count, record_count)
 
