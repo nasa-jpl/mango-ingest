@@ -297,12 +297,24 @@ class TimeSeriesDataset:
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
 
-    def _get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime):
+    def _get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime, check_data_span: bool = False):
         """
         Given a query span, return the lowest aggregation level required to limit the result to the product's query
         result limit
+
+        Parameters
+        ----------
+        from_dt: datetime
+        to_dt: datetime
+        check_data_span: bool - if true, will query the db for actual data span and trim the requested bounds
+            accordingly. Gives absolute minimum aggregation level but is slower due to overhead
+
         """
-        span_duration = to_dt - from_dt
+        extant_data_span = self.get_data_span()
+        if check_data_span:
+            span_duration = max(to_dt, extant_data_span.begin) - min(from_dt, extant_data_span.end)
+        else:
+            span_duration = to_dt - from_dt
         full_res_data_count = span_duration / self.product.time_series_interval
         min_downsampling_factor = full_res_data_count / self.product.query_result_limit
         downsampling_level = math.ceil(math.log(min_downsampling_factor, self.product.aggregation_step_factor))
