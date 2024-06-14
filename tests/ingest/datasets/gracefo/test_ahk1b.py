@@ -35,6 +35,5 @@ class GraceFOAhk1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          None, None, None, None, None,
          0, 0, 0, '00000000000000000000000000000000',)
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

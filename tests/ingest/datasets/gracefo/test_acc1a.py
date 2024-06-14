@@ -17,6 +17,5 @@ class GraceFOAcc1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          -0.00149625837802887, -0.0006985849142074586, 0,
          datetime(2023, 6, 1, 0, 0, 0, 11933, tzinfo=timezone.utc))
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

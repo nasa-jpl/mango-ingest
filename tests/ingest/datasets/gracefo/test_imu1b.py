@@ -15,6 +15,5 @@ class GraceFOImu1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
         (738849600, 108547, 'D', 1, 694.834522646494, '00000000',
          datetime(2023, 6, 1, 0, 0, 0, 108547, tzinfo=timezone.utc))
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

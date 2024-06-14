@@ -30,6 +30,5 @@ class GraceFOGni1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
           datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
           )
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()
