@@ -20,6 +20,5 @@ class GraceFOMag1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          0.0, 0.0, 65000.0, -65000.0, -137.4900054931641,  '00000000',
          datetime(2023, 6, 1, 0, 0, 0, 83, tzinfo=timezone.utc))
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

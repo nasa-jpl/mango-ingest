@@ -26,6 +26,5 @@ class GraceFOMas1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          None, None, None, None, None, None,
          13.66316195230655, 13.82401085038554)
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

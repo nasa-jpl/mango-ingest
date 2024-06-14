@@ -17,6 +17,5 @@ class GraceFOGnv1APrnDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase)
          (738849600, 11, 'D',
          3, 18.44810485839844, 20.0234375, datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

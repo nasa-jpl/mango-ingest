@@ -15,6 +15,5 @@ class GraceFOSca1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
         (738849600, 29988, 'D', 1, 'P', 0.07622107143425871, 0.7564510073877059, 0.6466095707487802, 0.06219553087423446, 0, 54, 1, '11000001', '11000000',
          datetime(2023, 6, 1, 0, 0, 0, 29988, tzinfo=timezone.utc))
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

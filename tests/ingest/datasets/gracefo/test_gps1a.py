@@ -30,6 +30,5 @@ class GraceFOGps1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          156,  19,  15,  36,  37,  38,
          None, None, None, None)
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

@@ -35,6 +35,5 @@ class GraceFOKbr1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          47747299.80598602, 91147677.24506988,
          None, None)
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

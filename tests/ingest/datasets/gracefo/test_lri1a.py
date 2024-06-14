@@ -28,6 +28,5 @@ class GraceFOLri1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
         3422061024,  1811142395,  3422060928,  1811142395,
         3422722192,  4702,  20,  124)
     ]
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()
