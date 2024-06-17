@@ -8,18 +8,18 @@ from masschange.ingest.datafilereaders.base import  DataFileWithProdFlagReader, 
     AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
 
 
-class GraceFOMas1ADataFileReader(DataFileWithProdFlagReader):
+class GraceFOMas1BDataFileReader(DataFileWithProdFlagReader):
     @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^MAS1A_\d{4}-\d{2}-\d{2}_(?P<stream_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
+        return '^MAS1B_\d{4}-\d{2}-\d{2}_(?P<stream_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL(?P<dataset_version>\d{2})\.ascii\.(LRI|noLRI)\.tgz'
+        return 'gracefo_1B_\d{4}-\d{2}-\d{2}_RL(?P<dataset_version>\d{2})\.ascii\.(LRI|noLRI)\.tgz'
 
     @classmethod
     # Use for reading row data
@@ -27,7 +27,7 @@ class GraceFOMas1ADataFileReader(DataFileWithProdFlagReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U8', unit=None),
