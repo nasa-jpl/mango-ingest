@@ -291,6 +291,8 @@ class TimeSeriesDataset:
                             GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
 
                     data_el = next(data_iter)
+                    el_ts = data_el[self.product.TIMESTAMP_COLUMN_NAME]
+
         except StopIteration:
             pass
 
