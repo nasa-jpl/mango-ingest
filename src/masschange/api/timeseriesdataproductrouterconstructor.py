@@ -15,7 +15,7 @@ from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVe
 def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     router = APIRouter(prefix=f'/{product.id_suffix}')
 
-    StreamEnum = StrEnum('Stream', sorted(product.instrument_ids))
+    InstrumentsEnum = StrEnum('Instruments', sorted(product.instrument_ids))
     available_version_strs = sorted(str(v) for v in product.get_available_versions())
     if len(available_version_strs) == 1:
         available_version_strs.append(' ')  # TODO: see https://github.com/pydantic/pydantic/discussions/7441
@@ -25,7 +25,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     DownsamplingFactorEnum = IntEnum(value='DownsamplingFactor', names=[(str(f), f) for f in downsampling_factors])
 
     @router.get('/versions/{dataset_version}/instruments/{instrument_id}', tags=[product.mission.id, product.get_full_id(), 'metadata'])
-    async def describe_dataset_instance(dataset_version: DatasetVersionEnum, instrument_id: StreamEnum):
+    async def describe_dataset_instance(dataset_version: DatasetVersionEnum, instrument_id: InstrumentsEnum):
         dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), instrument_id.value)
         description = product.describe(exclude_available_versions=True)
         metadata = dataset.get_metadata_properties()
@@ -34,7 +34,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
 
     @router.get('/versions/{dataset_version}/instruments/{instrument_id}/data', tags=[product.mission.id, product.get_full_id(), 'data'])
     async def get_data(
-            instrument_id: StreamEnum,
+            instrument_id: InstrumentsEnum,
             dataset_version: DatasetVersionEnum,
             # default values are chosen to allow users to immediately run a fast query from docs page
             # these may be removed later if they are confusing

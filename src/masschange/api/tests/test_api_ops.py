@@ -22,7 +22,7 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
-    print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} stream {ds.instrument_id}')
+    print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
     path = f'/missions/{ds.product.mission.id}/datasets/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
     response = client.get(path)
     assert response.status_code == 200
@@ -69,7 +69,7 @@ def test_location_lookup():
     test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
     test_span_end = test_span_begin + timedelta(minutes=1)
     print(
-        f'test_gracefo_data_select() for {dataset.product.get_full_id()} version {dataset.version} stream {dataset.instrument_id}')
+        f'test_gracefo_data_select() for {dataset.product.get_full_id()} version {dataset.version} instruments {dataset.instrument_id}')
     path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/instruments/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
     response = client.get(path)
     assert response.status_code == 200
