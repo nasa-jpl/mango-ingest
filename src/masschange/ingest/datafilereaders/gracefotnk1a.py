@@ -34,19 +34,19 @@ class GraceFOTnk1ADataFileReader(DataFileWithProdFlagReader):
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='tank_pres', np_type=np.double,
-                                                    unit='bar'),
+                                                    unit='bar', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='reg_pres', np_type=np.double,
-                                                    unit='bar'),
+                                                    unit='bar', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='skin_temp', np_type=np.double,
-                                                    unit='degrees C'),
+                                                    unit='degrees C', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='skin_temp_r', np_type=np.double,
-                                                    unit='degrees C'),
+                                                    unit='degrees C', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='adap_temp', np_type=np.double,
-                                                    unit='degrees C'),
+                                                    unit='degrees C', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='boss_fixed', np_type=np.double,
-                                                    unit='degrees C'),
+                                                    unit='degrees C', aggregations=['MIN', 'MAX']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='boss_sliding', np_type=np.double,
-                                                    unit='degrees C')
+                                                    unit='degrees C', aggregations=['MIN', 'MAX'])
             # prod_flag_bit_index = 7 is undefined
         ]
 
