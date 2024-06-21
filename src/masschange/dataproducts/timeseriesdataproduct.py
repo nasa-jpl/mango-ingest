@@ -49,7 +49,7 @@ class TimeSeriesDataProduct(ABC):
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
             'processing_level': cls.processing_level,
-            'streams': [{
+            'instruments': [{
                 'id': id,
                 # These are disabled for the time being, as they are slow
                 # TODO: Store these in the metadata table that doesn't exist yet
