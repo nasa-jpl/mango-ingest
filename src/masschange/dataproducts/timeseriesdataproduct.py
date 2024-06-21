@@ -24,7 +24,7 @@ class TimeSeriesDataProduct(ABC):
     time_series_interval: timedelta
     processing_level: str
 
-    aggregation_step_factor: int = 5
+    aggregation_step_factor: int = 5  # the factor which is applied at each level of downsampling aggregation
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
