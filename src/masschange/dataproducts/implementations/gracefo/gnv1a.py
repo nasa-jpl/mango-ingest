@@ -12,7 +12,7 @@ class GraceFOGnv1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'GNV1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=2)
     processing_level = '1A'
 

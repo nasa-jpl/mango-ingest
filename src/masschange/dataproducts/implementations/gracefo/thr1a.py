@@ -13,7 +13,7 @@ class GraceFOThr1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'THR1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=120)  # TODO: THR1A is not a time-series dataset, and measurement intervals are irregular.  Once non-timeseries dataset classes are implemented, this should be switched to the appropriate base class
     processing_level = '1A'
 

@@ -15,7 +15,7 @@ from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVe
 def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     router = APIRouter(prefix=f'/{product.id_suffix}')
 
-    StreamEnum = StrEnum('Stream', sorted(product.stream_ids))
+    StreamEnum = StrEnum('Stream', sorted(product.instrument_ids))
     available_version_strs = sorted(str(v) for v in product.get_available_versions())
     if len(available_version_strs) == 1:
         available_version_strs.append(' ')  # TODO: see https://github.com/pydantic/pydantic/discussions/7441
@@ -40,9 +40,9 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
             # these may be removed later if they are confusing
 
             # TODO: Re-enable these dynamic default values
-            # from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.stream_ids)[0]) or datetime.min,
+            # from_isotimestamp: datetime = DatasetCls.get_data_begin(sorted(DatasetCls.instrument_ids)[0]) or datetime.min,
             # to_isotimestamp: datetime = (DatasetCls.get_data_begin(
-            #     sorted(DatasetCls.stream_ids)[0]) or datetime.min) + timedelta(minutes=1),
+            #     sorted(DatasetCls.instrument_ids)[0]) or datetime.min) + timedelta(minutes=1),
             # TODO: Remove these ad-hoc placeholders (used while versioning implementation is in-prog)
             from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0),
             to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1),

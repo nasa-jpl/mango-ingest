@@ -13,7 +13,7 @@ class GraceFOAhk1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'AHK1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=1)
     processing_level = '1A'
 
