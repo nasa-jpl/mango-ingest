@@ -132,7 +132,7 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset) -> None:
                 cur.execute(sql)
                 conn.commit()
                 log.info(
-                    f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", stream "{dataset.instrument_id}"')
+                    f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", instruments "{dataset.instrument_id}"')
 
             refresh_continuous_aggregates(dataset)
 

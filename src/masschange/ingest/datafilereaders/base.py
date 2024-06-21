@@ -42,7 +42,7 @@ class DataFileReader(ABC):
 
     @classmethod
     def extract_instrument_id(cls, filepath: str) -> str:
-        """Extract stream id from unzipped input file"""
+        """Extract instruments id from unzipped input file"""
         filename = os.path.split(filepath)[-1]
         satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('instrument_id')
         return satellite_id_char

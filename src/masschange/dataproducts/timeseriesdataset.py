@@ -75,7 +75,7 @@ class TimeSeriesDataset:
             return None
 
     def _get_data_span_stat(self, agg: str) -> Union[datetime, None]:
-        """Get either the min or max timestamp for a given dataset, version and stream"""
+        """Get either the min or max timestamp for a given dataset, version and instruments"""
         if agg not in {'min', 'max'}:
             raise ValueError(f'"{agg}" is not a supported timespan stat')
 
@@ -205,17 +205,17 @@ class TimeSeriesDataset:
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
 
     def get_table_name(self) -> str:
-        """Return the name of the SQL table storing the data for this dataset for a given stream"""
+        """Return the name of the SQL table storing the data for this dataset for a given instruments"""
         return self.get_table_or_view_name(aggregation_depth=0)
 
     def get_table_or_view_name(self, aggregation_depth: int) -> str:
         """
-        Return the name of the SQL table or view providing access to data for this dataset for a given stream at a given
+        Return the name of the SQL table or view providing access to data for this dataset for a given instruments at a given
         aggregation level
         """
         if self.instrument_id not in self.product.instrument_ids:
             raise ValueError(
-                f'stream id "{self.instrument_id}" not recognized (expected one of {sorted(self.product.instrument_ids)})')
+                f'instruments id "{self.instrument_id}" not recognized (expected one of {sorted(self.product.instrument_ids)})')
 
         aggregation_depth_pad_width = 2
         padded_aggregation_depth = str(aggregation_depth).rjust(aggregation_depth_pad_width, "0")
@@ -235,7 +235,7 @@ class TimeSeriesDataset:
 
     def get_sql_table_create_statement(self) -> str:
         # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
-        """Get an SQL statement to create a table for this dataset/stream"""
+        """Get an SQL statement to create a table for this dataset/instruments"""
         if self.instrument_id not in self.product.instrument_ids:
             raise ValueError(
                 f'instrument_id {self.instrument_id} not in {self.product.__name__}.instrument_ids - expected one of {self.product.instrument_ids}')
