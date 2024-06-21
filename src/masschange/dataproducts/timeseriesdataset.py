@@ -24,12 +24,12 @@ log = logging.getLogger()
 class TimeSeriesDataset:
     product: TimeSeriesDataProduct
     version: TimeSeriesDatasetVersion
-    stream_id: str
+    instrument_id: str
 
-    def __init__(self, product: TimeSeriesDataProduct, version: TimeSeriesDatasetVersion, stream_id: str):
+    def __init__(self, product: TimeSeriesDataProduct, version: TimeSeriesDatasetVersion, instrument_id: str):
         self.product = product
         self.version = version
-        self.stream_id = stream_id
+        self.instrument_id = instrument_id
 
     def get_metadata_properties(self) -> Union[Dict, None]:
         """Get available values from the _meta_dataproducts_versions_instruments table for the corresponding row"""
@@ -57,7 +57,7 @@ class TimeSeriesDataset:
                     );
                     """
                 cur.execute(sql, {'data_product_name': self.product.get_full_id(), 'version_name': self.version.value,
-                                  'instrument_name': self.stream_id})
+                                  'instrument_name': self.instrument_id})
                 result = cur.fetchone()
             except Exception as err:
                 logging.info(f'query failed with {err}: {sql}')
@@ -213,9 +213,9 @@ class TimeSeriesDataset:
         Return the name of the SQL table or view providing access to data for this dataset for a given stream at a given
         aggregation level
         """
-        if self.stream_id not in self.product.instrument_ids:
+        if self.instrument_id not in self.product.instrument_ids:
             raise ValueError(
-                f'stream id "{self.stream_id}" not recognized (expected one of {sorted(self.product.instrument_ids)})')
+                f'stream id "{self.instrument_id}" not recognized (expected one of {sorted(self.product.instrument_ids)})')
 
         aggregation_depth_pad_width = 2
         padded_aggregation_depth = str(aggregation_depth).rjust(aggregation_depth_pad_width, "0")
@@ -227,18 +227,18 @@ class TimeSeriesDataset:
         aggregation_suffix = f'f{self.product.aggregation_step_factor}l{padded_aggregation_depth}'
 
         # TODO: Remove legacy null-version support when fully implemented/migrated
-        table_base_name = (f'{self.product.get_table_name_prefix()}_{self.stream_id}'.lower()
+        table_base_name = (f'{self.product.get_table_name_prefix()}_{self.instrument_id}'.lower()
                            if self.version.is_null
-                           else f'{self.product.get_table_name_prefix()}_{str(self.version)}_{self.stream_id}'.lower())
+                           else f'{self.product.get_table_name_prefix()}_{str(self.version)}_{self.instrument_id}'.lower())
 
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
 
     def get_sql_table_create_statement(self) -> str:
         # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
         """Get an SQL statement to create a table for this dataset/stream"""
-        if self.stream_id not in self.product.instrument_ids:
+        if self.instrument_id not in self.product.instrument_ids:
             raise ValueError(
-                f'stream_id {self.stream_id} not in {self.product.__name__}.instrument_ids - expected one of {self.product.instrument_ids}')
+                f'instrument_id {self.instrument_id} not in {self.product.__name__}.instrument_ids - expected one of {self.product.instrument_ids}')
 
         sql = f"""
             create table public.{self.get_table_name()}
@@ -256,7 +256,7 @@ class TimeSeriesDataset:
         of the GNV dataset).
         A value of None will be assigned to input data for which there is no GNV data available.
         """
-        gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), self.version, self.stream_id)
+        gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), self.version, self.instrument_id)
         gnv_field_names = {gnv_dataset.product.TIMESTAMP_COLUMN_NAME, 'location'}
         gnv_fields = [f for f in gnv_dataset.product.get_available_fields() if f.name in gnv_field_names]
 

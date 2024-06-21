@@ -17,10 +17,10 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
 
     product = GraceFOAcc1ADataProduct()
     version = TimeSeriesDatasetVersion('04')
-    stream_id = 'C'
+    instrument_id = 'C'
 
     def setUp(self):
-        self.dataset = TimeSeriesDataset(self.product, self.version, self.stream_id)
+        self.dataset = TimeSeriesDataset(self.product, self.version, self.instrument_id)
         self.input_filepaths = [os.path.join(self.input_dir, fn) for fn in os.listdir(self.input_dir)]
         super().__init__()
 

@@ -24,7 +24,7 @@ class DataFileReader(ABC):
         """
         Return the regex pattern to identify relevant datafiles by filename.
         Must implement the following named capture groups:
-            - stream_id
+            - instrument_id
             - dataset_version
         """
         pass
@@ -35,16 +35,16 @@ class DataFileReader(ABC):
         """
         Return the regex pattern to identify relevant compressed files containing datafiles, by filename
         Must implement the following named capture groups:
-            - stream_id
+            - instrument_id
             - dataset_version
         """
         pass
 
     @classmethod
-    def extract_stream_id(cls, filepath: str) -> str:
+    def extract_instrument_id(cls, filepath: str) -> str:
         """Extract stream id from unzipped input file"""
         filename = os.path.split(filepath)[-1]
-        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('stream_id')
+        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('instrument_id')
         return satellite_id_char
 
     @classmethod

@@ -129,7 +129,7 @@ def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
 
 
     reader = product.get_reader()
-    dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_stream_id(src_filepath))
+    dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
