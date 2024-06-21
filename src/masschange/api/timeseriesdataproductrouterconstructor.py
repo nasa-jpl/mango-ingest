@@ -24,17 +24,17 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     downsampling_factors = [product.aggregation_step_factor ** exp for exp in range(0, product.get_required_aggregation_depth() + 1)]
     DownsamplingFactorEnum = IntEnum(value='DownsamplingFactor', names=[(str(f), f) for f in downsampling_factors])
 
-    @router.get('/versions/{dataset_version}/streams/{stream_id}', tags=[product.mission.id, product.get_full_id(), 'metadata'])
-    async def describe_dataset_instance(dataset_version: DatasetVersionEnum, stream_id: StreamEnum):
-        dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), stream_id.value)
+    @router.get('/versions/{dataset_version}/streams/{instrument_id}', tags=[product.mission.id, product.get_full_id(), 'metadata'])
+    async def describe_dataset_instance(dataset_version: DatasetVersionEnum, instrument_id: StreamEnum):
+        dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), instrument_id.value)
         description = product.describe(exclude_available_versions=True)
         metadata = dataset.get_metadata_properties()
         description.update(metadata)
         return description
 
-    @router.get('/versions/{dataset_version}/streams/{stream_id}/data', tags=[product.mission.id, product.get_full_id(), 'data'])
+    @router.get('/versions/{dataset_version}/streams/{instrument_id}/data', tags=[product.mission.id, product.get_full_id(), 'data'])
     async def get_data(
-            stream_id: StreamEnum,
+            instrument_id: StreamEnum,
             dataset_version: DatasetVersionEnum,
             # default values are chosen to allow users to immediately run a fast query from docs page
             # these may be removed later if they are confusing
@@ -77,7 +77,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
 
         try:
             query_start = datetime.now()
-            dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), stream_id.name)
+            dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), instrument_id.name)
             results = dataset.select(
                 from_isotimestamp,
                 to_isotimestamp,

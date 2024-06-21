@@ -27,7 +27,7 @@ def update_metadata(dataset: TimeSeriesDataset,
             VALUES (DEFAULT, %(name)s, %(label)s)
             ON CONFLICT DO NOTHING;
             """
-        cur.execute(sql, {'name': dataset.stream_id, 'label': dataset.stream_id})
+        cur.execute(sql, {'name': dataset.instrument_id, 'label': dataset.instrument_id})
         conn.commit()
 
     with get_db_connection() as conn, conn.cursor() as cur:
@@ -45,7 +45,7 @@ def update_metadata(dataset: TimeSeriesDataset,
             FROM _meta_instruments
             WHERE name = %(name)s;
         """
-        cur.execute(sql, {'name': dataset.stream_id})
+        cur.execute(sql, {'name': dataset.instrument_id})
         instrument_db_id = cur.fetchone()[0]
 
     with get_db_connection() as conn, conn.cursor() as cur:

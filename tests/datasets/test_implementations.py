@@ -18,7 +18,7 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
 
     def test_mandatory_filename_regex_capture_groups(self):
         mandatory_capture_group_names = {
-            'stream_id',
+            'instrument_id',
             'dataset_version'
         }
         dataset_implementations = get_time_series_dataproduct_classes()

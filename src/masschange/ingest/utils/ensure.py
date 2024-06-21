@@ -79,7 +79,7 @@ def ensure_table_exists(dataset: TimeSeriesDataset) -> None:
     """
     # product = dataset.product
     # dataset_version = dataset.product
-    stream_id = dataset.stream_id
+    instrument_id = dataset.instrument_id
 
     table_name = dataset.get_table_name()
     log.info(f'Ensuring table_name exists: "{table_name}"')
@@ -102,7 +102,7 @@ def ensure_table_exists(dataset: TimeSeriesDataset) -> None:
 
 def ensure_continuous_aggregates(dataset: TimeSeriesDataset) -> None:
     """
-    Ensure that the table for this dataset and stream_id's data exists, creating the table and all necessary views if
+    Ensure that the table for this dataset and instrument_id's data exists, creating the table and all necessary views if
     the table doesn't exist.  Does not check for or fix partial existence (i.e. table exists but views do not).
     """
     log.info(f'Ensuring expected continuous aggregates exist for dataset "{dataset.product.get_full_id()}"')
@@ -132,7 +132,7 @@ def ensure_continuous_aggregates(dataset: TimeSeriesDataset) -> None:
                 cur.execute(sql)
                 conn.commit()
                 log.info(
-                    f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", stream "{dataset.stream_id}"')
+                    f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", stream "{dataset.instrument_id}"')
 
             refresh_continuous_aggregates(dataset)
 
@@ -149,8 +149,8 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     for product_cls in get_time_series_dataproduct_classes():
         product = product_cls()
         for version in product_cls.get_available_versions():
-            for stream_id in product_cls.instrument_ids:
-                dataset = TimeSeriesDataset(product, version, stream_id)
+            for instrument_id in product_cls.instrument_ids:
+                dataset = TimeSeriesDataset(product, version, instrument_id)
                 log.info(f'Ensuring tables/caggs for {dataset.get_table_name()}')
                 ensure_dataset(dataset)
                 log.info(f'Updating metadata for {dataset.get_table_name()}')

@@ -22,8 +22,8 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
-    print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} stream {ds.stream_id}')
-    path = f'/missions/{ds.product.mission.id}/datasets/{ds.product.id_suffix}/versions/{ds.version}/streams/{ds.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
+    print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} stream {ds.instrument_id}')
+    path = f'/missions/{ds.product.mission.id}/datasets/{ds.product.id_suffix}/versions/{ds.version}/streams/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
     response = client.get(path)
     assert response.status_code == 200
     content = response.json()
@@ -69,8 +69,8 @@ def test_location_lookup():
     test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
     test_span_end = test_span_begin + timedelta(minutes=1)
     print(
-        f'test_gracefo_data_select() for {dataset.product.get_full_id()} version {dataset.version} stream {dataset.stream_id}')
-    path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
+        f'test_gracefo_data_select() for {dataset.product.get_full_id()} version {dataset.version} stream {dataset.instrument_id}')
+    path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
     response = client.get(path)
     assert response.status_code == 200
     content = response.json()
@@ -98,13 +98,13 @@ def test_downsampled_location_lookup():
 
     test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
     test_span_end = test_span_begin + timedelta(minutes=1)
-    full_res_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
+    full_res_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
     full_res_response = client.get(full_res_path)
     assert full_res_response.status_code == 200
     full_res_content = full_res_response.json()
 
     downsampling_factor = dataset.product.get_available_downsampling_factors()[2]
-    downsampled_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.stream_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location&downsampling_factor={downsampling_factor}'
+    downsampled_path = f'/missions/{dataset.product.mission.id}/datasets/{dataset.product.id_suffix}/versions/{dataset.version}/streams/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location&downsampling_factor={downsampling_factor}'
     downsampled_response = client.get(downsampled_path)
     assert downsampled_response.status_code == 200
     downsampled_content = downsampled_response.json()
