@@ -213,9 +213,9 @@ class TimeSeriesDataset:
         Return the name of the SQL table or view providing access to data for this dataset for a given stream at a given
         aggregation level
         """
-        if self.stream_id not in self.product.stream_ids:
+        if self.stream_id not in self.product.instrument_ids:
             raise ValueError(
-                f'stream id "{self.stream_id}" not recognized (expected one of {sorted(self.product.stream_ids)})')
+                f'stream id "{self.stream_id}" not recognized (expected one of {sorted(self.product.instrument_ids)})')
 
         aggregation_depth_pad_width = 2
         padded_aggregation_depth = str(aggregation_depth).rjust(aggregation_depth_pad_width, "0")
@@ -236,9 +236,9 @@ class TimeSeriesDataset:
     def get_sql_table_create_statement(self) -> str:
         # TODO: Perhaps generate this from column definitions rather than hardcoding per-class?  Need to think about it.
         """Get an SQL statement to create a table for this dataset/stream"""
-        if self.stream_id not in self.product.stream_ids:
+        if self.stream_id not in self.product.instrument_ids:
             raise ValueError(
-                f'stream_id {self.stream_id} not in {self.product.__name__}.stream_ids - expected one of {self.product.stream_ids}')
+                f'stream_id {self.stream_id} not in {self.product.__name__}.instrument_ids - expected one of {self.product.instrument_ids}')
 
         sql = f"""
             create table public.{self.get_table_name()}

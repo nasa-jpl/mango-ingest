@@ -149,7 +149,7 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     for product_cls in get_time_series_dataproduct_classes():
         product = product_cls()
         for version in product_cls.get_available_versions():
-            for stream_id in product_cls.stream_ids:
+            for stream_id in product_cls.instrument_ids:
                 dataset = TimeSeriesDataset(product, version, stream_id)
                 log.info(f'Ensuring tables/caggs for {dataset.get_table_name()}')
                 ensure_dataset(dataset)

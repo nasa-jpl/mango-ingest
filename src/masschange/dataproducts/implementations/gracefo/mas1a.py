@@ -13,7 +13,7 @@ class GraceFOMas1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'MAS1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(hours=1)
     processing_level = '1A'
 

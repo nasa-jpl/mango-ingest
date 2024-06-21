@@ -7,7 +7,7 @@ from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 def permute_all_datasets() -> Iterable[TimeSeriesDataset]:
     for product in get_time_series_dataproduct_classes():
         for version in product.get_available_versions():
-            for stream_id in product.stream_ids:
+            for stream_id in product.instrument_ids:
                 yield TimeSeriesDataset(product(), version, stream_id)
 
 

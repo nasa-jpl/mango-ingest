@@ -13,7 +13,7 @@ class GraceFOPci1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'PCI1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=5)
     processing_level = '1A'
 

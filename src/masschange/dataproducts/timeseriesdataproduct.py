@@ -20,7 +20,7 @@ class TimeSeriesDataProduct(ABC):
     description: str = ''
     mission: Type[Mission]
     id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
-    stream_ids: Set[str]
+    instrument_ids: Set[str]
     time_series_interval: timedelta
     processing_level: str
 
@@ -56,7 +56,7 @@ class TimeSeriesDataProduct(ABC):
                 # 'data_begin': cls.get_data_begin(id),
                 # 'data_end': cls.get_data_end(id)
             } for id in
-                sorted(cls.stream_ids)],
+                sorted(cls.instrument_ids)],
             'available_fields': sorted([field.describe() for field in cls.get_available_fields()],
                                        key=lambda description: description['name']),
             'available_resolutions': [

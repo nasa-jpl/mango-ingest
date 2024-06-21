@@ -13,7 +13,7 @@ class GraceFOTnk1ADataProduct(TimeSeriesDataProduct):
 
     mission = GraceFO
     id_suffix = 'TNK1A'
-    stream_ids = {'C', 'D'}
+    instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=1/2)  # one measurement (but sometimes two) per tank per second.  Two tanks
     processing_level = '1A'
 
