@@ -24,7 +24,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     downsampling_factors = [product.aggregation_step_factor ** exp for exp in range(0, product.get_required_aggregation_depth() + 1)]
     DownsamplingFactorEnum = IntEnum(value='DownsamplingFactor', names=[(str(f), f) for f in downsampling_factors])
 
-    @router.get('/versions/{dataset_version}/streams/{instrument_id}', tags=[product.mission.id, product.get_full_id(), 'metadata'])
+    @router.get('/versions/{dataset_version}/instruments/{instrument_id}', tags=[product.mission.id, product.get_full_id(), 'metadata'])
     async def describe_dataset_instance(dataset_version: DatasetVersionEnum, instrument_id: StreamEnum):
         dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version.value), instrument_id.value)
         description = product.describe(exclude_available_versions=True)
@@ -32,7 +32,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
         description.update(metadata)
         return description
 
-    @router.get('/versions/{dataset_version}/streams/{instrument_id}/data', tags=[product.mission.id, product.get_full_id(), 'data'])
+    @router.get('/versions/{dataset_version}/instruments/{instrument_id}/data', tags=[product.mission.id, product.get_full_id(), 'data'])
     async def get_data(
             instrument_id: StreamEnum,
             dataset_version: DatasetVersionEnum,
