@@ -42,16 +42,19 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
             agg_column_exprs.append(column_expr)
 
     bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.{dataset.product.TIMESTAMP_COLUMN_NAME})"
+    time_series_id_columns = sorted(field.name for field in dataset.product.get_available_fields() if field.is_time_series_id_column)
+    time_series_id_select_block = ''.join(f'{column}, ' for column in time_series_id_columns)
+    group_by_expr =', '.join([bucket_expr] + time_series_id_columns)
     agg_columns_block = ',\n'.join(agg_column_exprs)
 
     return f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
-        SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME},
+        SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME}, {time_series_id_select_block}
         {agg_columns_block}
         FROM {source_name} as src
-        GROUP BY {bucket_expr}
+        GROUP BY {group_by_expr}
         WITH NO DATA;
         
          ---- disable realtime aggregation
