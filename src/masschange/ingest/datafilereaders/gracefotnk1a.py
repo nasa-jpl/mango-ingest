@@ -28,7 +28,7 @@ class GraceFOTnk1ADataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='', const_value='R'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=''),
-            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit=''),
+            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit='', is_time_series_id_column=True),
             AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit=''),
             AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8', unit=''),
             # skip definitions of columns defined by 'prod_flag'
