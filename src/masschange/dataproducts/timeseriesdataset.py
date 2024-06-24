@@ -126,7 +126,9 @@ class TimeSeriesDataset:
 
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
-               limit_data_span: bool = True, resolve_location: bool = False) -> List[Dict]:
+               limit_data_span: bool = True, resolve_location: bool = False, filters: List = None) -> List[Dict]:
+        filters = filters or []
+
         if aggregation_level is None:
             aggregation_level = self._get_minimum_aggregation_level(from_dt, to_dt)
 
