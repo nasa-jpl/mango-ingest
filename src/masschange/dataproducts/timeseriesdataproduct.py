@@ -129,7 +129,8 @@ class TimeSeriesDataProduct(ABC):
 
             # normal fields, with aggregations
             elif using_aggregations and field.has_aggregations:
-                for column_name in field.aggregation_db_column_names:
+                aggregate_column_names = {agg.get_aggregated_name(field.name) for agg in field.aggregations}
+                for column_name in aggregate_column_names:
                     agg_name = column_name.replace(f'{field.name}_', '', 1)
                     if field.name not in structured_result:
                         structured_result[field.name] = {}

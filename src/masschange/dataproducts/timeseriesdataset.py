@@ -154,7 +154,8 @@ class TimeSeriesDataset:
             column_names = set()
             for field in non_lookup_fields:
                 if field.has_aggregations:
-                    column_names.update(field.aggregation_db_column_names)
+                    aggregate_column_names =  {agg.get_aggregated_name(field.name) for agg in field.aggregations}
+                    column_names.update(aggregate_column_names)
                 else:
                     column_names.add(field.name)
 

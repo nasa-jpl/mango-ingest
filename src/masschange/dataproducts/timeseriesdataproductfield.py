@@ -71,11 +71,6 @@ class TimeSeriesDataProductField(ABC):
     def has_aggregations(self):
         return len(self.aggregations) > 0
 
-    @property
-    def aggregation_db_column_names(self) -> Set[str]:
-        # TODO: Excise calls to this function
-        return {agg.get_aggregated_name(self.name) for agg in self.aggregations}
-
     def __hash__(self):
         return self.name.__hash__()
 
