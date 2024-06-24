@@ -83,7 +83,8 @@ class TimeSeriesDataProductField(ABC):
             'type': self.python_type.__name__,
             'description': self.description,
             'unit': self.unit,
-            'supported_aggregations': sorted([agg.get_aggregated_name(self.name) for agg in self.aggregations]),
+            'supported_aggregations': sorted([agg.describe(self.name) for agg in self.aggregations],
+                                             key=lambda agg_dict: agg_dict.get('type')),
         }
 
         if self.is_constant:
