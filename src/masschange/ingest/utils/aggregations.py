@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Sequence, Callable
+from typing import Sequence, Callable, Dict
 
 
 class Aggregation(ABC):
@@ -19,6 +19,13 @@ class Aggregation(ABC):
 
     def get_aggregated_name(self, operand_column_name: str) -> str:
         return self._output_name_f(operand_column_name)
+
+    def describe(self, operand_column_name: str) -> Dict:
+        """Return a JSON representation of this aggregation for use in the API"""
+        return {
+            'type': self.name,
+            'field_name': self.get_aggregated_name(operand_column_name)
+        }
 
 
 class TrivialAggregation(Aggregation):
