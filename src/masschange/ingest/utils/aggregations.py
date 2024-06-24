@@ -5,9 +5,14 @@ from typing import Sequence, Callable
 class Aggregation(ABC):
     """Defines an aggregation on a single column and provides utilities for interfacing with SQL"""
 
-    def __init__(self, sql_expr_f: Callable[[str], str], output_name_f: Callable[[str], str]):
+    def __init__(self, name: str, sql_expr_f: Callable[[str], str], output_name_f: Callable[[str], str]):
+        self._name = name
         self._sql_expr_f = sql_expr_f
         self._output_name_f = output_name_f
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def get_sql_expression(self, operand_column_name: str) -> str:
         return self._sql_expr_f(operand_column_name)
@@ -23,10 +28,8 @@ class TrivialAggregation(Aggregation):
     """
 
     def __init__(self, func_name: str):
-        super().__init__(
-            lambda column_name: f'{func_name}({column_name})',
-            lambda column_name: f'{column_name}_{func_name.lower()}'
-        )
+        super().__init__(func_name, lambda column_name: f'{func_name}({column_name})',
+                         lambda column_name: f'{column_name}_{func_name.lower()}')
 
 
 class NestedAggregation(Aggregation):
@@ -38,10 +41,11 @@ class NestedAggregation(Aggregation):
     correct construction would be NestedAggregation(["F2", "F1"])
     """
 
-    def __init__(self, func_names: Sequence[str], output_name_f_override: Callable[[str], str] = None):
+    def __init__(self, name, func_names: Sequence[str], output_name_f_override: Callable[[str], str] = None):
         self._func_names = func_names
 
         super().__init__(
+            name,
             self._compose_sql_expr,
             output_name_f_override if output_name_f_override is not None else lambda column_name: column_name
         )

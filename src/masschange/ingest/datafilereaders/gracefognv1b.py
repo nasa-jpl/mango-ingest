@@ -44,7 +44,8 @@ class GraceFOGnv1BDataFileReader(AsciiDataFileReader):
 
             AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None),
 
-            DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None, aggregations=[NestedAggregation(['st_collect', 'st_centroid'])]),
+            DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None, aggregations=[
+                NestedAggregation("CENTROID", ['st_collect', 'st_centroid'])]),
             DerivedAsciiDataFileReaderColumn(name='orbit_direction', np_type='U1', unit=None)
         ]
 
