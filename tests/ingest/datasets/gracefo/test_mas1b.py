@@ -24,5 +24,5 @@ class GraceFOMas1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
          13.66314067421178, 13.82399457459087)
     ]
 
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()
