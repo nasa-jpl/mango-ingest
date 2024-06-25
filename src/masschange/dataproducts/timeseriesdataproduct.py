@@ -3,7 +3,7 @@ import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection, Sequence
 from datetime import timedelta
-from typing import Dict, Set, Type
+from typing import Dict, Set, Type, List
 
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
@@ -36,7 +36,7 @@ class TimeSeriesDataProduct(ABC):
         return f'{cls.mission.id}_{cls.id_suffix}'
 
     @classmethod
-    def describe(cls, exclude_available_versions: bool = False) -> Dict:
+    def describe(cls, exclude_available_versions: bool = False,  metadata_cache: List[Dict] = None) -> Dict:
         """
         Returns
         -------
@@ -49,14 +49,7 @@ class TimeSeriesDataProduct(ABC):
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
             'processing_level': cls.processing_level,
-            'instruments': [{
-                'id': id,
-                # These are disabled for the time being, as they are slow
-                # TODO: Store these in the metadata table that doesn't exist yet
-                # 'data_begin': cls.get_data_begin(id),
-                # 'data_end': cls.get_data_end(id)
-            } for id in
-                sorted(cls.instrument_ids)],
+            'instruments': sorted(cls.instrument_ids),
             'available_fields': sorted([field.describe() for field in cls.get_available_fields()],
                                        key=lambda description: description['name']),
             'available_resolutions': [
@@ -69,9 +62,16 @@ class TimeSeriesDataProduct(ABC):
             'query_result_limit': cls.query_result_limit
         }
 
-        # This includes a db call, and may not always be useful
-        if not exclude_available_versions:
-            description.update({'available_versions': [str(version) for version in cls.get_available_versions()]})
+        try:
+            if metadata_cache is not None:
+                datasets = [ds for ds in metadata_cache if ds['product'] == cls.get_full_id()]
+                description['datasets'] = datasets
+                description['available_versions'] = sorted({ds['version'] for ds in datasets})
+            elif not exclude_available_versions:
+                description['available_versions'] = sorted(str(version) for version in cls.get_available_versions())
+
+        except KeyError as err:
+            logging.error(f'Failed to retrieve expected metadata for product {cls.get_full_id()}: {err}')
 
         return description
 
