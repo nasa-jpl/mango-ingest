@@ -123,3 +123,17 @@ def test_downsampled_location_lookup():
     full_res_max_longitude = max(d['location']['longitude'] for d in full_res_data)
     assert full_res_min_latitude <= downsampled_datum['location']['latitude'] <= full_res_max_latitude
     assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
+
+
+def test_basic_metadata():
+    path = f'/missions/GRACEFO/datasets/'
+    response = client.get(path)
+    assert response.status_code == 200
+    content = response.json()
+
+    # TODO: Turn this into an enum derived from Aggregation if it gets much bigger than it is
+    recognised_aggregation_types = {'MIN', 'MAX', 'AVG', 'CENTROID'}
+    for ds in content['data']:
+        for field in ds['available_fields']:
+            for agg in field['supported_aggregations']:
+                assert agg['type'] in recognised_aggregation_types
