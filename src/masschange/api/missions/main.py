@@ -3,6 +3,7 @@ from typing import Iterable, Type
 from fastapi import APIRouter
 
 from masschange.api.timeseriesdataproductrouterconstructor import construct_router
+from masschange.api.utils.db.queries import fetch_bulk_metadata
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
@@ -25,7 +26,9 @@ for mission in missions:
 
     @mission_data_products_router.get('/', tags=['dataproducts', 'metadata'])
     def get_available_data_products_for_mission():
-        return {'data': [product.describe() for product in sorted(mission_data_products, key=lambda product: product.id_suffix)]}
+        # use metadata cache to enable population of datasets with full metadata
+        metadata_cache = list(fetch_bulk_metadata())
+        return {'data': [product.describe(metadata_cache=metadata_cache) for product in sorted(mission_data_products, key=lambda product: product.id_suffix)]}
 
     for product in mission_data_products:
         product_router = construct_router(product)
