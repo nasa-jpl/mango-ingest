@@ -60,7 +60,7 @@ class TimeSeriesDataset:
                                   'instrument_name': self.instrument_id})
                 result = cur.fetchone()
             except Exception as err:
-                logging.info(f'query failed with {err}: {sql}')
+                logging.warning(f'query failed with {err}: {sql}')
                 return None
 
         return result
@@ -90,7 +90,7 @@ class TimeSeriesDataset:
                 cur.execute(sql)
                 result = cur.fetchone()[0]
             except Exception as err:
-                logging.info(f'query failed with {err}: {sql}')
+                logging.warning(f'query failed with {err}: {sql}')
                 return None
 
         return result
@@ -181,7 +181,7 @@ class TimeSeriesDataset:
                 cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
                 results = cur.fetchall()
             except psycopg2.errors.UndefinedTable as err:
-                logging.error(f'Query failed with {err}: {sql}')
+                logging.warning(f'Query failed with {err}: {sql}')
                 raise RuntimeError(
                     f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
             except psycopg2.errors.UndefinedColumn as err:
@@ -192,7 +192,7 @@ class TimeSeriesDataset:
                 raise ValueError(
                     f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
-                logging.error(f'query failed with {err}: {sql}')
+                logging.warning(f'query failed with {err}: {sql}')
                 raise Exception
 
         try:

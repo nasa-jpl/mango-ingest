@@ -27,6 +27,6 @@ JOIN _meta_instruments mi on mi.id = mdpvi._meta_instruments_id
             cur.execute(sql)
             results = cur.fetchall()
         except Exception as err:
-            logging.info(f'query failed with {err}: {sql}')
+            logging.warning(f'query failed with {err}: {sql}')
             return None
     return results
