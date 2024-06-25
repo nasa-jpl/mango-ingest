@@ -31,17 +31,17 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
                                       const_value='00000100000000000000000000111111'),
             # TODO: prod_flag should be a bit array - need to work out how to convert on load
             AsciiDataFileReaderColumn(index=6, name='lin_accl_x', np_type=np.double, unit='m/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='lin_accl_y', np_type=np.double, unit='m/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=8, name='lin_accl_z', np_type=np.double, unit='m/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=9, name='ang_accl_x', np_type=np.double, unit='rad/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=10, name='ang_accl_y', np_type=np.double, unit='rad/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=11, name='ang_accl_z', np_type=np.double, unit='rad/s2',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=12, name='icu_blk_nr', np_type=int, unit=None)
         ]
 

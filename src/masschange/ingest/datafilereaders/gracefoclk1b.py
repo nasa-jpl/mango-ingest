@@ -26,13 +26,13 @@ class GraceFOClk1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=2, name='clock_id', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=3, name='eps_time', np_type=np.double, unit='s',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='eps_err', np_type=np.double, unit='s',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=5, name='eps_drift', np_type=np.double, unit='s/s',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=6, name='drift_err', np_type=np.double, unit='s/s',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='qualflg', np_type='U8', unit=None)
         ]
 

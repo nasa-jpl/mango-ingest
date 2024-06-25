@@ -132,7 +132,7 @@ def test_basic_metadata():
     content = response.json()
 
     # TODO: Turn this into an enum derived from Aggregation if it gets much bigger than it is
-    recognised_aggregation_types = {'MIN', 'MAX', 'AVG', 'CENTROID'}
+    recognised_aggregation_types = {'min', 'max', 'avg', 'centroid'}
     for ds in content['data']:
         for field in ds['available_fields']:
             for agg in field['supported_aggregations']:
