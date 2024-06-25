@@ -29,7 +29,7 @@ class TimeSeriesDataProductField(ABC):
     aggregations: Set[Aggregation]
     is_lookup_field: bool = False  # only True via subclass override
 
-    VALID_BASIC_AGGREGATIONS: Set[str] = {'MIN', 'MAX', 'AVG'}
+    VALID_BASIC_AGGREGATIONS: Set[str] = {'min', 'max', 'avg'}
 
     def __init__(self, name: str, unit: str, description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None,

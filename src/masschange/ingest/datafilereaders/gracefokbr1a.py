@@ -36,25 +36,25 @@ class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='CA_range', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='L1_range', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='L2_range', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
 
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='CA_phase', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='L1_phase', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='L2_phase', np_type=np.double,
-                                                    unit='m', aggregations=['MIN', 'MAX']),
+                                                    unit='m', aggregations=['min', 'max']),
 
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='CA_SNR', np_type=np.double,
-                                                    unit='V/V', aggregations=['MIN', 'MAX']),
+                                                    unit='V/V', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='L1_SNR', np_type=np.double,
-                                                    unit='V/V', aggregations=['MIN', 'MAX']),
+                                                    unit='V/V', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=8, name='L2_SNR', np_type=np.double,
-                                                    unit='V/V', aggregations=['MIN', 'MAX']),
+                                                    unit='V/V', aggregations=['min', 'max']),
 
             # TODO: assume that 'channel' is an integer number. Need to confirm
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name='CA_chan', np_type=pd.Int32Dtype,
@@ -65,9 +65,9 @@ class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
                                                     unit=None),
 
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=12, name='K_phase', np_type=np.double,
-                                                    unit='cycles', aggregations=['MIN', 'MAX']),
+                                                    unit='cycles', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=13, name='Ka_phase', np_type=np.double,
-                                                    unit='cycles', aggregations=['MIN', 'MAX']),
+                                                    unit='cycles', aggregations=['min', 'max']),
 
             # Note: 'NaN' is not defined for int. Panda has a nullable int types pd.Int64Dtype
             # See:

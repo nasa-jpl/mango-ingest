@@ -29,7 +29,7 @@ class GraceFOImu1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='gyro_id', np_type=np.ubyte, unit=None),  # valid_range: 1, 4
             AsciiDataFileReaderColumn(index=5, name='FiltAng', np_type=np.double, unit='degree',
-                                      aggregations=['MIN', 'MAX']),
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit=None),
         ]
 
