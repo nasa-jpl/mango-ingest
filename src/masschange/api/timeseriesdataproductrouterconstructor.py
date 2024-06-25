@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
+from masschange.api.utils.db.queries import fetch_bulk_metadata
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
@@ -16,6 +17,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
     router = APIRouter(prefix=f'/{product.id_suffix}')
 
     InstrumentsEnum = StrEnum('Instruments', sorted(product.instrument_ids))
+    # TODO: this approach will require API restart after new dataset version is ingested to register the new id
     available_version_strs = sorted(str(v) for v in product.get_available_versions())
     if len(available_version_strs) == 1:
         available_version_strs.append(' ')  # TODO: see https://github.com/pydantic/pydantic/discussions/7441
@@ -105,6 +107,8 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
 
     @router.get('/', tags=[product.mission.id, product.get_full_id(), 'metadata'])
     async def describe_data_product_definition():
-        return product.describe()
+        # use metadata cache to enable population of datasets with full metadata
+        metadata_cache = list(fetch_bulk_metadata())
+        return product.describe(metadata_cache=fetch_bulk_metadata())
 
     return router
