@@ -65,8 +65,13 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
 
         if filter is not None:
             filter = [KeyValueQueryParameter(s) for s in filter]
+
         else:
             filter = []
+        extant_filter_keys = {f.key for f in filter}
+        expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_time_series_id_column}
+        if not expected_filter_keys.issubset(extant_filter_keys):
+            raise HTTPException(status_code=400, detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
 
         field_names = fields
         fields = set()
