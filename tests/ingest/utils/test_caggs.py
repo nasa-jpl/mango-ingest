@@ -6,8 +6,8 @@ from masschange.ingest.utils.aggregations import TrivialAggregation, NestedAggre
 class AggregationsTestCase(unittest.TestCase):
 
     def test_trivial_aggregation(self):
-        agg = TrivialAggregation('MIN')
-        self.assertEqual('MIN(someColumnName)', agg.get_sql_expression('someColumnName'))
+        agg = TrivialAggregation('min')
+        self.assertEqual('min(someColumnName)', agg.get_sql_expression('someColumnName'))
         self.assertEqual('someColumnName_min', agg.get_aggregated_name('someColumnName'))
 
     def test_nested_aggregation(self):
