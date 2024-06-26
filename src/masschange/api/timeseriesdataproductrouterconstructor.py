@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.db.queries import fetch_bulk_metadata
+from masschange.api.utils.misc import KeyValueQueryParameter
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
@@ -98,7 +99,7 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
                 fields=fields,
                 aggregation_level=downsampling_level,
                 resolve_location=resolve_location,
-                filters = filter
+                filters=filter
             )
             query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
         except TooMuchDataRequestedError as err:
@@ -125,15 +126,3 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
         return product.describe(metadata_cache=fetch_bulk_metadata())
 
     return router
-
-
-class KeyValueQueryParameter:
-    key: str
-    value: str
-
-    def __init__(self, raw_input: str):
-        if len([c for c in raw_input if c == '=']) != 1:
-            raise ValueError(
-                f'key-value query parameter must have value of form "{{key}}={{value}}" (got "{raw_input}")')
-
-        self.key, self.value = raw_input.split('=', maxsplit=1)
