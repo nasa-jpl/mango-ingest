@@ -6,6 +6,7 @@ from typing import List, Dict, Union, Iterable
 
 import psycopg2
 from psycopg2 import extras
+from psycopg2.sql import SQL, Identifier
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
@@ -173,15 +174,25 @@ class TimeSeriesDataset:
             table_name = self.get_table_or_view_name(aggregation_level)
             select_columns_clause = self._get_sql_select_columns_clause(column_names)
 
+            parameters = {'from_dt': from_dt, 'to_dt': to_dt}
+            filter_parameters = {f'filter_{i}': f.value for i, f in enumerate(filters)}
+            parameters.update(filter_parameters)
+
+            conditions = [
+                SQL('{} >= %(from_dt)s').format(Identifier(self.product.TIMESTAMP_COLUMN_NAME)),
+                SQL('{} <= %(to_dt)s').format(Identifier(self.product.TIMESTAMP_COLUMN_NAME))
+            ] + [SQL(f'{{}}=%(filter_{i})s').format(Identifier(f.key)) for i, f in enumerate(filters)]
+            where_clause = SQL(' AND ').join(conditions).as_string(conn)
+
+
             try:
                 sql = f"""
                     SELECT {select_columns_clause}
                     FROM {table_name}
-                    WHERE   {self.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
-                        AND {self.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
+                    WHERE {where_clause}
                     ORDER BY {self.product.TIMESTAMP_COLUMN_NAME}
                     """
-                cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
+                cur.execute(sql, parameters)
                 results = cur.fetchall()
             except psycopg2.errors.UndefinedTable as err:
                 logging.warning(f'Query failed with {err}: {sql}')
