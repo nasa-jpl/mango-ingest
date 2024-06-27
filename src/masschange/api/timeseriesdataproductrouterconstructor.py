@@ -1,11 +1,13 @@
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 from enum import IntEnum
-from typing import Type, Union, Annotated, List
+import logging
+from typing import Annotated, List
 
+import psycopg2
 from fastapi import APIRouter, HTTPException, Query
+from psycopg2.sql import Identifier, SQL
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
-from pydantic import BaseModel
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.db.queries import fetch_bulk_metadata
@@ -13,6 +15,10 @@ from masschange.api.utils.misc import KeyValueQueryParameter
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.db import get_db_connection
+from masschange.db.utils import list_table_columns as list_db_table_columns
+from masschange.utils.misc import get_human_readable_timedelta
+
 
 
 def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
@@ -129,5 +135,67 @@ def construct_router(product: TimeSeriesDataProduct) -> APIRouter:
         # use metadata cache to enable population of datasets with full metadata
         metadata_cache = list(fetch_bulk_metadata())
         return product.describe(metadata_cache=fetch_bulk_metadata())
+
+    @router.get('/versions/{dataset_version}/instruments/{instrument_id}/fields/{field_name}/statistics/{statistic}',
+                tags=[product.mission.id, product.get_full_id(), 'data'])
+    async def get_statistic_for_field(
+            dataset_version: str,
+            instrument_id: str,
+            field_name: str,
+            statistic: str,
+            from_isotimestamp: datetime = datetime.combine(date.today(), time(0, 0, 0)) - timedelta(days=30),
+            to_isotimestamp: datetime = datetime.combine(date.today(), time(0, 0, 0)) + timedelta(days=1),
+            filter: Annotated[List[str], Query()] = None
+    ):
+        dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion(dataset_version), instrument_id)
+
+        # validate requested statistic
+        # TODO: Turn this into an enum later
+        supported_statistics = {'stddev_pop'}
+        if statistic not in supported_statistics:
+            return HTTPException(status_code=400,
+                                 detail=f'statistic "{statistic}"not in list of supported statistics {sorted(supported_statistics)}')
+
+        # validate temporal span
+        max_query_temporal_span = timedelta(days=31)
+        requested_temporal_span = to_isotimestamp - from_isotimestamp
+        if requested_temporal_span > max_query_temporal_span:
+            raise TooMuchDataRequestedError(
+                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
+
+        with get_db_connection() as conn, conn.cursor() as cur:
+            table_name = dataset.get_table_or_view_name(aggregation_depth=0)
+            select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(conn)
+            where_clause = f'{dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s'
+
+            try:
+                sql = f"""
+                            SELECT {select_clause}
+                            FROM {table_name}
+                            WHERE {where_clause}
+                            """
+                cur.execute(sql, {'from_dt': from_isotimestamp, 'to_dt': to_isotimestamp})
+                result = cur.fetchone()
+            except psycopg2.errors.UndefinedTable as err:
+                logging.warning(f'Query failed with {err}: {sql}')
+                raise RuntimeError(
+                    f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
+            except psycopg2.errors.UndefinedColumn as err:
+                logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
+                available_columns = list_db_table_columns(table_name)
+                missing_columns = {f.name for f in dataset.product.get_available_fields() if
+                                   f.name not in available_columns and not f.is_lookup_field}
+                raise ValueError(
+                    f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
+            except Exception as err:
+                logging.warning(f'query failed with {err}: {sql}')
+                raise Exception
+
+        return {
+            'from_isotimestamp': from_isotimestamp.isoformat(),
+            'to_isotimestamp': to_isotimestamp.isoformat(),
+            'statistic': statistic,
+            'result': result[0]
+        }
 
     return router
