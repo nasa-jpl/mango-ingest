@@ -15,6 +15,9 @@ missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_ser
 # Constructs routing for everything in the /missions/{id}/products/{id} tree
 # This isn't super-clean, but saves having an equivalent "vine" of two-line files to navigate through.
 # Feel free to break it out into an import tree if it gets complicated when non-TimeSeriesDataset stuff is implemented
+#TODO: Reconsider this whole construct_router() approach - it exists to allow the docs page to populate parameters from
+# available versions, but it makes the codebase much less clean and I'm not sure how much value that actually adds as
+# the project matures out of the pathfinding stage.
 missions_router = APIRouter(prefix='/missions')
 
 for mission in missions:
