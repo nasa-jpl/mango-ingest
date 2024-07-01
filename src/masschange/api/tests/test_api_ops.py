@@ -33,7 +33,8 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     # TODO: Update once variable data span is implemented properly in dataset classes
     if data_span is not None and (ds.product.time_series_interval == timedelta(
             milliseconds=100) or ds.product.time_series_interval == timedelta(seconds=1)):
-        assert is_nearly_equal(600, content['data_count'])
+        expected_data_count = (test_span_end - test_span_begin) / ds.product.time_series_interval
+        assert is_nearly_equal(expected_data_count, content['data_count'])
 
     expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'data_begin', 'data_end', 'data_count',
                            'downsampling_factor', 'nominal_data_interval_seconds', 'query_elapsed_ms', 'data']
