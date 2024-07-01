@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
 
-from masschange.api.missions import main as missions
+from masschange.api.routers import missions
 
 app = FastAPI()
 
