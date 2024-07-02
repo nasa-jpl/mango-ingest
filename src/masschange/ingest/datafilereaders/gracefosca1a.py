@@ -42,7 +42,7 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=0, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=3, name='sca_id', np_type=np.ubyte, unit=None),
+            AsciiDataFileReaderColumn(index=3, name='sca_id', np_type=np.ubyte, unit=None, is_time_series_id_column=True),
             AsciiDataFileReaderColumn(index=4, name='sca_desig', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=5, name='quatangle', np_type=np.double, unit=None),
             AsciiDataFileReaderColumn(index=6, name='quaticoeff', np_type=np.double, unit=None),

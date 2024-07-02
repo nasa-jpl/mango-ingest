@@ -31,7 +31,13 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
 
     # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
     additional_parameters = {
-        'TNK1A': '&filter=tank_id=1'
+        'TNK1A': '&filter=tank_id=1',
+        'SCA1A': '&filter=sca_id=1',
+        'SCA1B': '&filter=sca_id=1',
+        'IMU1A': '&filter=gyro_id=1',
+        'IMU1B': '&filter=gyro_id=1',
+        'IHK1A': '&filter=sensortype=V',
+        'IHK1B': '&filter=sensortype=V'
     }
     if ds.product.id_suffix in additional_parameters:
         path += f'{additional_parameters[ds.product.id_suffix]}'
