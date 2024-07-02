@@ -151,7 +151,7 @@ def test_downsampled_location_lookup():
     assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
 
 
-def basic_test_metadata():
+def test_metadata_basic():
     path = f'/missions/GRACEFO/products/'
     response = client.get(path)
     assert response.status_code == 200
@@ -165,7 +165,7 @@ def basic_test_metadata():
                 assert agg['type'] in recognised_aggregation_types
 
 
-def basic_test_statistics():
+def test_statistics_basic():
     """Just tests one field of one dataset to ensure endpoints are generally working"""
     product = GraceFOAcc1ADataProduct()
     dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
