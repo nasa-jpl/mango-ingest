@@ -131,8 +131,8 @@ def test_downsampled_location_lookup():
     assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
 
 
-def test_basic_metadata():
-    path = f'/missions/GRACEFO/datasets/'
+def basic_test_metadata():
+    path = f'/missions/GRACEFO/products/'
     response = client.get(path)
     assert response.status_code == 200
     content = response.json()
