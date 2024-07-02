@@ -28,6 +28,14 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     print(
         f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
     path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
+
+    # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
+    additional_parameters = {
+        'TNK1A': '&filter=tank_id=1'
+    }
+    if ds.product.id_suffix in additional_parameters:
+        path += f'{additional_parameters[ds.product.id_suffix]}'
+
     response = client.get(path)
     content = response.json()
 
