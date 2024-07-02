@@ -1,46 +1,28 @@
 from typing import Iterable, Type
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from masschange.api.timeseriesdataproductrouterconstructor import construct_router
 from masschange.api.utils.db.queries import fetch_bulk_metadata
-
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.utils import get_time_series_dataproduct_classes
+from masschange.dataproducts.utils import get_time_series_dataproduct_classes, get_time_series_dataproducts
 from masschange.missions import Mission
 
+available_missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataproduct_classes()}
 
-missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataproduct_classes()}
-
-# Constructs routing for everything in the /missions/{id}/products/{id} tree
-# This isn't super-clean, but saves having an equivalent "vine" of two-line files to navigate through.
-# Feel free to break it out into an import tree if it gets complicated when non-TimeSeriesDataset stuff is implemented
-#TODO: Reconsider this whole construct_router() approach - it exists to allow the docs page to populate parameters from
-# available versions, but it makes the codebase much less clean and I'm not sure how much value that actually adds as
-# the project matures out of the pathfinding stage.
-missions_router = APIRouter(prefix='/missions')
-
-for mission in missions:
-    mission_router = APIRouter(prefix=f'/{mission.id}')
-
-    mission_data_products_router = APIRouter(prefix='/products')
-
-    mission_data_products = [product() for product in get_time_series_dataproduct_classes() if product.mission == mission]
-
-    @mission_data_products_router.get('/', tags=['dataproducts', 'metadata'])
-    def get_available_data_products_for_mission():
-        # use metadata cache to enable population of datasets with full metadata
-        metadata_cache = list(fetch_bulk_metadata())
-        return {'data': [product.describe(metadata_cache=metadata_cache) for product in sorted(mission_data_products, key=lambda product: product.id_suffix)]}
-
-    for product in mission_data_products:
-        product_router = construct_router(product)
-        mission_data_products_router.include_router(product_router)
-
-    mission_router.include_router(mission_data_products_router)
-    missions_router.include_router(mission_router)
+router = APIRouter()
 
 
-@missions_router.get('/', tags=['missions', 'metadata'])
+@router.get('/', tags=['missions', 'metadata'])
 def get_available_missions():
-    return {'data': sorted([mission.id for mission in missions])}
+    return {'data': sorted([mission.id for mission in available_missions])}
+
+
+@router.get('/{mission_id}/products', tags=['missions', 'metadata'])
+def get_available_data_products_for_mission(mission_id: str):
+    if mission_id not in [m.id for m in available_missions]:
+        raise HTTPException(status_code=400,
+                            detail=f'No mission found with id {mission_id} in extant missions ({sorted(mission.id for mission in available_missions)})')
+    # use metadata cache to enable population of datasets with full metadata
+    metadata_cache = list(fetch_bulk_metadata())
+    mission_data_products = [p for p in get_time_series_dataproducts() if p.mission.id == mission_id]
+    return {'data': [product.describe(metadata_cache=metadata_cache) for product in
+                     sorted(mission_data_products, key=lambda product: product.id_suffix)]}
