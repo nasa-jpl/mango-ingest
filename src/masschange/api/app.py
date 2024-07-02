@@ -5,7 +5,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
 
-from masschange.api.routers import missions
+from masschange.api.routers.missions import router as missions_router
+from masschange.api.routers.dataproducts import router as dataproducts_router
+from masschange.api.routers.datasets import router as datasets_router
 
 app = FastAPI()
 
@@ -31,7 +33,9 @@ def view_documentation_message(request: Request):
         f'Welcome to the MassChange API!  View interactive documentation <a href="{documentation_url}">HERE</a>')
 
 
-app.include_router(missions.missions_router)
+dataproducts_router.include_router(datasets_router, prefix='/{product_id_suffix}')
+missions_router.include_router(dataproducts_router, prefix='/{mission_id}/products')
+app.include_router(missions_router, prefix='/missions')
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)
