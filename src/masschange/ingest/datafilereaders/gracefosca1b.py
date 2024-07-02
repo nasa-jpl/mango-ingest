@@ -27,7 +27,7 @@ class GraceFOSca1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='sca_id', np_type=np.ubyte, unit=None),
+            AsciiDataFileReaderColumn(index=2, name='sca_id', np_type=np.ubyte, unit=None, is_time_series_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='quatangle', np_type=np.double, unit=None),
             AsciiDataFileReaderColumn(index=4, name='quaticoeff', np_type=np.double, unit=None),
             AsciiDataFileReaderColumn(index=5, name='quatjcoeff', np_type=np.double, unit=None),
