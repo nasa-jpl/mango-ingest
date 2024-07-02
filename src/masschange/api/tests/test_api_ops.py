@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
@@ -25,8 +27,11 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
     path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
     response = client.get(path)
-    assert response.status_code == 200
     content = response.json()
+
+    if response.status_code != 200:
+        print(json.dumps(content))
+    assert response.status_code == 200
 
     # Omit variable-data-span-datasets from the test as the expected data count is unknown
     # Currently, anything not 1Hz or 10Hz is assumed to be variable, though this is not always true
