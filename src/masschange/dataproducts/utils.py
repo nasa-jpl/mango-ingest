@@ -9,9 +9,14 @@ from masschange.dataproducts import implementations as datasetimplementations
 log = logging.getLogger()
 
 
+# TODO: Switch all calls to get_time_series_dataproducts()
 def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProduct]]:
     import_submodules(datasetimplementations)
     return TimeSeriesDataProduct.__subclasses__()
+
+
+def get_time_series_dataproducts() -> Collection[TimeSeriesDataProduct]:
+    return [cls() for cls in get_time_series_dataproduct_classes()]
 
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
