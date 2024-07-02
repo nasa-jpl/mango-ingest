@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 
 from masschange.api.app import app
+from masschange.api.routers.datasets import SupportedStatisticsEnum
 from masschange.api.tests.utils import is_nearly_equal, permute_all_datasets
 from masschange.dataproducts.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
@@ -24,7 +25,8 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
-    print(f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
+    print(
+        f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
     path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
     response = client.get(path)
     content = response.json()
@@ -143,3 +145,19 @@ def basic_test_metadata():
         for field in ds['available_fields']:
             for agg in field['supported_aggregations']:
                 assert agg['type'] in recognised_aggregation_types
+
+
+def basic_test_statistics():
+    """Just tests one field of one dataset to ensure endpoints are generally working"""
+    product = GraceFOAcc1ADataProduct()
+    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    stat_span_begin = dataset.get_data_span().begin
+    stat_span_end = stat_span_begin + timedelta(days=7)
+
+    assert len(SupportedStatisticsEnum) > 5
+
+    base_path = f'/missions/GRACEFO/products?fromisotimestamp={stat_span_begin.isoformat()}&toisotimestamp={stat_span_end.isoformat()}&field=lin_accl_x'
+    for statistic in SupportedStatisticsEnum:
+        path = f'{base_path}/{statistic.value}'
+        response = client.get(path)
+        assert response.status_code == 200
