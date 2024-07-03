@@ -24,7 +24,7 @@ class GraceFOClk1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='rcv_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='clock_id', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=2, name='clock_id', np_type=int, unit=None, is_time_series_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='eps_time', np_type=np.double, unit='s',
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='eps_err', np_type=np.double, unit='s',
