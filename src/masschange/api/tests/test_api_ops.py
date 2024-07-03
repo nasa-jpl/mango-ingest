@@ -27,8 +27,8 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     test_span_end = test_span_begin + timedelta(minutes=1)
     print(
         f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
-    path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}'
-
+    path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?from_isotimestamp=' \
+           f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
     # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
     additional_parameters = {
         'TNK1A': '&filter=tank_id=1',
@@ -37,13 +37,17 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
         'IMU1A': '&filter=gyro_id=1',
         'IMU1B': '&filter=gyro_id=1',
         'IHK1A': '&filter=sensortype=V',
-        'IHK1B': '&filter=sensortype=V'
+        'IHK1B': '&filter=sensortype=V',
+        'CLK1B': '&filter=clock_id=-1',
+        'GNV1A_PRN': '&filter=prn_id=3',
+        'GPS1A': '&filter=prn_id=7&filter=ant_id=0'
     }
     if ds.product.id_suffix in additional_parameters:
         path += f'{additional_parameters[ds.product.id_suffix]}'
 
     response = client.get(path)
     content = response.json()
+
 
     if response.status_code != 200:
         print(json.dumps(content))
