@@ -38,9 +38,9 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
         'IMU1B': '&filter=gyro_id=1',
         'IHK1A': '&filter=sensortype=V',
         'IHK1B': '&filter=sensortype=V',
-        'CLK1B': '&filter=clock_id=1',
+        'CLK1B': '&filter=clock_id=-1',
         'GNV1A_PRN': '&filter=prn_id=3',
-        'GPS1A': '&filter=prn_id=6&filter=ant_id=0'
+        'GPS1A': '&filter=prn_id=7&filter=ant_id=0'
     }
     if ds.product.id_suffix in additional_parameters:
         path += f'{additional_parameters[ds.product.id_suffix]}'
