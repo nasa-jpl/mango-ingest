@@ -14,4 +14,4 @@ def permute_all_datasets() -> Iterable[TimeSeriesDataset]:
 def is_nearly_equal(expected: Union[int, float], actual: Union[int, float], allowed_deviation_percent=5) -> bool:
     if expected == 0:
         return actual == 0
-    return (abs(expected - actual) / expected) < allowed_deviation_percent / 100
+    return (abs(expected - actual) / expected) <= allowed_deviation_percent / 100
