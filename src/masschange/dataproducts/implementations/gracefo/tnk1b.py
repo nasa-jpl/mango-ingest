@@ -1,21 +1,21 @@
 from datetime import timedelta
 
 from masschange.ingest.datafilereaders.base import DataFileReader
-from masschange.ingest.datafilereaders.gracefotnk1a import GraceFOTnk1ADataFileReader
+from masschange.ingest.datafilereaders.gracefotnk1b import GraceFOTnk1BDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 
 
-class GraceFOTnk1ADataProduct(TimeSeriesDataProduct):
+class GraceFOTnk1BDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_reader(cls) -> DataFileReader:
-        return GraceFOTnk1ADataFileReader()
+        return GraceFOTnk1BDataFileReader()
 
     mission = GraceFO
-    id_suffix = 'TNK1A'
+    id_suffix = 'TNK1B'
     instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=1)  # one measurement (but sometimes two) per tank per second.  Two tanks
-    processing_level = '1A'
+    processing_level = '1B'
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
