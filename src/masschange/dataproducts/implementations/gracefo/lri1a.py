@@ -14,7 +14,7 @@ class GraceFOLri1ADataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'LRI1A'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(seconds=1)
+    time_series_interval = timedelta(seconds=1/10)
     processing_level = '1A'
 
     @classmethod
