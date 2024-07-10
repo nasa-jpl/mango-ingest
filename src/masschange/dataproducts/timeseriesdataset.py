@@ -287,6 +287,7 @@ class TimeSeriesDataset:
             gnv_pair_begin = None
             gnv_pair_end = next(geo_iter)
 
+            # DEV WARNING: Here be dragons - the nested iteration is easy to mess up and unit tests don't exist yet.
             while True:  # iterate until a StopIteration
                 gnv_pair_begin = gnv_pair_end
                 gnv_pair_end = next(geo_iter)
@@ -294,6 +295,14 @@ class TimeSeriesDataset:
                 gnv_begin_ts = gnv_pair_begin[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
                 gnv_end_ts = gnv_pair_end[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
                 el_ts = data_el[self.product.TIMESTAMP_COLUMN_NAME]
+
+                # If datum exists before start of the GNV pair, assign it a null value and move on
+                # This should ONLY occur for the first GNV pair, and should loop through all data elements with
+                # timestamps earlier than the available GNV data
+                if (el_ts < gnv_begin_ts):
+                    data_el[self.product.LOCATION_COLUMN_NAME] = None
+                    data_el = next(data_iter)
+                    continue
 
                 # for each datum falling within the timespan bounded by the gnv pair, assign it the location of
                 #  the closest bounding gnv record
@@ -311,6 +320,7 @@ class TimeSeriesDataset:
         except StopIteration:
             pass
 
+        # Assign null location to all data after end of available GNV data
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
 
