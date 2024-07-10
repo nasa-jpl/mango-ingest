@@ -132,7 +132,7 @@ class TimeSeriesDataset:
         filters = filters or []
 
         if aggregation_level is None:
-            aggregation_level = self._get_minimum_aggregation_level(from_dt, to_dt)
+            aggregation_level = self.get_minimum_aggregation_level(from_dt, to_dt)
 
         using_aggregations = aggregation_level > 0
 
@@ -324,7 +324,7 @@ class TimeSeriesDataset:
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
 
-    def _get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime, check_data_span: bool = False):
+    def get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime, check_data_span: bool = False):
         """
         Given a query span, return the lowest aggregation level required to limit the result to the product's query
         result limit

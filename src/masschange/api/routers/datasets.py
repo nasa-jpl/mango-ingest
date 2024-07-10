@@ -57,7 +57,7 @@ async def get_data(
         from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0),
         to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1),
         fields: Annotated[List[str], Query()] = None,
-        downsampling_factor: int = 1,
+        downsampling_factor: int = None,
         filter: Annotated[List[str], Query()] = None
 ):
     product = dataset.product
@@ -65,9 +65,14 @@ async def get_data(
     if fields == None:
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
 
-    if downsampling_factor not in product.get_available_downsampling_factors():
+    # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
+    if downsampling_factor is None:
+        downsampling_factor = dataset.product.aggregation_step_factor ** dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+    elif downsampling_factor not in product.get_available_downsampling_factors():
         raise ValueError(
             f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(product.get_available_downsampling_factors())})')
+
+    aggregation_level = int(math.log(downsampling_factor, product.aggregation_step_factor))
 
     if filter is not None:
         filter = [KeyValueQueryParameter(s) for s in filter]
@@ -100,7 +105,6 @@ async def get_data(
     fields.add(dataset_fields_by_name[product.TIMESTAMP_COLUMN_NAME])
 
     resolve_location = dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME) in fields
-    downsampling_level = int(math.log(downsampling_factor, product.aggregation_step_factor))
 
     try:
         query_start = datetime.now()
@@ -108,7 +112,7 @@ async def get_data(
             from_isotimestamp,
             to_isotimestamp,
             fields=fields,
-            aggregation_level=downsampling_level,
+            aggregation_level=aggregation_level,
             resolve_location=resolve_location,
             filters=filter
         )
@@ -125,7 +129,7 @@ async def get_data(
         'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
         'data_count': len(results),
         'downsampling_factor': downsampling_factor,
-        'nominal_data_interval_seconds': product.get_nominal_data_interval(downsampling_level).total_seconds(),
+        'nominal_data_interval_seconds': product.get_nominal_data_interval(aggregation_level).total_seconds(),
         'query_elapsed_ms': query_elapsed_ms,
         'data': results
     }
