@@ -496,9 +496,6 @@ class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
 
     """
 
-
-
-
     index: int
     np_dtype: np.dtype
     transform: Callable[[Any], Any]
