@@ -13,7 +13,7 @@ class TimeSeriesDataProductField(ABC):
     Attributes
         name (str): the field's name, as used in the database and presented via the API
         description(str): a description which may be displayed in the presentation layer (API)
-        unit (str): the unit of measurement for the field's values
+        unit (str | None): the unit of measurement for the field's values
         const_value (Any | None): an optional value for the column, which is assumed to be constant across every datum '
         of a given data product, which is validated during ingestion
         aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled.
@@ -26,7 +26,7 @@ class TimeSeriesDataProductField(ABC):
 
     name: str
     description: str
-    unit: str
+    unit: Union[str, None]
     const_value: Union[Any, None]
     aggregations: Set[Aggregation]
     is_lookup_field: bool = False  # only True via subclass override
@@ -34,7 +34,7 @@ class TimeSeriesDataProductField(ABC):
 
     VALID_BASIC_AGGREGATIONS: Set[str] = {'min', 'max', 'avg'}
 
-    def __init__(self, name: str, unit: str, description: str = "",
+    def __init__(self, name: str, unit: Union[str, None], description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None,
                  const_value: Union[Any, None] = None, is_lookup_field: bool = False, is_time_series_id_column: bool = False):
         self.name = name.lower()
@@ -98,7 +98,7 @@ class TimeSeriesDataProductField(ABC):
 
 
 class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
-    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+    def __init__(self, name: str, unit: Union[str, None], description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
 
         if aggregations is not None:
@@ -117,7 +117,7 @@ class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
 class TimeSeriesDataProductLocationLookupField(TimeSeriesDataProductField):
     """Location field which is dynamically resolved at query-time, loading values from the GNV data tables."""
 
-    def __init__(self, name: str, unit: str, description: str = "", aggregations: Collection[str] = None,
+    def __init__(self, name: str, unit: Union[str, None], description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
 
         if aggregations is not None:

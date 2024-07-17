@@ -24,13 +24,13 @@ class GraceFOTnk1BDataFileReader(DataFileWithProdFlagReader):
     # Use for reading row data
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='c'),
+            AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit='', const_value='G'),
-            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=''),
-            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit='', is_time_series_id_column=True),
-            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit=''),
-            AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8', unit=''),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
+            AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit=None, is_time_series_id_column=True),
+            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit=None),
+            AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8', unit=None),
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='tank_pres', np_type=np.double,
