@@ -493,7 +493,7 @@ class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
     np_dtype: np.dtype
     transform: Callable[[Any], Any]
 
-    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: str, description: str = "",
+    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: Union[str, None], description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None, transform: Union[Callable[[Any], Any], None] = None,
                  const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
         super().__init__(name, unit, description=description, aggregations=aggregations, const_value=const_value,
@@ -537,7 +537,7 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     """
     prod_flag_bit_index: int
 
-    def __init__(self, prod_flag_bit_index: int, name: str, np_type: Union[Type, str], unit, description='',
+    def __init__(self, prod_flag_bit_index: int, name: str, np_type: Union[Type, str], unit:Union[str, None], description='',
                  aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
                  const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
         super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
@@ -552,7 +552,7 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     but derived from data in the product file, possibly from different columns.
     """
 
-    def __init__(self, name: str, np_type: Union[Type, str], unit, description='', aggregations: Collection[Union[str, Aggregation]] = None,
+    def __init__(self, name: str, np_type: Union[Type, str], unit:Union[str, None], description='', aggregations: Collection[Union[str, Aggregation]] = None,
                  transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
         if const_value is not None:
             raise ValueError(f'it is not valid to instantiate a DerivedAsciiDataFileReaderColumn with a const value')
