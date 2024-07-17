@@ -18,6 +18,9 @@ def get_extant_continuous_aggregates(dataset: TimeSeriesDataset) -> Set[str]:
 
 
 def delete_caggs(table_names: Collection[str]):
+    if len(table_names) == 0:
+        log.debug('Nothing to delete')
+
     ordered_table_names = sorted(table_names, reverse=True)  # must be in reverse order due to dependencies
     for table_name in ordered_table_names:
         sql = f"drop materialized view {table_name};"
