@@ -484,10 +484,20 @@ class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
          See https://numpy.org/doc/stable/reference/arrays.dtypes.html ctrl+f "array-protocol type string" for further
          details on the string aliases used by numpy.
 
+        description(str): a description which may be displayed in the presentation layer (API)
+
+        aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled
+
         transform (Callable[[T], T]): a transform (or wrapper for series of transforms) to apply to the extracted values, if applicable
 
         const_value(Any | None): an optional assumed_constant value for the column, which is validated during ingestion
+
+        is_time_series_id_column (bool): True if this field contains an identifier which differentiates distinct
+
     """
+
+
+
 
     index: int
     np_dtype: np.dtype
