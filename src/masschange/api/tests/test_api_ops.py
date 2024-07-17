@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from masschange.api.app import app
 from masschange.api.routers.datasets import SupportedStatisticsEnum
 from masschange.api.tests.utils import is_nearly_equal, permute_all_datasets
-from masschange.dataproducts.implementations.gracefo.acc1a import GraceFOAcc1ADataProduct
-from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
+from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
+from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 
