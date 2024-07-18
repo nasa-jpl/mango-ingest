@@ -10,7 +10,7 @@ from psycopg2.sql import SQL, Identifier
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
-from masschange.dataproducts.implementations.gracefo.gnv1a import GraceFOGnv1ADataProduct
+from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductLocationLookupField
