@@ -6,8 +6,8 @@ from masschange.ingest.ingest import ingest_file_to_db
 from masschange.ingest.errors import EmptyProductException
 from masschange.dataproducts.implementations.gracefo.primary.act1b import GraceFOAct1BDataProduct
 from masschange.dataproducts.implementations.gracefo.primary.ahk1a import GraceFOAhk1ADataProduct
-from masschange.ingest.datafilereaders.gracefo.primary.gracefoact1b import GraceFOAct1BDataFileReader
-from masschange.ingest.datafilereaders.gracefo.primary.gracefoahk1a import GraceFOAhk1ADataFileReader
+from masschange.ingest.datafilereaders.gracefo.primary.act1b import GraceFOAct1BDataFileReader
+from masschange.ingest.datafilereaders.gracefo.primary.ahk1a import GraceFOAhk1ADataFileReader
 
 from masschange.db import get_db_connection
 
