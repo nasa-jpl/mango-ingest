@@ -1,16 +1,11 @@
 import logging
-import os
 import unittest
 from datetime import datetime
-from typing import Sequence, Type, Tuple, Dict, List
+from typing import List
 
 import numpy as np
 
-from masschange.ingest import ingest
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.db import get_db_connection
 from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
-from masschange.ingest.datafilereaders.gracefoacc1a import GraceFOAcc1ADataFileReader
 
 log = logging.getLogger()
 
