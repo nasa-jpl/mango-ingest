@@ -356,7 +356,7 @@ class ReportFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.file_tag)
+        return cls.get_reference_epoch() + timedelta(seconds=row.first_data_point_t_tag)
 
     @classmethod
     def get_header_line_count(cls, filename: str) -> int:
