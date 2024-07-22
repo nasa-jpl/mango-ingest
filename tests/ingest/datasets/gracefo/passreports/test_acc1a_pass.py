@@ -2,7 +2,7 @@ import unittest
 from masschange.ingest import ingest
 import os
 from datetime import datetime, timezone
-from masschange.dataproducts.implementations.gracefo.pass_.acc1a_pass import GraceFOAcc1APassDataProduct
+from masschange.dataproducts.implementations.gracefo.passreports.acc1a_pass import GraceFOAcc1APassDataProduct
 from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
 
@@ -11,7 +11,7 @@ class GraceFOAcc1PassDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase)
     @classmethod
     def setUpClass(cls):
         super(DatasetIngestTestCaseBase, cls).setUpClass()
-        ingest.run(product=cls.dataset_cls(), src=os.path.abspath('./tests/input_data/test_pass_reports'),
+        ingest.run(product=cls.dataset_cls(), src=os.path.abspath('./tests/input_data/test_passreports'),
                    data_is_zipped=False)
 
     dataset_cls = GraceFOAcc1APassDataProduct
