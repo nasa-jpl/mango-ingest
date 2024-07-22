@@ -1,18 +1,18 @@
 from datetime import timedelta
 
 from masschange.ingest.datafilereaders.base import DataFileReader
-from masschange.ingest.datafilereaders.gracefo.rpt.acc1a_rpt import GraceFOAcc1ARptDataFileReader
+from masschange.ingest.datafilereaders.gracefo.passreports.acc1a_pass import GraceFOAcc1APassDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 
 
-class GraceFOAcc1ARptDataProduct(TimeSeriesDataProduct):
+class GraceFOAcc1APassDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_reader(cls) -> DataFileReader:
-        return GraceFOAcc1ARptDataFileReader()
+        return GraceFOAcc1APassDataFileReader()
 
     mission = GraceFO
-    id_suffix = 'ACC1A_RPT'
+    id_suffix = 'ACC1A_PASS'
     instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(days=1)
     processing_level = '1A'
@@ -39,7 +39,14 @@ class GraceFOAcc1ARptDataProduct(TimeSeriesDataProduct):
             bit_count_4 int not null,
             bit_count_5 int not null,
             bit_count_6 int not null,
-            bit_count_7 int not null,      
+            bit_count_7 int not null,
+            nrec_read int not null,
+            nrec_read_used int not null,
+            nrec_written int not null,
+            nrec_nulled int not null,
+            nrec_non_incorporated int not null,
+            nrec_filled int not null,
+            nrec_consistency int not null,       
         
             timestamp timestamptz not null
         """
