@@ -17,7 +17,8 @@ class GraceFOAcc1APassDataFileReader(ReportFileReader):
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return None
+        # no-match pattern, because the data are never zipped
+        return '$^'
 
     @classmethod
     def get_rpt_custom_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
