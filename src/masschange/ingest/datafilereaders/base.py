@@ -324,7 +324,7 @@ class ReportFileReader(AsciiDataFileReader):
         # except instead of 'camel case' we use low case separated by underscore.
 
         standard_columns = [
-            AsciiDataFileReaderColumn(index=0, name='file_name', np_type='U32', unit=None),
+            AsciiDataFileReaderColumn(index=0, name='file_name', np_type='U40', unit=None),
             AsciiDataFileReaderColumn(index=1, name='file_tag', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name='process_ttag', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=3, name='first_data_point_t_tag', np_type=np.double, unit='s'),
@@ -335,14 +335,14 @@ class ReportFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=8, name='time_gap_min', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=9, name='time_gap_max', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=10, name='n_qual_bits', np_type=np.ubyte,  unit=None),
-            AsciiDataFileReaderColumn(index=11, name='bit_count_0', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=12, name='bit_count_1', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=13, name='bit_count_2', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=14, name='bit_count_3', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=15, name='bit_count_4', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=16, name='bit_count_5', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=17, name='bit_count_6', np_type=np.byte, unit=None),
-            AsciiDataFileReaderColumn(index=18, name='bit_count_7', np_type=np.byte, unit=None)
+            AsciiDataFileReaderColumn(index=11, name='bit_count_0', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=12, name='bit_count_1', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=13, name='bit_count_2', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=14, name='bit_count_3', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=15, name='bit_count_4', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=16, name='bit_count_5', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=17, name='bit_count_6', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=18, name='bit_count_7', np_type=int, unit=None)
             ]
         return standard_columns + cls.get_rpt_custom_input_column_defs()
 
@@ -356,7 +356,7 @@ class ReportFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.file_tag)
+        return cls.get_reference_epoch() + timedelta(seconds=row.first_data_point_t_tag)
 
     @classmethod
     def get_header_line_count(cls, filename: str) -> int:
