@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.datafilereaders.base import  DataFileWithProdFlagReader, \
+from masschange.ingest.datafilereaders.base import DataFileWithProdFlagReader, \
     AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
 
 
