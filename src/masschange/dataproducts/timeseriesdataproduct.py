@@ -175,6 +175,10 @@ class TimeSeriesDataProduct(ABC):
         return special_fields.union(cls.get_reader().get_fields())
 
     @classmethod
+    def has_time_series_id_fields(cls) -> bool:
+        return len([f.name for f in cls.get_available_fields() if f.is_time_series_id_column]) > 0
+
+    @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
         with get_db_connection() as conn, conn.cursor() as cur:
             data_product_name = cls.get_full_id()

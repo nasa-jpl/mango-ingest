@@ -191,7 +191,7 @@ def test_downsampled_location_lookup():
     assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
 
 
-def test_metadata_basic():
+def test_product_metadata_basic():
     path = f'/missions/GRACEFO/products/'
     response = client.get(path)
     assert response.status_code == 200
@@ -203,6 +203,31 @@ def test_metadata_basic():
         for field in ds['available_fields']:
             for agg in field['supported_aggregations']:
                 assert agg['type'] in recognised_aggregation_types
+
+
+@pytest.mark.parametrize("ds", permute_all_datasets())
+def test_dataset_metadata(ds: TimeSeriesDataset):
+    path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}'
+    response = client.get(path)
+    content = response.json()
+
+    if response.status_code != 200:
+        print(json.dumps(content))
+    assert response.status_code == 200
+
+    expected_attributes = ['description', 'mission', 'id', 'full_id', 'processing_level', 'instruments',
+                           'available_fields', 'available_resolutions', 'timestamp_field', 'query_result_limit',
+                           'data_begin', 'data_end', 'last_updated']
+    for k in expected_attributes:
+        assert k in content
+
+    expected_field_attributes = ['name', 'type', 'description', 'unit', 'supported_aggregations',
+                                 'is_time_series_id']
+    for field in content['available_fields']:
+        for k in expected_field_attributes:
+            assert k in field
+        if field['is_time_series_id'] is True:
+            assert 'enum_values' in field
 
 
 def test_statistics_basic():

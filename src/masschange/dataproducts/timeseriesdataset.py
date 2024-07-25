@@ -6,6 +6,7 @@ from typing import List, Dict, Union, Iterable
 
 import psycopg2
 from psycopg2 import extras
+from psycopg2.extensions import cursor as Cursor
 from psycopg2.sql import SQL, Identifier
 
 from masschange.api.errors import TooMuchDataRequestedError
@@ -40,33 +41,13 @@ class TimeSeriesDataset:
 
         with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             try:
-                sql = f"""
-                    SELECT {','.join(sorted(supported_properties))}
-                    FROM _meta_dataproducts_versions_instruments as mdpvi
-                    WHERE mdpvi._meta_dataproducts_versions_id in (
-                        SELECT id 
-                        FROM _meta_dataproducts_versions as mdpv
-                        WHERE mdpv.name=%(version_name)s
-                        AND mdpv._meta_dataproducts_id in (
-                            SELECT id
-                            FROM _meta_dataproducts as mdp
-                            WHERE mdp.name=%(data_product_name)s
-                        )
-                    )
-                    AND mdpvi._meta_instruments_id in (
-                        SELECT id 
-                        FROM _meta_instruments as mi
-                        WHERE mi.name=%(instrument_name)s
-                    );
-                    """
-                cur.execute(sql, {'data_product_name': self.product.get_full_id(), 'version_name': self.version.value,
-                                  'instrument_name': self.instrument_id})
-                result = cur.fetchone()
+                metadata = self._get_basic_metadata(cur, supported_properties)
+                metadata['time_series_id_enums'] = self._enumerate_time_series_id_values(cur)
             except Exception as err:
-                logging.warning(f'query failed with {err}: {sql}')
+                logging.warning(err)
                 return None
 
-        return result
+        return metadata
 
     def get_data_span(self) -> Union[TimeSpan, None]:
         begin = self._get_data_begin()
@@ -103,6 +84,61 @@ class TimeSeriesDataset:
 
     def _get_data_end(self) -> Union[datetime, None]:
         return self._get_data_span_stat('max')
+
+    def _get_basic_metadata(self, cur: Cursor, supported_properties: Collection[str]) -> Dict:
+        sql = f"""
+            SELECT {','.join(sorted(supported_properties))}
+            FROM _meta_dataproducts_versions_instruments as mdpvi
+            WHERE mdpvi._meta_dataproducts_versions_id in (
+                SELECT id 
+                FROM _meta_dataproducts_versions as mdpv
+                WHERE mdpv.name=%(version_name)s
+                AND mdpv._meta_dataproducts_id in (
+                    SELECT id
+                    FROM _meta_dataproducts as mdp
+                    WHERE mdp.name=%(data_product_name)s
+                )
+            )
+            AND mdpvi._meta_instruments_id in (
+                SELECT id 
+                FROM _meta_instruments as mi
+                WHERE mi.name=%(instrument_name)s
+            );
+            """
+        try:
+            cur.execute(sql, {'data_product_name': self.product.get_full_id(), 'version_name': self.version.value,
+                              'instrument_name': self.instrument_id})
+        except Exception as err:
+            raise err.__class__(f'query failed with {err}: {sql}')
+        result = cur.fetchone()
+        return result
+
+    def _enumerate_time_series_id_values(self, cur: Cursor) -> Dict:
+        if not self.product.has_time_series_id_fields():
+            return {}
+
+        time_series_id_column_names = [f.name for f in self.product.get_available_fields() if f.is_time_series_id_column]
+        # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
+        # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
+        view_depth = min(([0] + self.product.get_available_aggregation_levels())[-1], 5)
+        sql = f"""
+            SELECT DISTINCT {','.join(sorted(time_series_id_column_names))}
+            FROM {self.get_table_or_view_name(view_depth)};
+            """
+        try:
+            cur.execute(sql)
+        except Exception as err:
+            raise err.__class__(f'query failed with {err}: {sql}')
+
+        metadata = {column: set() for column in time_series_id_column_names}
+        for row in cur.fetchall():
+            for column in time_series_id_column_names:
+                metadata[column].add(row[column])
+
+        for column in time_series_id_column_names:
+            metadata[column] = sorted(metadata[column])
+
+        return metadata
 
     @staticmethod
     def _get_sql_select_columns_clause(column_names: Collection[str]):
