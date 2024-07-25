@@ -16,7 +16,8 @@ from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataPro
     TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.db import get_db_connection
-from masschange.db.utils import list_table_columns as list_db_table_columns
+from masschange.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_parameters, \
+    prepare_where_clause_conditions
 from masschange.utils.misc import get_human_readable_timedelta
 from masschange.utils.timespan import TimeSpan
 
@@ -174,16 +175,9 @@ class TimeSeriesDataset:
             table_name = self.get_table_or_view_name(aggregation_level)
             select_columns_clause = self._get_sql_select_columns_clause(column_names)
 
-            parameters = {'from_dt': from_dt, 'to_dt': to_dt}
-            filter_parameters = {f'filter_{i}': f.value for i, f in enumerate(filters)}
-            parameters.update(filter_parameters)
-
-            conditions = [
-                SQL('{} >= %(from_dt)s').format(Identifier(self.product.TIMESTAMP_COLUMN_NAME)),
-                SQL('{} <= %(to_dt)s').format(Identifier(self.product.TIMESTAMP_COLUMN_NAME))
-            ] + [SQL(f'{{}}=%(filter_{i})s').format(Identifier(f.key)) for i, f in enumerate(filters)]
+            parameters = prepare_where_clause_parameters(from_dt, to_dt, filters)
+            conditions = prepare_where_clause_conditions(self.product.TIMESTAMP_COLUMN_NAME, filters)
             where_clause = SQL(' AND ').join(conditions).as_string(conn)
-
 
             try:
                 sql = f"""
