@@ -60,12 +60,16 @@ def instantiate_filters(product: TimeSeriesDataProduct,
 
     return filters
 
-@router.get('/', tags=['metadata'])
+@router.get('/versions/{version_id}/instruments/{instrument_id}', tags=['metadata'])
 async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)]):
-    description = dataset.product.describe(exclude_available_versions=True)
-    metadata = dataset.get_metadata_properties()
-    description.update(metadata)
-    return description
+    metadata = dataset.product.describe(exclude_available_versions=True)
+    dataset_specific_metadata = dataset.get_metadata_properties()
+    additional_fields_metadata = dataset_specific_metadata.pop('time_series_id_enums')
+    for field_name, enumeration in additional_fields_metadata.items():
+        field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
+        field_metadata['enum_values'] = enumeration
+    metadata.update(dataset_specific_metadata)
+    return metadata
 
 
 @router.get('/versions/{version_id}/instruments/{instrument_id}/data', tags=['data'])
