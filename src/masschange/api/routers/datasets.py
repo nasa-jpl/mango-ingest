@@ -1,7 +1,7 @@
 import math
 from datetime import datetime, timedelta, date, time
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, Union
 
 import psycopg2
 from fastapi import APIRouter, HTTPException, Query, Path
@@ -11,6 +11,7 @@ from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproducts
@@ -43,6 +44,21 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
     return TimeSeriesDataset(product, version, instrument_id)
 
 
+def instantiate_filters(product: TimeSeriesDataProduct,
+                        filter_qparam_strs: Union[List[str], None]) -> List[KeyValueQueryParameter]:
+    if filter_qparam_strs is not None:
+        filters = [KeyValueQueryParameter(s) for s in filter_qparam_strs]
+    else:
+        filters = []
+
+    extant_filter_keys = {f.key for f in filters}
+    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_time_series_id_column}
+    if not expected_filter_keys.issubset(extant_filter_keys):
+        raise HTTPException(status_code=400,
+                            detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
+
+    return filters
+
 @router.get('/', tags=['metadata'])
 async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)]):
     description = dataset.product.describe(exclude_available_versions=True)
@@ -74,16 +90,7 @@ async def get_data(
 
     aggregation_level = int(math.log(downsampling_factor, product.aggregation_step_factor))
 
-    if filter is not None:
-        filter = [KeyValueQueryParameter(s) for s in filter]
-
-    else:
-        filter = []
-    extant_filter_keys = {f.key for f in filter}
-    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_time_series_id_column}
-    if not expected_filter_keys.issubset(extant_filter_keys):
-        raise HTTPException(status_code=400,
-                            detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
+    filters = instantiate_filters(product, filter)
 
     field_names = fields
     fields = set()
@@ -114,7 +121,7 @@ async def get_data(
             fields=fields,
             aggregation_level=aggregation_level,
             resolve_location=resolve_location,
-            filters=filter
+            filters=filters
         )
         query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
     except TooMuchDataRequestedError as err:
