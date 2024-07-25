@@ -180,8 +180,11 @@ async def get_statistic_for_field(
                         FROM {table_name}
                         WHERE {where_clause}
                         """
+            query_start = datetime.now()
             cur.execute(sql, parameters)
             result = cur.fetchone()
+            query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
+
         except psycopg2.errors.UndefinedTable as err:
             logging.warning(f'Query failed with {err}: {sql}')
             raise RuntimeError(
@@ -202,5 +205,6 @@ async def get_statistic_for_field(
         'to_isotimestamp': to_isotimestamp.isoformat(),
         'field': field_name,
         'statistic': statistic,
-        'result': result[0]
+        'result': result[0],
+        'query_elapsed_ms': query_elapsed_ms,
     }
