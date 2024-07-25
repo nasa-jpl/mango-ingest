@@ -8,3 +8,6 @@ class KeyValueQueryParameter:
                 f'key-value query parameter must have value of form "{{key}}={{value}}" (got "{raw_input}")')
 
         self.key, self.value = raw_input.split('=', maxsplit=1)
+
+    def __lt__(self, other):
+        return self.key < other.key
