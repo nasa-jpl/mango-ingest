@@ -16,7 +16,8 @@ from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproducts
 from masschange.db import get_db_connection
-from masschange.db.utils import list_table_columns as list_db_table_columns
+from masschange.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_parameters, \
+    prepare_where_clause_conditions
 from masschange.utils.misc import get_human_readable_timedelta
 
 router = APIRouter(tags=['datasets'])
@@ -156,6 +157,8 @@ async def get_statistic_for_field(
         to_isotimestamp: datetime = datetime.combine(date.today(), time(0, 0, 0)) + timedelta(days=1),
         filter: Annotated[List[str], Query()] = None
 ):
+    filters = instantiate_filters(dataset.product, filter)
+
     # validate temporal span
     max_query_temporal_span = timedelta(days=31)
     requested_temporal_span = to_isotimestamp - from_isotimestamp
@@ -166,7 +169,10 @@ async def get_statistic_for_field(
     with get_db_connection() as conn, conn.cursor() as cur:
         table_name = dataset.get_table_or_view_name(aggregation_depth=0)
         select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(conn)
-        where_clause = f'{dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s'
+
+        parameters = prepare_where_clause_parameters(from_isotimestamp, to_isotimestamp, filters)
+        conditions = prepare_where_clause_conditions(dataset.product.TIMESTAMP_COLUMN_NAME, filters)
+        where_clause = SQL(' AND ').join(conditions).as_string(conn)
 
         try:
             sql = f"""
@@ -174,7 +180,7 @@ async def get_statistic_for_field(
                         FROM {table_name}
                         WHERE {where_clause}
                         """
-            cur.execute(sql, {'from_dt': from_isotimestamp, 'to_dt': to_isotimestamp})
+            cur.execute(sql, parameters)
             result = cur.fetchone()
         except psycopg2.errors.UndefinedTable as err:
             logging.warning(f'Query failed with {err}: {sql}')
