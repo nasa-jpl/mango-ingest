@@ -94,31 +94,29 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
-    try:
-        test_field = next(f for f in ds.product.get_available_fields() if f.python_type in {int, float})
-    except StopIteration:
-        # in the rare/nonexistent case that no numerical field exists
-        return
 
     print(
         f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
-    path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/fields/{test_field.name}/statistics/avg?from_isotimestamp=' \
-           f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
-    # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-    if ds.product.id_suffix in timeseries_id_additional_parameters:
-        path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
+    test_fields = [f for f in ds.product.get_available_fields() if f.python_type in {int, float}]
+    for field in test_fields:
+        path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/fields/{field.name}/statistics/avg?from_isotimestamp=' \
+               f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
+        # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-    response = client.get(path)
-    content = response.json()
+        if ds.product.id_suffix in timeseries_id_additional_parameters:
+            path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
 
-    if response.status_code != 200:
-        print(json.dumps(content))
-    assert response.status_code == 200
+        response = client.get(path)
+        content = response.json()
 
-    expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'field', 'statistic', 'result', 'query_elapsed_ms']
-    for k in expected_attributes:
-        assert k in content
+        if response.status_code != 200:
+            print(json.dumps(content))
+        assert response.status_code == 200
+
+        expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'field', 'statistic', 'result', 'query_elapsed_ms']
+        for k in expected_attributes:
+            assert k in content
 
 
 def test_location_lookup():
