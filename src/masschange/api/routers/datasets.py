@@ -197,9 +197,12 @@ async def get_statistic_for_field(
             logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
             available_columns = list_db_table_columns(table_name)
             missing_columns = {f.name for f in dataset.product.get_available_fields() if
-                               f.name not in available_columns and not f.is_lookup_field}
-            raise ValueError(
-                f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
+                               f.name not in available_columns and not f.is_lookup_field and not f.is_constant}
+            if missing_columns:
+                raise ValueError(
+                    f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
+            else:
+                raise err
         except Exception as err:
             logging.warning(f'query failed with {err}: {sql}')
             raise Exception
