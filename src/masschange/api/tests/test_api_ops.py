@@ -98,7 +98,7 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
     print(
         f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
 
-    test_fields = [f for f in ds.product.get_available_fields() if f.python_type in {int, float}]
+    test_fields = [f for f in ds.product.get_available_fields() if f.is_aggregable]
     for field in test_fields:
         path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/fields/{field.name}/statistics/avg?from_isotimestamp=' \
                f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
