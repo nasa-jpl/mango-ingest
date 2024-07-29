@@ -175,6 +175,14 @@ class TimeSeriesDataProduct(ABC):
         return special_fields.union(cls.get_reader().get_fields())
 
     @classmethod
+    def get_field_by_name(cls, field_name: str) -> TimeSeriesDataProductField:
+        try:
+            return next(f for f in cls.get_available_fields() if f.name == field_name)
+        except StopIteration:
+            raise ValueError(f'No field with name "{field_name}" found in class "{cls.__name__}" '
+                             f'(valid names are {[f.name for f in cls.get_available_fields()]})')
+
+    @classmethod
     def has_time_series_id_fields(cls) -> bool:
         return len([f.name for f in cls.get_available_fields() if f.is_time_series_id_column]) > 0
 
