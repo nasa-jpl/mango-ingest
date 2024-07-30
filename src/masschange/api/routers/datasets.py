@@ -163,6 +163,15 @@ async def get_statistic_for_field(
 ):
     filters = instantiate_filters(dataset.product, filter)
 
+    # validate requested field_name
+    try:
+        field = dataset.product.get_field_by_name(field_name)
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=err)
+    if not field.is_aggregable:
+        reason = "Field is const-valued" if field.is_constant else f"Field is of unsupported type {field.python_type.__name__}"
+        raise HTTPException(status_code=400,detail=f'Cannot request statistical aggregate - {reason}')
+
     # validate temporal span
     max_query_temporal_span = timedelta(days=31)
     requested_temporal_span = to_isotimestamp - from_isotimestamp
