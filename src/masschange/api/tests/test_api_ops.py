@@ -31,7 +31,7 @@ timeseries_id_additional_parameters = {
     'IHK1B': '&filter=sensortype=V',
     'CLK1B': '&filter=clock_id=-1',
     'GNV1A_PRN': '&filter=prn_id=3',
-    'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
+    'GPS1A': '&filter=ant_id=0&filter=prn_id=7',
     'TIM1B': '&filter=ts_suppid=0'
 }
 
