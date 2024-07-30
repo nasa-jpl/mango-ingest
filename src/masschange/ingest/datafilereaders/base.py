@@ -500,9 +500,17 @@ class LogFileReader(AsciiDataFileReader):
             ndmin=1
         )
 
+        # replace commas with semicolons, because commas break conversion to csv during ingestion
+        # TODO: another option is to update ingestion code to use escape char for commas:
+        #  df.to_csv(buffer, header=False, index=False quoting=csv.QUOTE_NONE, escapechar='\\'))
+        #  In this case ',' will be replaced with '\,' in the record
+
+        clean_logs = np.char.replace(logs[log_col_name], ',', ';')
+
         # convert to data frame, because it is easier to append a column to a dataframe
         df = pd.DataFrame(data)
-        df[log_col_name] = logs[log_col_name]
+        # append log messages to the dataframe
+        df[log_col_name] = clean_logs
 
         # convert back to structured array, so we can use load_data_from_file from the parent class
         return np.core.records.fromarrays(df.values.transpose(),
