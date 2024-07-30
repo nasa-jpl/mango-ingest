@@ -468,6 +468,66 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
         """
         pass
 
+class LogFileReader(AsciiDataFileReader):
+    """
+    Data reader for log files.
+    Log files have log messages in free format after '>' delimiter
+    """
+    @classmethod
+    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+
+        header_line_count = cls.get_header_line_count(filename)
+        column_defs = cls.get_input_column_defs()
+
+        # read fixed format columns
+        data = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=None,  # split rows by whitespace chunks
+            usecols=([col.index for col in column_defs if col.index is not None]),
+            dtype=[(col.name, col.np_dtype) for col in column_defs if col.index is not None],
+            ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
+        )
+
+        # read log data after '>' delimiter
+        log_col_name = cls.log_msg_column_name()
+        logs = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=">",
+            usecols=[1],
+            dtype=[(log_col_name, f'U{cls.log_msg_max_size()}')],
+            ndmin=1
+        )
+
+        # convert to data frame, because it is easier to append a column to a dataframe
+        df = pd.DataFrame(data)
+        df[log_col_name] = logs[log_col_name]
+
+        # convert back to structured array, so we can use load_data_from_file from the parent class
+        return np.core.records.fromarrays(df.values.transpose(),
+                                          dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
+
+    @classmethod
+    def log_msg_column_name(cls):
+        pass
+
+    @classmethod
+    def log_msg_max_size(cls):
+        return 1000
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
     """
