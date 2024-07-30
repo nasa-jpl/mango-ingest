@@ -37,7 +37,7 @@ def prepare_where_clause_conditions(timestamp_column_name: str, filters: List[Ke
 def prepare_where_clause_parameters(from_dt: datetime, to_dt: datetime, filters: List[KeyValueQueryParameter]) -> Dict:
     """Given a start/end datetime and a set of filter conditions, prepare parameters for use in SQL parametrized query"""
     parameters = {'from_dt': from_dt, 'to_dt': to_dt}
-    filter_parameters = {f'filter_{i}': f.value for i, f in enumerate(filters)}
+    filter_parameters = {f'filter_{i}': f.value for i, f in enumerate(sorted(filters))}
     parameters.update(filter_parameters)
 
     return parameters
