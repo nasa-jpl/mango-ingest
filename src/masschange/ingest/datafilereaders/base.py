@@ -502,8 +502,8 @@ class LogFileReader(AsciiDataFileReader):
 
         # replace commas with semicolons, because commas break conversion to csv during ingestion
         # TODO: another option is to update ingestion code to use escape char for commas:
-        #  df.to_csv(buffer, header=False, index=False quoting=csv.QUOTE_NONE, escapechar='\\'))
-        #  In this case ',' will be replaced with '\,' in the record
+        #  df.to_csv(buffer, header=False, index=False, quoting=csv.QUOTE_NONE, escapechar='\\'))
+        #  In this case, commas will be replaced with '\,' in the record
 
         clean_logs = np.char.replace(logs[log_col_name], ',', ';')
 
@@ -517,11 +517,19 @@ class LogFileReader(AsciiDataFileReader):
                                           dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
 
     @classmethod
-    def log_msg_column_name(cls):
+    def log_msg_column_name(cls) -> str:
+        """
+        Returns name of a log message variable in the log file
+        -------
+        """
         pass
 
     @classmethod
-    def log_msg_max_size(cls):
+    def log_msg_max_size(cls) -> int:
+        """
+        Returns max number of characters in the log message
+        -------
+        """
         return 1000
 
 
