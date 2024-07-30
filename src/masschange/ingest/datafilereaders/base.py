@@ -468,6 +468,83 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
         """
         pass
 
+class LogFileReader(AsciiDataFileReader):
+    """
+    Data reader for log files.
+    Log files have log messages in free format after '>' delimiter
+    """
+    @classmethod
+    def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+
+        header_line_count = cls.get_header_line_count(filename)
+        column_defs = cls.get_input_column_defs()
+
+        # read fixed format columns
+        data = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=None,  # split rows by whitespace chunks
+            usecols=([col.index for col in column_defs if col.index is not None]),
+            dtype=[(col.name, col.np_dtype) for col in column_defs if col.index is not None],
+            ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
+        )
+
+        # read log data after '>' delimiter
+        log_col_name = cls.log_msg_column_name()
+        logs = np.loadtxt(
+            fname=filename,
+            skiprows=header_line_count,
+            delimiter=">",
+            usecols=[1],
+            dtype=[(log_col_name, f'U{cls.log_msg_max_size()}')],
+            ndmin=1
+        )
+
+        # replace commas with semicolons, because commas break conversion to csv during ingestion
+        # TODO: another option is to update ingestion code to use escape char for commas:
+        #  df.to_csv(buffer, header=False, index=False, quoting=csv.QUOTE_NONE, escapechar='\\'))
+        #  In this case, commas will be replaced with '\,' in the record
+
+        clean_logs = np.char.replace(logs[log_col_name], ',', ';')
+
+        # convert to data frame, because it is easier to append a column to a dataframe
+        df = pd.DataFrame(data)
+        # append log messages to the dataframe
+        df[log_col_name] = clean_logs
+
+        # convert back to structured array, so we can use load_data_from_file from the parent class
+        return np.core.records.fromarrays(df.values.transpose(),
+                                          dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
+
+    @classmethod
+    @abstractmethod
+    def log_msg_column_name(cls) -> str:
+        """
+        Returns name of a log message variable in the log file
+        -------
+        """
+        pass
+
+    @classmethod
+    def log_msg_max_size(cls) -> int:
+        """
+        Returns max number of characters in the log message
+        -------
+        """
+        return 1000
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
     """
