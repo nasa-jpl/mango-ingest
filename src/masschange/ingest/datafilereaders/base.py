@@ -517,6 +517,7 @@ class LogFileReader(AsciiDataFileReader):
                                           dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
 
     @classmethod
+    @abstractmethod
     def log_msg_column_name(cls) -> str:
         """
         Returns name of a log message variable in the log file
