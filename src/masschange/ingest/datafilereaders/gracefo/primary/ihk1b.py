@@ -27,10 +27,10 @@ class GraceFOIhk1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
-            AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None, is_time_series_id_column=True),
+            AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None),
 
             AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.double, unit="V (sensortype='V'), degK (sensortype='T'), A (sensortype='A')"),
-            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U2', unit=None),
+            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U2', unit=None, is_time_series_id_column=True),
         ]
 
     @classmethod
