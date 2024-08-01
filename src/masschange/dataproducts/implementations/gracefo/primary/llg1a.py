@@ -14,7 +14,7 @@ class GraceFOLlg1ADataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'LLG1A'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(hours=1)  # TODO: Uso is not a time-series dataset.
+    time_series_interval = timedelta(hours=1)  # TODO: This is not a time-series dataset.
     processing_level = '1A'
 
     @classmethod
