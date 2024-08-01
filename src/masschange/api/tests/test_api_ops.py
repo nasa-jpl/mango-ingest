@@ -27,12 +27,13 @@ timeseries_id_additional_parameters = {
     'SCA1B': '&filter=sca_id=1',
     'IMU1A': '&filter=gyro_id=1',
     'IMU1B': '&filter=gyro_id=1',
-    'IHK1A': '&filter=sensortype=V',
-    'IHK1B': '&filter=sensortype=V',
+    'IHK1A': '&filter=sensorname=39',
+    'IHK1B': '&filter=sensorname=39',
     'CLK1B': '&filter=clock_id=-1',
     'GNV1A_PRN': '&filter=prn_id=3',
     'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
-    'TIM1B': '&filter=ts_suppid=0'
+    'TIM1B': '&filter=ts_suppid=0',
+    'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT'
 }
 
 
