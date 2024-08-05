@@ -8,12 +8,13 @@ ENV TSDB_USER='postgres'
 ENV TSDB_PASSWORD='password'
 ENV TSDB_DATABASE='masschange'
 
+# root if docker userspace mapping is enabled, otherwise appuser
+ENV USER='root'
+
 # Install core system dependencies
-ENV HOME /home/appuser
-RUN useradd -r -u 1001 -g users appuser \
-  && mkdir $HOME \
+ENV HOME='/home/root'
+RUN mkdir $HOME \
   && mkdir /app \
-  && chown appuser $HOME \
   && dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
   && yum -y update; yum clean all \
   && yum -y install python3-pip; yum clean all \
@@ -24,7 +25,7 @@ RUN useradd -r -u 1001 -g users appuser \
 
 
 # Install conda
-USER appuser
+USER $USER
 RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3-latest-Linux-x86_64.sh \
   && bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
 ENV PATH=$PATH:$HOME/miniconda/condabin
@@ -34,7 +35,7 @@ USER 0
 COPY environment.yml /tmp/preliminary-environment.yml
 RUN chmod a+r /tmp/preliminary-environment.yml
 
-USER appuser
+USER $USER
 RUN ["/bin/bash", "--login", "-c", "$HOME/miniconda/condabin/conda env create -f /tmp/preliminary-environment.yml"]
 RUN ["/bin/bash", "--login", "-c", "$HOME/miniconda/condabin/conda init"]
 
@@ -44,12 +45,12 @@ ENV MASSCHANGE_DATA_ROOT=/data
 ENV MASSCHANGE_INGEST_LOGS_ROOT=/data/logs
 ENV MASSCHANGE_INGEST_LOGS_ALIAS=/var/log/masschange-ingest
 ENV MASSCHANGE_API_LOGS_ROOT=/var/log/masschange-api
-ENV MASSCHANGE_CONFIG_ROOT=/home/appuser/.config/masschange
+ENV MASSCHANGE_CONFIG_ROOT=/home/$USER/.config/masschange
 
 # Create application directories
 USER 0
 RUN mkdir -p /data $MASSCHANGE_API_LOGS_ROOT \
- && chown -R appuser /data $MASSCHANGE_API_LOGS_ROOT \
+ && chown -R $USER /data $MASSCHANGE_API_LOGS_ROOT \
  && chmod -R a+w /data
 
 
@@ -59,10 +60,10 @@ RUN ln -s $MASSCHANGE_INGEST_LOGS_ROOT $MASSCHANGE_INGEST_LOGS_ALIAS
 # Copy application files
 USER 0
 COPY . $MASSCHANGE_REPO_ROOT
-RUN chown -R appuser /app
+RUN chown -R $USER /app
 
 # Copy configuration defaults file
-USER appuser
+USER $USER
 RUN mkdir -p $MASSCHANGE_CONFIG_ROOT
 COPY ./defaults.conf.ini $MASSCHANGE_CONFIG_ROOT
 
@@ -70,14 +71,14 @@ COPY ./defaults.conf.ini $MASSCHANGE_CONFIG_ROOT
 RUN chmod +x $MASSCHANGE_REPO_ROOT/*.sh
 
 # Install MassChange to existing conda environment
-USER appuser
-RUN ["/home/appuser/miniconda/condabin/conda", "run", "-n", "masschange", "/bin/bash", "--login", "-c", "pip3 install -e /app/masschange"]
+USER $USER
+RUN ["/home/$USER/miniconda/condabin/conda", "run", "-n", "masschange", "/bin/bash", "--login", "-c", "pip3 install -e /app/masschange"]
 
 # Overridable as runtime env-var, used for reverse-proxying
 ENV API_ROOT_PATH /
 
 # Entrypoint
-#USER appuser
+#USER $USER
 #WORKDIR /app/masschange
 #RUN chmod u+x /app/src/*.sh
 
