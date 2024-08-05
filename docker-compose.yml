@@ -1,0 +1,39 @@
+version: '3'
+services:
+  mango-api:
+    build: .
+    networks:
+      - mango-backend
+    restart: 'always'
+    ports:
+      - 8000:8000
+    environment:
+      - API_PROXY_HOST
+      - API_ROOT_PATH
+      - SOURCE_DATA_ROOT
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $SOURCE_DATA_ROOT:/input
+    user: root
+    command: conda run -n masschange /app/masschange/start_api.sh
+  mango-db:
+    image: 'timescale/timescaledb-ha:pg16'
+    networks:
+      - mango-backend
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $PERSIST_LOCATION:/home/postgres/pgdata/data
+networks:
+  mango-backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: 'mango-backend'
