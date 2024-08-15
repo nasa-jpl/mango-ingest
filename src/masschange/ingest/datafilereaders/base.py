@@ -473,15 +473,35 @@ class LogFileReader(AsciiDataFileReader):
     Data reader for log files.
     Log files have log messages in free format after '>' delimiter
     """
+
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+        return cls._load_raw_data_from_product_or_tmp_file(filename)
 
-        header_line_count = cls.get_header_line_count(filename)
+    @classmethod
+    def _load_raw_data_from_product_or_tmp_file(cls, product_or_tmp_filename: str) -> np.ndarray:
+        """
+        For some log product types, we need to clean up the data before reading
+        and write the data to a temporary file.
+        This method provide functionality to read data from a 'clean' file
+        The _load_raw_data_from_file() wraps this method and calls it with a product file or with a
+        'cleaned' tmp file
+
+        Parameters
+        ----------
+        product_or_tmp_filename -> str : file path to product file or to a tmp file with cleaned data
+
+        Returns np.ndarray with data from input file
+        -------
+
+        """
+
+        header_line_count = cls.get_header_line_count(product_or_tmp_filename)
         column_defs = cls.get_input_column_defs()
 
         # read fixed format columns
         data = np.loadtxt(
-            fname=filename,
+            fname=product_or_tmp_filename,
             skiprows=header_line_count,
             delimiter=None,  # split rows by whitespace chunks
             usecols=([col.index for col in column_defs if col.index is not None]),
@@ -492,7 +512,7 @@ class LogFileReader(AsciiDataFileReader):
         # read log data after '>' delimiter
         log_col_name = cls.log_msg_column_name()
         logs = np.loadtxt(
-            fname=filename,
+            fname=product_or_tmp_filename,
             skiprows=header_line_count,
             delimiter=">",
             usecols=[1],
