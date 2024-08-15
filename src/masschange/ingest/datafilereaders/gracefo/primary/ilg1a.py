@@ -50,4 +50,4 @@ class GraceFOIlg1ADataFileReader(LogFileReader):
             tmp.write(contents)
 
             # read from tmp file
-            return cls._load_raw_data_from_product_or_tmp_file(tmp.name)
+            return super()._load_raw_data_from_file(tmp.name)
