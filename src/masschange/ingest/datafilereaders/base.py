@@ -645,3 +645,4 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
                          const_value=None, is_time_series_id_column=is_time_series_id_column)
 
 
+
