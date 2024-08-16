@@ -16,9 +16,8 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.db.utils import get_db_connection
-from masschange.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_parameters, \
-    prepare_where_clause_conditions
+from masschange.dataproducts.db.utils import get_db_connection, list_table_columns as list_db_table_columns, \
+    prepare_where_clause_conditions, prepare_where_clause_parameters
 from masschange.utils.misc import get_human_readable_timedelta
 from masschange.utils.timespan import TimeSpan
 
