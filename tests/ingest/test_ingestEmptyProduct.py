@@ -9,7 +9,7 @@ from masschange.dataproducts.implementations.gracefo.primary.ahk1a import GraceF
 from masschange.ingest.datafilereaders.gracefo.primary.act1b import GraceFOAct1BDataFileReader
 from masschange.ingest.datafilereaders.gracefo.primary.ahk1a import GraceFOAhk1ADataFileReader
 
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 
 log = logging.getLogger()
 

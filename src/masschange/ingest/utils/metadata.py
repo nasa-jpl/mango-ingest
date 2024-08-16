@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 from masschange.utils.timespan import TimeSpan
 
 
