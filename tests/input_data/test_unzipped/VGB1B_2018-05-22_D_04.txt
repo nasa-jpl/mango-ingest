@@ -1,0 +1,26 @@
+PRODUCER AGENCY               : NASA                                            
+PRODUCER INSTITUTION          : JPL                                             
+FILE TYPE ipXXXVOF            : 9                                               
+FILE FORMAT 0=BINARY 1=ASCII  : 1                                               
+NUMBER OF HEADER RECORDS      : 23                                              
+SOFTWARE VERSION              : 9a1b2                                           
+SOFTWARE BUILD TIME           : 2019-04-04_00:01:08_PDT                         
+REFERENCE DOCUMENTATION       : GRACEFO Level 1 Software Handbook               
+SATELLITE NAME                : GRACE D                                         
+SENSOR NAME                   : Nodef                                           
+TIME EPOCH (GPS TIME)         : 2000-01-01 12:00:00                             
+TIME FIRST OBS(SEC PAST EPOCH): 580219200.000000 (2018-05-22 00:00:00.00)       
+TIME LAST OBS(SEC PAST EPOCH) : 580219200.000000 (2018-05-22 00:00:00.00)       
+NUMBER OF DATA RECORDS        : 2                                               
+PRODUCT CREATE START TIME(UTC): 2019-05-13 21:31:58 by operator                 
+PRODUCT CREATE END TIME(UTC)  : 2019-05-13 21:31:58 by operator                 
+FILESIZE (BYTES)              : 2140                                            
+FILENAME                      : VGB1B_2018-05-22_D_04.txt                       
+PROCESS LEVEL (1A OR 1B)      : VO                                              
+INPUT FILE NAME               : A2B<-Standard_Out                               
+INPUT FILE CREATION TIME (UTC): A2B<-2019-05-13 22:32:15 by operator            
+INPUT FILE SOFTWARE VERSION   : A2B<-9a1b2                                      
+INPUT FILE BUILDTIME TAG      : A2B<-04-04_00:01:03_PDT                         
+END OF HEADER                                                                   
+580219200 D 1.601125092708249 -0.975095579421092 -0.1873682458455261 -0.1186665557021665 00000001
+580219200 D 1.601125092708249 -0.975095579421092 -0.1873682458455261 -0.1186665557021665 00000010

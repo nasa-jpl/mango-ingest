@@ -1,0 +1,25 @@
+PRODUCER AGENCY               : NASA                                            
+PRODUCER INSTITUTION          : JPL                                             
+FILE TYPE ipSCA1BF            : 6                                               
+FILE FORMAT 0=BINARY 1=ASCII  : 1                                               
+NUMBER OF HEADER RECORDS      : 23                                              
+SOFTWARE VERSION              : 9a1b2                                           
+SOFTWARE BUILD TIME           : 2019-04-04_00:01:08_PDT                         
+REFERENCE DOCUMENTATION       : GRACEFO Level 1 Software Handbook               
+SATELLITE NAME                : GRACE D                                         
+SENSOR NAME                   : Nodef                                           
+TIME EPOCH (GPS TIME)         : 2000-01-01 12:00:00                             
+TIME FIRST OBS(SEC PAST EPOCH): 580219200.000000 (2018-05-22 00:00:00.00)       
+TIME LAST OBS(SEC PAST EPOCH) : 580219200.000000 (2018-05-22 00:00:00.00)       
+NUMBER OF DATA RECORDS        : 1                                               
+PRODUCT CREATE START TIME(UTC): 2019-05-16 19:38:53 by operator                 
+PRODUCT CREATE END TIME(UTC)  : 2019-05-16 19:38:53 by operator                 
+FILESIZE (BYTES)              : 2038                                            
+FILENAME                      : QCP1B_2018-05-22_D_04.txt                       
+PROCESS LEVEL (1A OR 1B)      : 1B                                              
+INPUT FILE NAME               : A2B<-QCP1B_2018-05-22_D_04.asc                  
+INPUT FILE CREATION TIME (UTC): A2B<-2019-05-16 20:19:22 by operator            
+INPUT FILE SOFTWARE VERSION   : A2B<-9a1b2                                      
+INPUT FILE BUILDTIME TAG      : A2B<-04-04_00:01:03_PDT                         
+END OF HEADER                                                                   
+580219200 D 0 0.999999909150795 -2.3871235e-08 -5.6499974515e-05 0.000422499886197 0 00000000
