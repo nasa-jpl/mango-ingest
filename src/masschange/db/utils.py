@@ -6,7 +6,7 @@ import psycopg2
 from psycopg2.sql import SQL, Identifier, Composed
 
 from masschange.api.utils.misc import KeyValueQueryParameter
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 
 
 def list_table_columns(table_name: str) -> Set[str]:

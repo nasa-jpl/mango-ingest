@@ -2,7 +2,7 @@ import logging
 
 import psycopg2
 
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 
 
 def fetch_bulk_metadata():

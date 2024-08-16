@@ -8,7 +8,7 @@ from typing import Dict, Set, Type, List
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 from masschange.ingest.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
 

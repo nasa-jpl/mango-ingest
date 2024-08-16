@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Collection, Set
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()

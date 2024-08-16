@@ -15,7 +15,7 @@ import psycopg2
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import resolve_dataset
-from masschange.db import get_db_connection
+from masschange.dataproducts.db.utils import get_db_connection
 from masschange.ingest.utils.benchmarking import get_human_readable_elapsed_since
 from masschange.ingest.utils.caggs import refresh_continuous_aggregates
 from masschange.ingest.utils.ensure import ensure_table_exists, ensure_continuous_aggregates, ensure_database_exists, ensure_metadata_tables_exist
