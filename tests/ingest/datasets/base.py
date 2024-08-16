@@ -84,3 +84,13 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
                     table_first_row = cur.fetchone()
 
                     self.assertEqual(expected_first_row, table_first_row)
+
+class DatasetIngestTestCaseBaseForUnzippedData(DatasetIngestTestCaseBase):
+    """
+    Base class for testing unzipped data located in /tests/input_data/test_unzipped directory
+    """
+    @classmethod
+    def setUpClass(cls):
+        super(DatasetIngestTestCaseBase, cls).setUpClass()
+        ingest.run(product=cls.dataset_cls(), src=os.path.abspath('./tests/input_data/test_unzipped'),
+                   data_is_zipped=False)
