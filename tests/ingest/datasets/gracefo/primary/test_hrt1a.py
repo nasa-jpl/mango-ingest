@@ -1,9 +1,12 @@
 import unittest
 from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.primary.hrt1a import GraceFOHrt1ADataProduct
-from tests.ingest.datasets.base import DatasetIngestTestCaseBaseForUnzippedData
+from tests.ingest.datasets.base import DatasetIngestTestCaseBase
 
-class GraceFOHrt1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBaseForUnzippedData):
+class GraceFOHrt1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
+
+    test_data_path = './tests/input_data/test_unzipped/'
+    data_is_zipped = False
 
     dataset_cls = GraceFOHrt1ADataProduct
     expected_table_names = ['gracefo_hrt1a_04_c', 'gracefo_hrt1a_04_d']
