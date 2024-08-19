@@ -23,6 +23,9 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
     expected_table_first_rows: Sequence[Tuple]
 
     target_database = 'masschange_functional_tests'
+    test_data_path = './tests/input_data'
+    data_is_zipped = True
+
 
     def skip_if_abstract(self):
         """Prevent test case from running on instantiation of this abstract test class"""
@@ -36,7 +39,8 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
         # Prevent attempt to run ingest on abstract base class
         if cls is not DatasetIngestTestCaseBase:
-            ingest.run(product=cls.dataset_cls(), src=os.path.abspath('./tests/input_data'), data_is_zipped=True)
+            ingest.run(product=cls.dataset_cls(), src=os.path.abspath(cls.test_data_path),
+                       data_is_zipped=cls.data_is_zipped)
 
     def test_has_expected_row_counts(self):
         self.skip_if_abstract()

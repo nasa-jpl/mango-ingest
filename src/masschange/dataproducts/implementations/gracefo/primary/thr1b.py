@@ -19,8 +19,6 @@ class GraceFOThr1BDataProduct(TimeSeriesDataProduct):
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
-        # NOTE: qualflag bit 7 = No ICU block number available for GRACE-FO,
-        # so assume that icu_blk_nr could be NULL
         return f"""
             time_intg bigint not null,
             time_frac int not null,
