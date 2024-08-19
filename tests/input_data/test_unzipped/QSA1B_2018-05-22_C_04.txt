@@ -1,0 +1,27 @@
+PRODUCER AGENCY               : NASA                                            
+PRODUCER INSTITUTION          : JPL                                             
+FILE TYPE ipSCA1BF            : 6                                               
+FILE FORMAT 0=BINARY 1=ASCII  : 1                                               
+NUMBER OF HEADER RECORDS      : 23                                              
+SOFTWARE VERSION              : 9a1b2                                           
+SOFTWARE BUILD TIME           : 2019-04-04_00:01:08_PDT                         
+REFERENCE DOCUMENTATION       : GRACEFO Level 1 Software Handbook               
+SATELLITE NAME                : GRACE C                                         
+SENSOR NAME                   : Nodef                                           
+TIME EPOCH (GPS TIME)         : 2000-01-01 12:00:00                             
+TIME FIRST OBS(SEC PAST EPOCH): 580219200.000000 (2018-05-22 00:00:00.00)       
+TIME LAST OBS(SEC PAST EPOCH) : 580219200.000000 (2018-05-22 00:00:00.00)       
+NUMBER OF DATA RECORDS        : 3                                               
+PRODUCT CREATE START TIME(UTC): 2019-05-13 21:06:34 by operator                 
+PRODUCT CREATE END TIME(UTC)  : 2019-05-13 21:06:34 by operator                 
+FILESIZE (BYTES)              : 2241                                            
+FILENAME                      : QSA1B_2018-05-22_C_04.txt                       
+PROCESS LEVEL (1A OR 1B)      : 1B                                              
+INPUT FILE NAME               : A2B<-Standard_Out                               
+INPUT FILE CREATION TIME (UTC): A2B<-2019-05-13 21:34:58 by operator            
+INPUT FILE SOFTWARE VERSION   : A2B<-9a1b2                                      
+INPUT FILE BUILDTIME TAG      : A2B<-04-04_00:01:03_PDT                         
+END OF HEADER                                                                   
+580219200 C 1 -0.1846523033914243 0.687786333034212 0.676514247097443 0.18756854858364 0 00000000
+580219200 C 2 0.2482955018618801 -0.0400731149707713 0.85161599836015 0.459884420858917 0 00000000
+580219200 C 3 -0.4627545612843981 0.85311986815175 -0.0427367676938312 -0.23710393346022 0 00000000
