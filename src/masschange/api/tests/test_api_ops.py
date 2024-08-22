@@ -33,7 +33,8 @@ timeseries_id_additional_parameters = {
     'GNV1A_PRN': '&filter=prn_id=3',
     'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
     'TIM1B': '&filter=ts_suppid=0',
-    'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT'
+    'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT',
+    'LLT1A': '&filter=rcv_id=C&filter=trx_id=D'
 }
 
 
