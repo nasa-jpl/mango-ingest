@@ -41,13 +41,19 @@ class GraceFOIlg1ADataFileReader(LogFileReader):
         # The ILG files seems to be encoded with 'windows-1252'
         # Replace carriage return characters and decode with 'windows-1252'
 
+        contents = ''
         with open(filename, "rb") as input_file:
-            contents = input_file.read().replace(b"\r", b"").decode('windows-1252')
+            while True:
+                line = input_file.readline().replace(b"\r", b"").decode('windows-1252').strip()
+                if not line:
+                    break
+                if line[-1] != ">":  # Remove rows with empty log message
+                    contents += line + '\n'
 
         # create a tmp file for updated input data
         import tempfile
         with tempfile.NamedTemporaryFile(mode="w") as tmp:
             tmp.write(contents)
-
+            tmp.seek(0)  # go back to the beginning to read data from the file
             # read from tmp file
             return super()._load_raw_data_from_file(tmp.name)
