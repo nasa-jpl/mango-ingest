@@ -47,7 +47,5 @@ class GraceFOLlt1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        # TODO: Pandas has timedelta that supports nanoseconds, but
-        # Postgres does not supports nanoseconds timestamp, so the timestamps will have microseconds precision
         return cls.get_reference_epoch() + timedelta(seconds=row.gps_time)
 
