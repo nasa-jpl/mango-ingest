@@ -9,10 +9,10 @@ class GraceFOIlg1ADatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
     expected_table_names = ['gracefo_ilg1a_04_c', 'gracefo_ilg1a_04_d']
 
     expected_field_types = [int, int, str, Union[str, type(None)], datetime]
-    expected_table_row_counts = [100, 96]
+    expected_table_row_counts = [72, 54]
     expected_table_first_rows = [
-        (738849504, 1, 'C', None, datetime(2023, 5, 31, 23, 58, 24, tzinfo=timezone.utc)),
-         (738849501, 1, 'D', None, datetime(2023, 5, 31, 23, 58, 21, tzinfo=timezone.utc))
+        (738849504, 1, 'C', 'OccAnt: @1369612704 FO:0 AO:0 FP:0 Tot:11', datetime(2023, 5, 31, 23, 58, 24, tzinfo=timezone.utc)),
+        (738849501, 1, 'D', 'OccAnt: @1369612702 FO:0 AO:0 FP:0 Tot:11', datetime(2023, 5, 31, 23, 58, 21, tzinfo=timezone.utc))
     ]
 
 if __name__ == '__main__':
