@@ -11,9 +11,14 @@ from masschange.api.routers.datasets import router as datasets_router
 
 app = FastAPI()
 
+origins = [
+    "https://***REMOVED***",
+    "http://localhost:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
