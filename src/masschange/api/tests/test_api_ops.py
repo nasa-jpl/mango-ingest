@@ -34,7 +34,8 @@ timeseries_id_additional_parameters = {
     'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
     'TIM1B': '&filter=ts_suppid=0',
     'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT',
-    'LLT1A': '&filter=rcv_id=C&filter=trx_id=D'
+    'LLT1A': '&filter=rcv_id=C&filter=trx_id=D',
+    'PLT1A': '&filter=rcv_id=C&filter=trx_id=D'
 }
 
 
