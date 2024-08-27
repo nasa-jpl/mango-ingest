@@ -13,7 +13,7 @@ import pandas as pd
 from masschange.ingest.executor.errors import EmptyProductException
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.ingest.executor.utils.aggregations import Aggregation
+from masschange.db.data.aggregations import Aggregation
 
 
 class DataFileReader(ABC):

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
-from masschange.ingest.executor.utils.aggregations import NestedAggregation
+from masschange.db.data.aggregations import NestedAggregation
 from masschange.ingest.executor.utils.geolocation import Geolocation
 
 class GraceFOGnv1BDataFileReader(AsciiDataFileReader):
