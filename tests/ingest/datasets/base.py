@@ -1,9 +1,8 @@
 import logging
 import os
-import unittest
 from typing import Sequence, Type, Tuple
 
-from masschange.ingest import ingest
+from masschange.ingest.executor import ingest
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.db.utils import get_db_connection
 from tests.ingest.base import IngestTestCaseBase

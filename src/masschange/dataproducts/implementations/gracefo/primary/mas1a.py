@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from masschange.ingest.datafilereaders.base import DataFileReader
-from masschange.ingest.datafilereaders.gracefo.primary.mas1a import GraceFOMas1ADataFileReader
+from masschange.ingest.executor.datafilereaders.base import DataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.mas1a import GraceFOMas1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 

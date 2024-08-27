@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 
-from masschange.ingest.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
 
 log = logging.getLogger()
 
