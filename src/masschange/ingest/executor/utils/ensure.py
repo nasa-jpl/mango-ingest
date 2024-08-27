@@ -6,7 +6,7 @@ import psycopg2
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.dataproducts.db.utils import get_db_connection
-from masschange.ingest.executor.utils.caggs import get_extant_continuous_aggregates, delete_caggs, \
+from masschange.db.data.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates
 from masschange.ingest.executor.utils.metadata import update_metadata
 from masschange.utils.logging import configure_root_logger
