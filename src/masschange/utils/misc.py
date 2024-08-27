@@ -1,5 +1,8 @@
+import functools
+import logging
 import random
-from datetime import timedelta
+from datetime import timedelta, datetime
+from typing import Callable
 
 
 def get_human_readable_timedelta(td: timedelta) -> str:
@@ -24,3 +27,23 @@ def get_human_readable_timedelta(td: timedelta) -> str:
 def get_random_hex_id(id_len: int = 6) -> str:
     val = random.randint(0, 16 ** id_len)
     return hex(val)[2:]
+
+
+def log_elapsed_time(label: str = None, log_f: Callable = logging.getLogger().info):
+    def inner(f):
+        task_label = label or f'{f.__name__}()'
+
+        @functools.wraps(f)
+        def wrapper():
+            begin = datetime.now()
+            result = f()
+            log_f(f'{task_label} completed in {get_human_readable_elapsed_since(begin)}')
+            return result
+
+        return wrapper
+
+    return inner
+
+
+def get_human_readable_elapsed_since(begin: datetime) -> str:
+    return get_human_readable_timedelta(datetime.now() - begin)
