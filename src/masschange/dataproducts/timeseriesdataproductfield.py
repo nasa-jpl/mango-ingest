@@ -3,7 +3,7 @@ from collections.abc import Collection
 from datetime import datetime
 from typing import Union, Any, Dict, Type, Set
 
-from masschange.ingest.executor.utils.aggregations import Aggregation, TrivialAggregation
+from masschange.db.data.aggregations import Aggregation, TrivialAggregation
 
 
 class TimeSeriesDataProductField(ABC):

@@ -1,6 +1,6 @@
 import unittest
 
-from masschange.ingest.executor.utils.aggregations import TrivialAggregation, NestedAggregation
+from masschange.db.data.aggregations import TrivialAggregation, NestedAggregation
 
 
 class AggregationsTestCase(unittest.TestCase):
