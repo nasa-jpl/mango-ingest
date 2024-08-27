@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.ingest.ingest import ingest_file_to_db
+from masschange.ingest.executor.ingest import ingest_file_to_db
 from tests.ingest.datasets.base import IngestTestCaseBase
 
 
