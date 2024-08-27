@@ -18,7 +18,9 @@ from masschange.dataproducts.utils import resolve_dataset
 from masschange.dataproducts.db.utils import get_db_connection
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
-from masschange.db.ensure import ensure_table_exists, ensure_continuous_aggregates, ensure_database_exists, ensure_metadata_tables_exist
+from masschange.db.ensure import ensure_database_exists
+from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
+from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 from masschange.ingest.crawler.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.db.metadata.update import update_metadata
 from masschange.utils.logging import configure_root_logger
@@ -135,8 +137,8 @@ def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
 
-    ensure_table_exists(dataset)
-    ensure_continuous_aggregates(dataset)
+    ensure_dataset_table_exists(dataset)
+    ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
