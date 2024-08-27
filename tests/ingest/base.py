@@ -5,7 +5,7 @@ import unittest
 import psycopg2.errors
 
 from masschange.dataproducts.db.utils import get_db_connection
-from masschange.ingest.executor.utils.ensure import ensure_all_db_state
+from masschange.db.ensure import ensure_all_db_state
 
 log = logging.getLogger()
 
