@@ -77,10 +77,6 @@ def ensure_table_exists(dataset: TimeSeriesDataset) -> None:
     """
     Ensure that the table for this dataset exists, creating and configuring the table if it does not.
     """
-    # product = dataset.product
-    # dataset_version = dataset.product
-    instrument_id = dataset.instrument_id
-
     table_name = dataset.get_table_name()
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
