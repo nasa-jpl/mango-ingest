@@ -20,7 +20,7 @@ from masschange.ingest.executor.utils.benchmarking import get_human_readable_ela
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_table_exists, ensure_continuous_aggregates, ensure_database_exists, ensure_metadata_tables_exist
 from masschange.ingest.executor.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
-from masschange.ingest.executor.utils.metadata import update_metadata
+from masschange.db.metadata.update import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
