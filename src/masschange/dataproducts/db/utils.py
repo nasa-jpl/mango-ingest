@@ -6,7 +6,7 @@ import psycopg2
 from psycopg2.sql import Composed, SQL, Identifier
 
 from masschange.api.utils.misc import KeyValueQueryParameter
-from masschange.db.utils import get_db_connection as _get_db_connection
+from masschange.db.conn import get_db_connection as _get_db_connection
 
 
 def get_db_connection(without_db: bool = False):
