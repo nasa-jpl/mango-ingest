@@ -7,6 +7,7 @@ from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.dataproducts.db.utils import get_db_connection
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
+from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 
 from masschange.db.metadata.update import update_metadata
@@ -46,6 +47,8 @@ def initialize_dataset(dataset, populate_dataproducts_versions):
 def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False):
     ensure_database_exists(database_name)
     ensure_metadata_tables_exist(database_name)
+
+    ensure_ingest_manager_tables_exist()
 
     for product_cls in get_time_series_dataproduct_classes():
         product = product_cls()
