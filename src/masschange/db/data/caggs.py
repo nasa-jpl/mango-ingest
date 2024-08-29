@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 from typing import Collection, Set
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
 
 def get_extant_continuous_aggregates(dataset: TimeSeriesDataset) -> Set[str]:
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         sql = f"""select table_name from information_schema.views where table_name like '{dataset.get_table_name()}_%';"""
         cur.execute(sql)
         results = cur.fetchall()
@@ -25,9 +25,8 @@ def delete_caggs(table_names: Collection[str]):
     ordered_table_names = sorted(table_names, reverse=True)  # must be in reverse order due to dependencies
     for table_name in ordered_table_names:
         sql = f"drop materialized view {table_name};"
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
             cur.execute(sql)
-            conn.commit()
             log.debug(f'Deleted continous aggregate "{table_name}"')
 
 
@@ -110,13 +109,10 @@ def _refresh_continuous_aggregate(materialized_view_name: str, refresh_span: Tim
     """Refresh a single cagg over a given span"""
     log.info(f'refreshing {materialized_view_name} for {refresh_span}')
 
-    conn = get_db_connection()
-    conn.autocommit = True
-    with conn.cursor() as cur:
+    with get_db_cursor(autocommit=True) as cur:
         sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
         cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
-    conn.close()
 
 
 def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: TimeSpan) -> TimeSpan:
@@ -143,7 +139,7 @@ def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: Time
       and bucket <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
       """
 
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         cur.execute(sql)
         results = cur.fetchone()
         if None not in results:

@@ -1,11 +1,13 @@
+import logging
+
 import psycopg2
 
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.db.data.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates
-from masschange.db.ensure import log
 
+log = logging.getLogger()
 
 def ensure_dataset_table_exists(dataset: TimeSeriesDataset) -> None:
     """
@@ -15,7 +17,7 @@ def ensure_dataset_table_exists(dataset: TimeSeriesDataset) -> None:
     log.info(f'Ensuring table_name exists: "{table_name}"')
 
     timestamp_column_name = dataset.product.TIMESTAMP_COLUMN_NAME
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         try:
             sql = f"""
             {dataset.get_sql_table_create_statement()}
@@ -24,7 +26,6 @@ def ensure_dataset_table_exists(dataset: TimeSeriesDataset) -> None:
             select set_chunk_time_interval('{table_name}', interval '24 hours');
             """
             cur.execute(sql)
-            conn.commit()
             log.info(f'Created new table: "{table_name}"')
         except psycopg2.errors.DuplicateTable:
             pass
@@ -57,10 +58,9 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
                 get_continuous_aggregate_create_statements(dataset, agg_level) for
                 agg_level in
                 dataset.product.get_available_aggregation_levels()]
-            with get_db_connection() as conn, conn.cursor() as cur:
+            with get_db_cursor() as cur:
                 sql = '\n'.join(cagg_create_statements)
                 cur.execute(sql)
-                conn.commit()
                 log.info(
                     f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", instruments "{dataset.instrument_id}"')
 

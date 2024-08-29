@@ -4,7 +4,7 @@ from typing import Sequence, Type, Tuple
 
 from masschange.ingest.executor import ingest
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 from tests.ingest.base import IngestTestCaseBase
 
 log = logging.getLogger()
@@ -43,7 +43,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
     def test_has_expected_row_counts(self):
         self.skip_if_abstract()
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
             for i, table_name in enumerate(self.expected_table_names):
                 expected_row_count_for_table = self.expected_table_row_counts[i]
                 cur.execute(f'SELECT COUNT(*) from {table_name};')
@@ -52,7 +52,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
     def test_has_expected_schema(self):
         self.skip_if_abstract()
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
                 for i, table_name in enumerate(self.expected_table_names):
                     cur.execute(f'SELECT * from {table_name};')
                     table_first_row = cur.fetchone()
@@ -66,7 +66,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
     def test_has_expected_table_names(self):
         self.skip_if_abstract()
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
                 cur.execute("""
                     SELECT table_name
                     FROM information_schema.tables
@@ -80,7 +80,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
     def test_has_expected_table_first_rows(self):
         self.skip_if_abstract()
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
                 for i, table_name in enumerate(self.expected_table_names):
                     expected_first_row = self.expected_table_first_rows[i]
                     cur.execute(f'SELECT * from {table_name};')

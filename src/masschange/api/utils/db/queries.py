@@ -2,7 +2,7 @@ import logging
 
 import psycopg2
 
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 
 
 def fetch_bulk_metadata():
@@ -15,7 +15,7 @@ def fetch_bulk_metadata():
     """
     supported_properties = {'data_begin', 'data_end', 'last_updated'}
 
-    with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         try:
             sql = f"""
 SELECT mdp.name as product, mdv.name as version, mi.name as instrument, {','.join(sorted(supported_properties))}

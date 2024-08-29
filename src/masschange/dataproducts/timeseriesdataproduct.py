@@ -8,7 +8,7 @@ from typing import Dict, Set, Type, List
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.missions import Mission
 
@@ -195,7 +195,7 @@ class TimeSeriesDataProduct(ABC):
 
     @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
             data_product_name = cls.get_full_id()
 
             sql = f"""

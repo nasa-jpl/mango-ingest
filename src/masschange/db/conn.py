@@ -3,28 +3,29 @@ import os
 import psycopg2.pool
 from contextlib import contextmanager
 
-default_database = os.environ['TSDB_DATABASE']
-dbpool = psycopg2.pool.ThreadedConnectionPool(
-    host=os.environ['TSDB_HOST'],
-    port=int(os.environ['TSDB_PORT']),
-    dbname=default_database,
-    user=os.environ['TSDB_USER'],
-    password=os.environ['TSDB_PASSWORD'],
-    minconn=4,  # arbitrarily chosen for the time being
-    maxconn=32  # arbitrarily chosen for the time being
-)
+def get_conn_pool():
+    default_database = os.environ['TSDB_DATABASE']
+    return psycopg2.pool.ThreadedConnectionPool(
+        host=os.environ['TSDB_HOST'],
+        port=int(os.environ['TSDB_PORT']),
+        dbname=default_database,
+        user=os.environ['TSDB_USER'],
+        password=os.environ['TSDB_PASSWORD'],
+        minconn=4,  # arbitrarily chosen for the time being
+        maxconn=32  # arbitrarily chosen for the time being
+    )
 
 
-# def get_db_connection(without_db: bool = False):
-#     if without_db:
-#         host = os.environ['TSDB_HOST']
-#         port = int(os.environ['TSDB_PORT'])
-#         user = os.environ['TSDB_USER']
-#         password = os.environ['TSDB_PASSWORD']
-#
-#         return psycopg2.connect(database=None, user=user, password=password, host=host, port=port)
-#     else:
-#         return dbpool.getconn()
+def get_db_connection(without_db: bool = False):
+    if without_db:
+        host = os.environ['TSDB_HOST']
+        port = int(os.environ['TSDB_PORT'])
+        user = os.environ['TSDB_USER']
+        password = os.environ['TSDB_PASSWORD']
+
+        return psycopg2.connect(database=None, user=user, password=password, host=host, port=port)
+    else:
+        return get_conn_pool().getconn()
 
 
 @contextmanager
@@ -37,7 +38,8 @@ def get_db_cursor(autocommit: bool = False, **kwargs):
     :param kwargs: kwargs to be passed through to the cursor constructor
     :return:
     """
-    conn = dbpool.getconn()
+    pool = get_conn_pool()
+    conn = pool.getconn()
     try:
         with conn.cursor(**kwargs) as cur:
             if autocommit:
@@ -61,4 +63,4 @@ def get_db_cursor(autocommit: bool = False, **kwargs):
         raise
 
     finally:
-        dbpool.putconn(conn)
+        pool.putconn(conn)

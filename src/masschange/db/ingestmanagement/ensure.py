@@ -1,6 +1,9 @@
-from masschange.dataproducts.db.utils import get_db_connection
+import logging
+
+from masschange.db.conn import get_db_cursor
 from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME
-from masschange.db.ensure import log
+
+log = logging.getLogger()
 
 
 def ensure_ingest_manager_tables_exist() -> None:
@@ -8,7 +11,7 @@ def ensure_ingest_manager_tables_exist() -> None:
     Ensure existence of ingest-manager tables used to track files which have been or have yet to be ingested.
     """
 
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         sql = f"""
             CREATE TABLE IF NOT EXISTS {INGEST_MANAGER_TABLE_NAME}
             (
@@ -26,12 +29,11 @@ def ensure_ingest_manager_tables_exist() -> None:
             
             CREATE INDEX IF NOT EXISTS idx_ingestion_started_at_is_null
             ON {INGEST_MANAGER_TABLE_NAME} (ingestion_started_at)
-            WHERE missing_value.ingestion_started_at IS NULL;
+            WHERE ingestion_started_at IS NULL;
             
             CREATE INDEX IF NOT EXISTS idx_ingestion_error_msg_not_null
             ON {INGEST_MANAGER_TABLE_NAME} (ingestion_error_msg)
             WHERE ingestion_error_msg IS NOT NULL;
         """
         cur.execute(sql)
-        conn.commit()
         log.info(f'Ensured presence of ingest manager tables!')

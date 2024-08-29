@@ -4,7 +4,7 @@ import unittest
 
 import psycopg2.errors
 
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor, get_db_connection
 from masschange.db.ensure import ensure_all_db_state
 
 log = logging.getLogger()
@@ -29,14 +29,10 @@ class IngestTestCaseBase(unittest.TestCase):
             cur.execute(f'DROP DATABASE IF EXISTS {cls.target_database} WITH (FORCE);')
             cur.execute(f'CREATE DATABASE {cls.target_database}')
         conn.close()
-        # reset connection, so we would connect to the newly created cls.target_database
-        conn = get_db_connection()
-        conn.autocommit = True
-        with conn.cursor() as cur:
+
+        with get_db_cursor(autocommit=True) as cur:
             cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
             cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
-
-        conn.close()
 
         ensure_all_db_state(cls.target_database)
 

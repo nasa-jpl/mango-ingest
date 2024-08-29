@@ -9,14 +9,14 @@ from masschange.dataproducts.implementations.gracefo.primary.ahk1a import GraceF
 from masschange.ingest.executor.datafilereaders.gracefo.primary.act1b import GraceFOAct1BDataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.ahk1a import GraceFOAhk1ADataFileReader
 
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor
 
 log = logging.getLogger()
 
 class IngestEmptyProductTestCase(IngestTestCaseBase):
 
     def table_exists(self, table_name):
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
             cur.execute("""
                 SELECT table_name
                 FROM information_schema.tables

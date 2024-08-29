@@ -6,16 +6,11 @@ import psycopg2
 from psycopg2.sql import Composed, SQL, Identifier
 
 from masschange.api.utils.misc import KeyValueQueryParameter
-from masschange.db.conn import get_db_connection as _get_db_connection
-
-
-def get_db_connection(without_db: bool = False):
-    database = None if without_db else os.environ['TSDB_DATABASE']
-    return _get_db_connection(database)
+from masschange.db.conn import get_db_cursor
 
 
 def list_table_columns(table_name: str) -> Set[str]:
-    with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         try:
             sql = f"""
                        SELECT *

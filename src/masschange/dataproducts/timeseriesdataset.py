@@ -7,16 +7,17 @@ from typing import List, Dict, Union, Iterable
 import psycopg2
 from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
-from psycopg2.sql import SQL, Identifier
+from psycopg2.sql import SQL
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.db.utils import get_db_connection, list_table_columns as list_db_table_columns, \
+from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, \
     prepare_where_clause_conditions, prepare_where_clause_parameters
 from masschange.utils.misc import get_human_readable_timedelta
 from masschange.utils.timespan import TimeSpan
@@ -38,7 +39,7 @@ class TimeSeriesDataset:
         """Get available values from the _meta_dataproducts_versions_instruments table for the corresponding row"""
         supported_properties = {'data_begin', 'data_end', 'last_updated'}
 
-        with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             try:
                 metadata = self._get_basic_metadata(cur, supported_properties)
                 metadata['time_series_id_enums'] = self._enumerate_time_series_id_values(cur)
@@ -62,7 +63,7 @@ class TimeSeriesDataset:
         if agg not in {'min', 'max'}:
             raise ValueError(f'"{agg}" is not a supported timespan stat')
 
-        with get_db_connection() as conn, conn.cursor() as cur:
+        with get_db_cursor() as cur:
             table_name = self.get_table_name()
 
             try:
@@ -116,7 +117,8 @@ class TimeSeriesDataset:
         if not self.product.has_time_series_id_fields():
             return {}
 
-        time_series_id_column_names = [f.name for f in self.product.get_available_fields() if f.is_time_series_id_column]
+        time_series_id_column_names = [f.name for f in self.product.get_available_fields() if
+                                       f.is_time_series_id_column]
         # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
         # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
         view_depth = min(([0] + self.product.get_available_aggregation_levels())[-1], 5)
@@ -164,7 +166,8 @@ class TimeSeriesDataset:
 
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
-               limit_data_span: bool = True, resolve_location: bool = False, filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
+               limit_data_span: bool = True, resolve_location: bool = False,
+               filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
         filters = filters or []
 
         if aggregation_level is None:
@@ -179,7 +182,8 @@ class TimeSeriesDataset:
                       and (f.has_aggregations or not using_aggregations)}
             if resolve_location:
                 try:
-                    location_lookup_field = next(f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
+                    location_lookup_field = next(
+                        f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
                     fields.add(location_lookup_field)
                 except StopIteration:
                     pass
@@ -194,7 +198,7 @@ class TimeSeriesDataset:
             column_names = set()
             for field in non_lookup_fields:
                 if field.has_aggregations:
-                    aggregate_column_names =  {agg.get_aggregated_name(field.name) for agg in field.aggregations}
+                    aggregate_column_names = {agg.get_aggregated_name(field.name) for agg in field.aggregations}
                     column_names.update(aggregate_column_names)
                 else:
                     column_names.add(field.name)
@@ -206,13 +210,13 @@ class TimeSeriesDataset:
             raise TooMuchDataRequestedError(
                 f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
-        with get_db_connection() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             table_name = self.get_table_or_view_name(aggregation_level)
             select_columns_clause = self._get_sql_select_columns_clause(column_names)
 
             parameters = prepare_where_clause_parameters(from_dt, to_dt, filters)
             conditions = prepare_where_clause_conditions(self.product.TIMESTAMP_COLUMN_NAME, filters)
-            where_clause = SQL(' AND ').join(conditions).as_string(conn)
+            where_clause = SQL(' AND ').join(conditions).as_string(cur.conn)
 
             try:
                 sql = f"""
@@ -374,4 +378,5 @@ class TimeSeriesDataset:
         full_res_data_count = span_duration / self.product.time_series_interval
         downsampling_factor_lower_bound = full_res_data_count / self.product.query_result_limit
         # return the lowest index for all factors which meet or exceed the lower bound
-        return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if f >= downsampling_factor_lower_bound)
+        return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if
+                   f >= downsampling_factor_lower_bound)

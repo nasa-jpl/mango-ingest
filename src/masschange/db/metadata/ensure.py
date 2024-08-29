@@ -1,6 +1,8 @@
-from masschange.dataproducts.db.utils import get_db_connection
-from masschange.db.ensure import log
+import logging
 
+from masschange.db.conn import get_db_cursor
+
+log = logging.getLogger()
 
 def ensure_metadata_tables_exist(db_name: str) -> None:
     """
@@ -8,7 +10,7 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
     as mutable properties like extant data span and extant dataset versions.
     """
 
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         sql = f"""
             CREATE TABLE IF NOT EXISTS _meta_dataproducts
             (
@@ -44,5 +46,4 @@ def ensure_metadata_tables_exist(db_name: str) -> None:
             );
         """
         cur.execute(sql)
-        conn.commit()
         log.info(f'Ensured presence of dataset metadata tables!')

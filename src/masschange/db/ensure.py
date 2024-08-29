@@ -5,7 +5,7 @@ import psycopg2
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_connection
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist

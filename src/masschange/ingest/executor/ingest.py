@@ -15,7 +15,7 @@ import psycopg2
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import resolve_dataset
-from masschange.dataproducts.db.utils import get_db_connection
+from masschange.db.conn import get_db_cursor, get_db_connection
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -93,7 +93,7 @@ def get_zipped_input_iterable(root_dir: str,
 
 def delete_overlapping_data(dataset: TimeSeriesDataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
@@ -101,7 +101,6 @@ def delete_overlapping_data(dataset: TimeSeriesDataset, data_temporal_span: Time
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
         cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
-        conn.commit()
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
 

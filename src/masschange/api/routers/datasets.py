@@ -1,4 +1,3 @@
-import math
 from datetime import datetime, timedelta, date, time, timezone
 import logging
 from typing import Annotated, List, Union
@@ -11,12 +10,13 @@ from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.db.conn import get_db_cursor
+from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_conditions, prepare_where_clause_parameters
+
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproducts
-from masschange.dataproducts.db.utils import get_db_connection, list_table_columns as list_db_table_columns, \
-    prepare_where_clause_conditions, prepare_where_clause_parameters
 from masschange.utils.misc import get_human_readable_timedelta
 
 router = APIRouter(tags=['datasets'])
@@ -81,12 +81,12 @@ async def get_data(
         filter: Annotated[List[str], Query()] = None
 ):
     product = dataset.product
-    
+
     if from_isotimestamp.tzinfo is None:
         from_isotimestamp = from_isotimestamp.replace(tzinfo=timezone.utc)
     if to_isotimestamp.tzinfo is None:
         to_isotimestamp = to_isotimestamp.replace(tzinfo=timezone.utc)
-    
+
     # TODO: Test this conditional
     if fields == None:
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
@@ -185,13 +185,13 @@ async def get_statistic_for_field(
         raise TooMuchDataRequestedError(
             f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
-    with get_db_connection() as conn, conn.cursor() as cur:
+    with get_db_cursor() as cur:
         table_name = dataset.get_table_or_view_name(aggregation_depth=0)
-        select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(conn)
+        select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(cur.conn)
 
         parameters = prepare_where_clause_parameters(from_isotimestamp, to_isotimestamp, filters)
         conditions = prepare_where_clause_conditions(dataset.product.TIMESTAMP_COLUMN_NAME, filters)
-        where_clause = SQL(' AND ').join(conditions).as_string(conn)
+        where_clause = SQL(' AND ').join(conditions).as_string(cur.conn)
 
         try:
             sql = f"""
