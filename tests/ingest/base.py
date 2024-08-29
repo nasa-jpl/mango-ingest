@@ -29,7 +29,7 @@ def setUp():
         cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
         cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
 
-    ensure_all_db_state(target_database)
+    ensure_all_db_state(target_database, is_database_init=True)
 
 
 def tearDown():

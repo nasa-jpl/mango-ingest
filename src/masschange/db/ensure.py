@@ -44,18 +44,26 @@ def initialize_dataset(dataset, populate_dataproducts_versions):
     update_metadata(dataset, data_span=data_span, populate_versions=populate_dataproducts_versions)
 
 
-def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False):
+def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False, is_database_init: bool = False):
+    """
+    Ensure that database is consistent and up-to-date (within limits)
+    :param database_name:
+    :param populate_dataproducts_versions: Not yet implemented
+    :param is_database_init: Set True to skip superfluous db calls for when there is no data.
+    :return:
+    """
     ensure_database_exists(database_name)
     ensure_metadata_tables_exist(database_name)
 
     ensure_ingest_manager_tables_exist()
 
-    for product_cls in get_time_series_dataproduct_classes():
-        product = product_cls()
-        for version in product_cls.get_available_versions():
-            for instrument_id in product_cls.instrument_ids:
-                dataset = TimeSeriesDataset(product, version, instrument_id)
-                initialize_dataset(dataset, populate_dataproducts_versions)
+    if not is_database_init:
+        for product_cls in get_time_series_dataproduct_classes():
+            product = product_cls()
+            for version in product_cls.get_available_versions():
+                for instrument_id in product_cls.instrument_ids:
+                    dataset = TimeSeriesDataset(product, version, instrument_id)
+                    initialize_dataset(dataset, populate_dataproducts_versions)
 
 
 if __name__ == '__main__':
