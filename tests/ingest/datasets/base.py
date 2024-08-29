@@ -21,7 +21,6 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
     expected_table_row_counts: Sequence[int]
     expected_table_first_rows: Sequence[Tuple]
 
-    target_database = 'masschange_functional_tests'
     test_data_path = './tests/input_data'
     data_is_zipped = True
 
