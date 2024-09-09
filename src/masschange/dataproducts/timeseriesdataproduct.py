@@ -206,7 +206,7 @@ class TimeSeriesDataProduct(ABC):
         return {TimeSeriesDatasetVersion(version_name) for version_name in results}
 
     @classmethod
-    def get_required_aggregation_depth(cls) -> int:
+    def get_required_aggregation_level_count(cls) -> int:
         if not any(field.has_aggregations for field in cls.get_available_fields()):
             return 0
 
@@ -222,7 +222,7 @@ class TimeSeriesDataProduct(ABC):
         Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
         , *exclusive* of level 0 (full-resolution)
         """
-        return [x for x in range(1, cls.get_required_aggregation_depth() + 1)]
+        return [x for x in range(1, cls.get_required_aggregation_level_count() + 1)]
 
     @classmethod
     def get_available_downsampling_factors(cls) -> Sequence[int]:
