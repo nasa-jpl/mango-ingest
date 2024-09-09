@@ -227,9 +227,11 @@ class TimeSeriesDataProduct(ABC):
     @classmethod
     def get_available_downsampling_factors(cls) -> Sequence[int]:
         """
-        Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset
+        Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset.
+        Fractional factors (which are a rare/nonexistent edge case) are rounded to the nearest integer.
+        The rounded values are used in the API, and when naming data tables
         """
-        return [1] + [cls.aggregation_step_factor ** level for level in cls.get_available_aggregation_levels()]
+        return [1] + [round(interval / cls.time_series_interval) for interval in list(cls._generate_cagg_bucket_intervals())]
 
     @classmethod
     def get_nominal_data_interval(cls, downsampling_level: int) -> timedelta:
