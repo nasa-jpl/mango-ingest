@@ -17,6 +17,7 @@ def ensure_ingest_manager_tables_exist() -> None:
             (
             id SERIAL PRIMARY KEY,
             src_filepath  VARCHAR NOT NULL,
+            src_file_last_modified DATE NOT NULL,
             crawled_at DATE DEFAULT NULL,
             ingestion_started_at DATE DEFAULT NULL,
             ingestion_terminated_at INTERVAL DEFAULT NULL,
