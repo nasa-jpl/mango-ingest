@@ -238,3 +238,41 @@ class TimeSeriesDataProduct(ABC):
         aggregated data, this is the bucket width
         """
         return cls.time_series_interval * cls.aggregation_step_factor ** downsampling_level
+
+    @classmethod
+    def _generate_cagg_bucket_intervals(cls) -> Sequence[timedelta]:
+        """
+        Generate the necessary series of bucket intervals for this dataset, given its raw resolution.
+
+        The step factor is applied repeatedly until a value of aligned_bucket_span is reached, ensuring that
+        aligned_bucket_span is included in the series, at which point the step factor is repeatedly applied to
+        aligned_bucket_span such that all data from that point onward is time-aligned across datasets.
+
+        The series continues until it reaches a point sufficient to represent the forseeable dataset temporal span in no
+        more than ~approximate_pixel_count data.
+        """
+        # TODO: account for the edge case where the raw time_series_interval is larger than the aligned_bucket_span
+
+        if not any(field.has_aggregations for field in cls.get_available_fields()):
+            return
+
+
+        approximate_pixel_count = 5000
+        aligned_bucket_span = timedelta(seconds=10)
+
+        # created the intervals which are smaller than the smallest-common bucket interval
+        bucket_interval = cls.time_series_interval * cls.aggregation_step_factor
+        while bucket_interval < aligned_bucket_span:
+            yield bucket_interval
+            bucket_interval *= cls.aggregation_step_factor
+
+        # create the smallest-common bucket interval
+        bucket_interval = aligned_bucket_span
+        yield bucket_interval
+        bucket_interval *= cls.aggregation_step_factor
+
+        # while estimated full-span pixel count is above the desired count, generate intervals using the smallest-common
+        # bucket interval as a basis for successive multiplication
+        while cls.max_data_span / bucket_interval > approximate_pixel_count:
+            yield bucket_interval
+            bucket_interval *= cls.aggregation_step_factor
