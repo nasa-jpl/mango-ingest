@@ -235,7 +235,12 @@ class TimeSeriesDataProduct(ABC):
         For a given downsampling level (hierarchical level, not factor), return the nominal interval between data.  For
         aggregated data, this is the bucket width
         """
-        return list(cls._generate_cagg_bucket_intervals())[downsampling_level]
+        return cls.get_available_data_intervals()[downsampling_level]
+
+    @classmethod
+    def get_available_data_intervals(cls) -> List[timedelta]:
+        """Return the full-resolution data interval, plus any data aggregate intervals"""
+        return [cls.time_series_interval] + list(cls._generate_cagg_bucket_intervals())
 
     @classmethod
     def _generate_cagg_bucket_intervals(cls) -> Sequence[timedelta]:
