@@ -87,12 +87,13 @@ async def get_data(
 
     # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
     if downsampling_factor is None:
-        downsampling_factor = dataset.product.aggregation_step_factor ** dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
     elif downsampling_factor not in product.get_available_downsampling_factors():
         raise ValueError(
             f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(product.get_available_downsampling_factors())})')
 
-    aggregation_level = int(math.log(downsampling_factor, product.aggregation_step_factor))
+    aggregation_level = dataset.product.get_available_downsampling_factors().index(downsampling_factor)
 
     filters = instantiate_filters(product, filter)
 
