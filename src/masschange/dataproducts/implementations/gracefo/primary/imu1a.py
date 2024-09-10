@@ -17,6 +17,9 @@ class GraceFOImu1ADataProduct(TimeSeriesDataProduct):
     time_series_interval = timedelta(seconds=1/8) # 8Hz, three gyros
     processing_level = '1A'
 
+    # See comment in parent class - 8Hz is incompatible with global default aligned_bucket_span of 0.1Hz
+    aligned_bucket_span: timedelta = time_series_interval * TimeSeriesDataProduct.aggregation_step_factor
+
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""

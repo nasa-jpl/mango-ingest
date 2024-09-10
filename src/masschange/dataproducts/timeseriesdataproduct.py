@@ -25,6 +25,13 @@ class TimeSeriesDataProduct(ABC):
     processing_level: str
 
     aggregation_step_factor: int = 5  # the factor which is applied at each level of downsampling aggregation
+
+    # aligned_bucket_span is a "lowest common denominator" for cagg bucket spans used when aggregating.
+    # This allows timestamp alignment of datasets which have different raw resolutions, and this base-class value is
+    # overridden only for products whose raw resolution is incompatible with the default value.  Cagg bucket spans must
+    # be a multiple of their input view/table bucket spans, so the 8Hz IMU1A/1B, for example, is incompatible.
+    aligned_bucket_span: timedelta = timedelta(seconds=10)
+
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
@@ -261,16 +268,16 @@ class TimeSeriesDataProduct(ABC):
 
 
         approximate_pixel_count = 5000
-        aligned_bucket_span = timedelta(seconds=10)
+
 
         # created the intervals which are smaller than the smallest-common bucket interval
         bucket_interval = cls.time_series_interval * cls.aggregation_step_factor
-        while bucket_interval < aligned_bucket_span:
+        while bucket_interval < cls.aligned_bucket_span:
             yield bucket_interval
             bucket_interval *= cls.aggregation_step_factor
 
         # create the smallest-common bucket interval
-        bucket_interval = aligned_bucket_span
+        bucket_interval = cls.aligned_bucket_span
         yield bucket_interval
         bucket_interval *= cls.aggregation_step_factor
 
