@@ -141,7 +141,7 @@ def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset)
+    refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
     update_metadata(dataset, data_temporal_span)
 
     if log.isEnabledFor(logging.DEBUG):
