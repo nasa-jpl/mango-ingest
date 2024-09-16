@@ -20,7 +20,6 @@ class GraceFOAcc1ARptDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         def get_sql_table_schema(cls) -> str:
-            print("QQQQQQQQQQQ ", f"""
                 {cls.RPT_COMMON_SCHEMA_SQL}
 
                 timestamp timestamptz not null
