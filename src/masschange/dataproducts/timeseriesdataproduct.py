@@ -31,6 +31,29 @@ class TimeSeriesDataProduct(ABC):
     TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
     LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
 
+    # All report data products have a set of common columns.
+    # List them here to avoid repeating in each report dataproduct class
+    RPT_COMMON_SCHEMA_SQL = f"""
+            file_name VARCHAR(40) not null,
+            file_tag bigint not null,
+            process_ttag bigint not null,
+            first_data_point_t_tag double precision not null,
+            last_data_point_t_tag  double precision not null,
+            n_recs int not null,
+            time_gap_avg double precision not null,
+            time_gap_var double precision not null,
+            time_gap_min double precision not null,
+            time_gap_max double precision not null,
+            n_qual_bits int not null,
+            bit_count_0 int not null,
+            bit_count_1 int not null,
+            bit_count_2 int not null,
+            bit_count_3 int not null,
+            bit_count_4 int not null,
+            bit_count_5 int not null,
+            bit_count_6 int not null,
+            bit_count_7 int not null,  
+        """
     @classmethod
     def get_full_id(cls) -> str:
         return f'{cls.mission.id}_{cls.id_suffix}'
