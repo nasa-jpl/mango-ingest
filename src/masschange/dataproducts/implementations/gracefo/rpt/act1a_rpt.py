@@ -3,10 +3,10 @@ from datetime import timedelta
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.rpt.act1a_rpt import GraceFOAct1ARptDataFileReader
 from masschange.missions import GraceFO
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesRptDataProduct
 
 
-class GraceFOAct1ARptDataProduct(TimeSeriesDataProduct):
+class GraceFOAct1ARptDataProduct(TimeSeriesRptDataProduct):
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOAct1ARptDataFileReader()
@@ -18,12 +18,10 @@ class GraceFOAct1ARptDataProduct(TimeSeriesDataProduct):
     processing_level = '1A'
 
     @classmethod
-    def get_sql_table_schema(cls) -> str:
+    def get_custom_rpt_sql_schema_columns(cls):
         return f"""
-            {cls.RPT_COMMON_SCHEMA_SQL}
-            
             noutliers int not null,
             outlier_max_span double precision not null,
             
-            timestamp timestamptz not null
+            timestamp timestamptz not null,
         """
