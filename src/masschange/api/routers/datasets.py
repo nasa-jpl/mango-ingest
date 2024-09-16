@@ -1,5 +1,5 @@
 import math
-from datetime import datetime, timedelta, date, time
+from datetime import datetime, timedelta, date, time, timezone
 import logging
 from typing import Annotated, List, Union
 
@@ -74,13 +74,19 @@ async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depend
 @router.get('/versions/{version_id}/instruments/{instrument_id}/data', tags=['data'])
 async def get_data(
         dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)],
-        from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0),
-        to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1),
+        from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0, tzinfo=timezone.utc),
+        to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1, tzinfo=timezone.utc),
         fields: Annotated[List[str], Query()] = None,
         downsampling_factor: int = None,
         filter: Annotated[List[str], Query()] = None
 ):
     product = dataset.product
+    
+    if from_isotimestamp.tzinfo is None:
+        from_isotimestamp = from_isotimestamp.replace(tzinfo=timezone.utc)
+    if to_isotimestamp.tzinfo is None:
+        to_isotimestamp = to_isotimestamp.replace(tzinfo=timezone.utc)
+    
     # TODO: Test this conditional
     if fields == None:
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
