@@ -7,10 +7,7 @@ class TimeSeriesRptDataProduct(TimeSeriesDataProduct):
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
-        """All report data products have a set of common columns.
-           If a class has additional columns, they are inserted
-           to the SQL statement through cls.get_custom_rpt_sql_schema_columns()
-           method that the class overwrites
+        """All report data products have a set of common columns
         """
         return f"""
             file_name VARCHAR(40) not null,
