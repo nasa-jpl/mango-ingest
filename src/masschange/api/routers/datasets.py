@@ -1,5 +1,5 @@
 import math
-from datetime import datetime, timedelta, date, time
+from datetime import datetime, timedelta, date, time, timezone
 import logging
 from typing import Annotated, List, Union
 
@@ -74,25 +74,32 @@ async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depend
 @router.get('/versions/{version_id}/instruments/{instrument_id}/data', tags=['data'])
 async def get_data(
         dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)],
-        from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0),
-        to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1),
+        from_isotimestamp: datetime = datetime(2022, 1, 1, 12, 0, tzinfo=timezone.utc),
+        to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1, tzinfo=timezone.utc),
         fields: Annotated[List[str], Query()] = None,
         downsampling_factor: int = None,
         filter: Annotated[List[str], Query()] = None
 ):
     product = dataset.product
+    
+    if from_isotimestamp.tzinfo is None:
+        from_isotimestamp = from_isotimestamp.replace(tzinfo=timezone.utc)
+    if to_isotimestamp.tzinfo is None:
+        to_isotimestamp = to_isotimestamp.replace(tzinfo=timezone.utc)
+    
     # TODO: Test this conditional
     if fields == None:
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
 
     # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
     if downsampling_factor is None:
-        downsampling_factor = dataset.product.aggregation_step_factor ** dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
     elif downsampling_factor not in product.get_available_downsampling_factors():
         raise ValueError(
             f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(product.get_available_downsampling_factors())})')
 
-    aggregation_level = int(math.log(downsampling_factor, product.aggregation_step_factor))
+    aggregation_level = dataset.product.get_available_downsampling_factors().index(downsampling_factor)
 
     filters = instantiate_filters(product, filter)
 

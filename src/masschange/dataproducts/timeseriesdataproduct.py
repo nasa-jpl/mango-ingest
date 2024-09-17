@@ -25,6 +25,13 @@ class TimeSeriesDataProduct(ABC):
     processing_level: str
 
     aggregation_step_factor: int = 5  # the factor which is applied at each level of downsampling aggregation
+
+    # aligned_bucket_span is a "lowest common denominator" for cagg bucket spans used when aggregating.
+    # This allows timestamp alignment of datasets which have different raw resolutions, and this base-class value is
+    # overridden only for products whose raw resolution is incompatible with the default value.  Cagg bucket spans must
+    # be a multiple of their input view/table bucket spans, so the 8Hz IMU1A/1B, for example, is incompatible.
+    aligned_bucket_span: timedelta = timedelta(seconds=10)
+
     max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
@@ -206,15 +213,11 @@ class TimeSeriesDataProduct(ABC):
         return {TimeSeriesDatasetVersion(version_name) for version_name in results}
 
     @classmethod
-    def get_required_aggregation_depth(cls) -> int:
+    def get_required_aggregation_level_count(cls) -> int:
         if not any(field.has_aggregations for field in cls.get_available_fields()):
             return 0
 
-        approximate_pixel_count = 5000
-        full_span_data_count = cls.max_data_span / cls.time_series_interval
-        required_decimation_levels = math.ceil(
-            math.log(full_span_data_count / approximate_pixel_count, cls.aggregation_step_factor))
-        return required_decimation_levels
+        return len(list(cls._generate_cagg_bucket_intervals()))
 
     @classmethod
     def get_available_aggregation_levels(cls) -> Sequence[int]:
@@ -222,14 +225,16 @@ class TimeSeriesDataProduct(ABC):
         Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
         , *exclusive* of level 0 (full-resolution)
         """
-        return [x for x in range(1, cls.get_required_aggregation_depth() + 1)]
+        return [x for x in range(1, cls.get_required_aggregation_level_count() + 1)]
 
     @classmethod
     def get_available_downsampling_factors(cls) -> Sequence[int]:
         """
-        Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset
+        Return the sorted downsampling resolution factors (full-res and aggregated) which exist for this dataset.
+        Fractional factors (which are a rare/nonexistent edge case) are rounded to the nearest integer.
+        The rounded values are used in the API, and when naming data tables
         """
-        return [1] + [cls.aggregation_step_factor ** level for level in cls.get_available_aggregation_levels()]
+        return [1] + [round(interval / cls.time_series_interval) for interval in list(cls._generate_cagg_bucket_intervals())]
 
     @classmethod
     def get_nominal_data_interval(cls, downsampling_level: int) -> timedelta:
@@ -237,6 +242,48 @@ class TimeSeriesDataProduct(ABC):
         For a given downsampling level (hierarchical level, not factor), return the nominal interval between data.  For
         aggregated data, this is the bucket width
         """
-        return cls.time_series_interval * cls.aggregation_step_factor ** downsampling_level
+
+        return cls.get_available_data_intervals()[downsampling_level]
+
+    @classmethod
+    def get_available_data_intervals(cls) -> List[timedelta]:
+        """Return the full-resolution data interval, plus any data aggregate intervals"""
+        return [cls.time_series_interval] + list(cls._generate_cagg_bucket_intervals())
+
+    @classmethod
+    def _generate_cagg_bucket_intervals(cls) -> Sequence[timedelta]:
+        """
+        Generate the necessary series of bucket intervals for this dataset, given its raw resolution.
+
+        The step factor is applied repeatedly until a value of aligned_bucket_span is reached, ensuring that
+        aligned_bucket_span is included in the series, at which point the step factor is repeatedly applied to
+        aligned_bucket_span such that all data from that point onward is time-aligned across datasets.
+
+        The series continues until it reaches a point sufficient to represent the forseeable dataset temporal span in no
+        more than ~approximate_pixel_count data.
+        """
+        # TODO: account for the edge case where the raw time_series_interval is larger than the aligned_bucket_span
+
+        if not any(field.has_aggregations for field in cls.get_available_fields()):
+            return
 
 
+        approximate_pixel_count = 5000
+
+
+        # created the intervals which are smaller than the smallest-common bucket interval
+        bucket_interval = cls.time_series_interval * cls.aggregation_step_factor
+        while bucket_interval < cls.aligned_bucket_span:
+            yield bucket_interval
+            bucket_interval *= cls.aggregation_step_factor
+
+        # create the smallest-common bucket interval
+        bucket_interval = cls.aligned_bucket_span
+        yield bucket_interval
+        bucket_interval *= cls.aggregation_step_factor
+
+        # while estimated full-span pixel count is above the desired count, generate intervals using the smallest-common
+        # bucket interval as a basis for successive multiplication
+        while cls.max_data_span / bucket_interval > approximate_pixel_count:
+            yield bucket_interval
+            bucket_interval *= cls.aggregation_step_factor

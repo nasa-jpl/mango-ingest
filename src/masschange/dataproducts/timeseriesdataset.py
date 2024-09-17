@@ -372,6 +372,6 @@ class TimeSeriesDataset:
         else:
             span_duration = to_dt - from_dt
         full_res_data_count = span_duration / self.product.time_series_interval
-        min_downsampling_factor = full_res_data_count / self.product.query_result_limit
-        downsampling_level = math.ceil(math.log(min_downsampling_factor, self.product.aggregation_step_factor))
-        return max(downsampling_level, 0)
+        downsampling_factor_lower_bound = full_res_data_count / self.product.query_result_limit
+        # return the lowest index for all factors which meet or exceed the lower bound
+        return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if f >= downsampling_factor_lower_bound)
