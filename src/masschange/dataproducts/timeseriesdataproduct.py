@@ -242,7 +242,6 @@ class TimeSeriesDataProduct(ABC):
         For a given downsampling level (hierarchical level, not factor), return the nominal interval between data.  For
         aggregated data, this is the bucket width
         """
-
         return cls.get_available_data_intervals()[downsampling_level]
 
     @classmethod
