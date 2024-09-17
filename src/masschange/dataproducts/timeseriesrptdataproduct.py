@@ -39,8 +39,7 @@ class TimeSeriesRptDataProduct(TimeSeriesDataProduct):
     @classmethod
     def insert_additional_columns_schema(cls, common_columns_sql: str, additional_columns_sql: str) -> str:
         """
-        Insert additional columns into default report table schema SQL statement;
-        Insert before the 'timestamp' clause
+        Insert additional columns into default report table schema before the 'timestamp' clause
         """
         idx = common_columns_sql.index('timestamp')
         return f""" {common_columns_sql[:idx]}  {additional_columns_sql}  {common_columns_sql[idx:]}"""
