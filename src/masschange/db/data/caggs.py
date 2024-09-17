@@ -1,4 +1,5 @@
 import logging
+import math
 from datetime import datetime, timedelta
 from typing import Collection, Set
 
@@ -67,22 +68,55 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+    """
+    Refresh all continuous aggregates for a given TimeSeriesDataset.
+    Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
+    Unexpectedly, the refresh runtime increases superlinearly with timespan, so this is necessary when refreshing a
+    large span.
+    """
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
-        bucket_interval = dataset.product.get_nominal_data_interval(aggregation_level)  # TODO: Why is this unused?
-        # Refresh span calculation soft-disabled as initial tests indicate that refreshing continuous aggregates for
-        #   which no relevant data change has taken place is essentially free
-        # refresh_span = get_refresh_span(materialized_view_name, bucket_interval, data_temporal_span)
-        refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
-        conn = get_db_connection()
-        conn.autocommit = True
-        with conn.cursor() as cur:
-            sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
-            cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
-            log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
-        conn.close()
+        if enable_chunking:
+            chunk_max_row_count = 10e6
+            data_span = dataset.get_data_span()
+            if data_span is None:
+                chunking_required = False
+            else:
+                input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
+                estimated_row_count = int(data_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
+                chunking_required = estimated_row_count > chunk_max_row_count
+
+            if chunking_required:
+                chunk_count = math.ceil(estimated_row_count / chunk_max_row_count)
+                chunk_duration = data_span.duration / chunk_count
+
+                chunk_span = TimeSpan(begin=data_span.begin, duration=chunk_duration)
+                while chunk_span.end < data_span.end:
+                    _refresh_continuous_aggregate(materialized_view_name, chunk_span)
+                    chunk_span = TimeSpan(chunk_span.end, duration=chunk_span.duration)
+                    _refresh_continuous_aggregate(materialized_view_name, chunk_span)
+
+            else:
+                refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
+                _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+        else:
+            refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
+            _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+
+
+def _refresh_continuous_aggregate(materialized_view_name: str, refresh_span: TimeSpan):
+    """Refresh a single cagg over a given span"""
+    log.info(f'refreshing {materialized_view_name} for {refresh_span}')
+
+    conn = get_db_connection()
+    conn.autocommit = True
+    with conn.cursor() as cur:
+        sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
+        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
+        log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
+    conn.close()
 
 
 def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: TimeSpan) -> TimeSpan:
