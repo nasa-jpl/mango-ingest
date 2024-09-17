@@ -69,6 +69,12 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
 
 
 def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+    """
+    Refresh all continuous aggregates for a given TimeSeriesDataset.
+    Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
+    Unexpectedly, the refresh runtime increases superlinearly with timespan, so this is necessary when refreshing a
+    large span.
+    """
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
@@ -101,6 +107,7 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: b
 
 
 def _refresh_continuous_aggregate(materialized_view_name: str, refresh_span: TimeSpan):
+    """Refresh a single cagg over a given span"""
     log.info(f'refreshing {materialized_view_name} for {refresh_span}')
 
     conn = get_db_connection()
