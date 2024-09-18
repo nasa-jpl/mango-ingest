@@ -6,18 +6,30 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.utils.packaging import import_submodules
 from masschange.dataproducts import implementations as datasetimplementations
 
+import inspect
+
 log = logging.getLogger()
 
 
+def get_all_subclasses(cls: Type) -> Collection[Type]:
+    """
+    Get all subclasses of a class recursively
+    """
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
+
 # TODO: Switch all calls to get_time_series_dataproducts()
 def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProduct]]:
+    """
+    Get all concrete subclasses of TimeSeriesDataProduct
+    """
     import_submodules(datasetimplementations)
-    return TimeSeriesDataProduct.__subclasses__()
-
-
-def get_time_series_dataproducts() -> Collection[TimeSeriesDataProduct]:
-    return [cls() for cls in get_time_series_dataproduct_classes()]
-
+    return [subclass for subclass in get_all_subclasses(TimeSeriesDataProduct) if not inspect.isabstract(subclass)]
 
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
     datasets_by_name = {ds().get_full_id(): ds() for ds in get_time_series_dataproduct_classes()}
