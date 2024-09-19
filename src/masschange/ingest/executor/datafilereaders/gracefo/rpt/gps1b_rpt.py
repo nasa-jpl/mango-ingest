@@ -38,8 +38,8 @@ class GraceFOGps1BRptDataFileReader(ReportFileReader):
             AsciiDataFileReaderColumn(index=27, name='lowL2_snr', np_type=int, unit=None),
 
             AsciiDataFileReaderColumn(index=28, name='CAmisLock', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=30, name='discards', np_type=np.double, unit=None),
-            AsciiDataFileReaderColumn(index=30, name='nobs_in', np_type=np.double, unit=None)
+            AsciiDataFileReaderColumn(index=29, name='discards', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=30, name='nobs_in', np_type=int, unit=None)
 
         ]
 
