@@ -31,6 +31,9 @@ def get_time_series_dataproduct_classes() -> Collection[Type[TimeSeriesDataProdu
     import_submodules(datasetimplementations)
     return [subclass for subclass in get_all_subclasses(TimeSeriesDataProduct) if not inspect.isabstract(subclass)]
 
+def get_time_series_dataproducts() -> Collection[TimeSeriesDataProduct]:
+    return [cls() for cls in get_time_series_dataproduct_classes()]
+
 def resolve_dataset(dataset_id: str) -> TimeSeriesDataProduct:
     datasets_by_name = {ds().get_full_id(): ds() for ds in get_time_series_dataproduct_classes()}
     dataset = datasets_by_name.get(dataset_id)
