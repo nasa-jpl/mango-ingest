@@ -37,7 +37,7 @@ class GraceFOClk1BRptDataFileReader(ReportFileReader):
             AsciiDataFileReaderColumn(index=31, name='overlap_rms_fit_end', np_type=np.double, unit='ns'),
             AsciiDataFileReaderColumn(index=32, name='overlap_npoints_end', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=33, name='rel_res_y', np_type=int, unit=None)
+            AsciiDataFileReaderColumn(index=33, name='nobs_formal_edit', np_type=int, unit=None)
         ]
 
 
