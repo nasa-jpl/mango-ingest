@@ -1,4 +1,4 @@
-# gma-data-backend
+# mango-ingest
 Gravity Missions Analysis Tool data ingestion and API
 
 ## Prerequisites
@@ -11,10 +11,6 @@ Gravity Missions Analysis Tool data ingestion and API
   export TSDB_USER='postgres';
   export TSDB_PASSWORD='password';
   export TSDB_DATABASE='masschange';
-  
-  # optionally, for prod deployment behind a proxy server
-  export API_ROOT_PATH='/mango/api/'
-  export API_PROXY_HOST='***REMOVED***'
   ```
   
 
@@ -58,24 +54,3 @@ API operational tests are provided by [starlette](https://fastapi.tiangolo.com/t
 ```bash
 pytest path/to/src/masschange/api/tests
 ```
-
-
-
-## Dockerized API Deployment (OUTDATED)
-
-### bigdata.jpl.nasa.gov
-After building the image from a fresh clone of the repository with 
-
-```docker image build --tag masschange .```
-
-Run a container, exposing the API on port `5463`, with 
-
-```docker container run --name gma-data-backend-api --publish 5463:8000 --volume /data/share/datasets/gravity-missions-analysis-tool/ingested-data/:/data -e MASSCHANGE_DATA_ROOT=/data masschange:latest conda run -n masschange /app/masschange/start_api.sh```
-
-Once running, the endpoints may be tested from your local environment by opening an SSH tunnel with 
-
-```
-ssh -L 5463:localhost:5463 bigdata
-```
-
-Documentation will then be available at http://0.0.0.0:5463/docs
