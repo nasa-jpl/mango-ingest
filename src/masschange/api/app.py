@@ -12,7 +12,6 @@ from masschange.api.routers.datasets import router as datasets_router
 app = FastAPI()
 
 origins = [
-    "https://***REMOVED***",
     "http://localhost:5173",
 ]
 
