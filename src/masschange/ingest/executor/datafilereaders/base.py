@@ -325,8 +325,8 @@ class ReportFileReader(AsciiDataFileReader):
 
         standard_columns = [
             AsciiDataFileReaderColumn(index=0, name='file_name', np_type='U40', unit=None),
-            AsciiDataFileReaderColumn(index=1, name='file_tag', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=2, name='process_ttag', np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=1, name='file_tag', np_type=np.longlong, unit='s'),
+            AsciiDataFileReaderColumn(index=2, name='process_ttag', np_type=np.longlong, unit='s'),
             AsciiDataFileReaderColumn(index=3, name='first_data_point_t_tag', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=4, name='last_data_point_t_tag',  np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=5, name='n_recs', np_type=int, unit=None),
