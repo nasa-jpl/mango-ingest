@@ -216,7 +216,7 @@ class TimeSeriesDataset:
 
             parameters = prepare_where_clause_parameters(from_dt, to_dt, filters)
             conditions = prepare_where_clause_conditions(self.product.TIMESTAMP_COLUMN_NAME, filters)
-            where_clause = SQL(' AND ').join(conditions).as_string(cur.conn)
+            where_clause = SQL(' AND ').join(conditions).as_string(cur.connection)
 
             try:
                 sql = f"""

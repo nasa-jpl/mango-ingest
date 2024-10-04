@@ -187,11 +187,11 @@ async def get_statistic_for_field(
 
     with get_db_cursor() as cur:
         table_name = dataset.get_table_or_view_name(aggregation_depth=0)
-        select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(cur.conn)
+        select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(cur.connection)
 
         parameters = prepare_where_clause_parameters(from_isotimestamp, to_isotimestamp, filters)
         conditions = prepare_where_clause_conditions(dataset.product.TIMESTAMP_COLUMN_NAME, filters)
-        where_clause = SQL(' AND ').join(conditions).as_string(cur.conn)
+        where_clause = SQL(' AND ').join(conditions).as_string(cur.connection)
 
         try:
             sql = f"""
