@@ -1,7 +1,5 @@
-from collections.abc import Collection
 from datetime import datetime
-
-from masschange.ingest.executor.datafilereaders.base import ReportFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import ReportFileReader
 
 
 class GraceFOPci1ARptDataFileReader(ReportFileReader):

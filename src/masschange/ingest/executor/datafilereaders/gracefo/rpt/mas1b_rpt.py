@@ -1,20 +1,16 @@
 from datetime import datetime
 from masschange.ingest.executor.datafilereaders.base import ReportFileReader
 
-
-class GraceFOGps1ARptDataFileReader(ReportFileReader):
+class GraceFOMas1BRptDataFileReader(ReportFileReader):
     @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^GPS1A_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.rpt$'
+        return '^MAS1B_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.rpt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL(?P<dataset_version>\d{2})\.ascii\.(LRI|noLRI)\.tgz'
-
-
-
+        return 'gracefo_1B_\d{4}-\d{2}-\d{2}_RL(?P<dataset_version>\d{2})\.ascii\.(LRI|noLRI)\.tgz'
 
