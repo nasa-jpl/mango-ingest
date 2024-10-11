@@ -1,7 +1,4 @@
-from collections.abc import Collection
 from datetime import datetime
-import numpy as np
-
 from masschange.ingest.executor.datafilereaders.base import ReportFileReader, AsciiDataFileReaderColumn
 
 
