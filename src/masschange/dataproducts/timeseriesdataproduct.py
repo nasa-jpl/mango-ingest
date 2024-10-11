@@ -286,3 +286,28 @@ class TimeSeriesDataProduct(ABC):
         while cls.max_data_span / bucket_interval > approximate_pixel_count:
             yield bucket_interval
             bucket_interval *= cls.aggregation_step_factor
+
+    @classmethod
+    def get_chunk_time_interval(cls) -> timedelta:
+        """
+        :return: the TimescaleDB chunk time interval for this product.  Per best-practice, chunks should be sized such
+        that storing one chunk from each hypertable in memory consumes 25% of available memory.
+        Sizing is, by default, coarsely-approximated based on the time-series interval.  This method should be
+        overridden at the product level if the approximation is found to be inaccurate for a particular product.
+        Changes to existing hypertables only apply to data written after the change is made, so data may have to be
+        reingested or migrated (utility script implementation to-do) if a change is made after data is loaded.
+        """
+
+        # Stick to some enumerated thresholds, by default
+        if cls.time_series_interval <= timedelta(milliseconds=100):
+            return timedelta(hours=48)
+        elif cls.time_series_interval <= timedelta(milliseconds=500):
+            return timedelta(days=10)
+        elif cls.time_series_interval <= timedelta(seconds=1):
+            return timedelta(days=20)
+        elif cls.time_series_interval <= timedelta(seconds=5):
+            return timedelta(days=100)
+        elif cls.time_series_interval <= timedelta(hours=1):
+            return timedelta(days=365)  # chosen arbitrarily
+        else:
+            return timedelta(days=365 * 30)  # basically just for those datasets which are actually not time-series - this will be cleaned up when an abstraction is created for those
