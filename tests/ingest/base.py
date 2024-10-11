@@ -38,7 +38,7 @@ def tearDown():
     try:
         with conn.cursor() as cur:
             cur.execute(f'DROP DATABASE {target_database} WITH (FORCE);')
-    except psycopg2.errors.ObjectInUse:
+    except (psycopg2.errors.ObjectInUse, psycopg2.errors.InvalidCatalogName):
         pass
     conn.close()
 
