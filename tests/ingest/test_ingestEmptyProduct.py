@@ -1,7 +1,7 @@
 import logging
 import os
 from masschange.ingest.executor import ingest
-from tests.ingest.base import ReaderTestCaseBase
+from tests.ingest.base import IngestTestCaseBase
 from masschange.ingest.executor.ingest import ingest_file_to_db
 from masschange.ingest.executor.errors import EmptyProductException
 from masschange.dataproducts.implementations.gracefo.primary.act1b import GraceFOAct1BDataProduct
@@ -13,7 +13,8 @@ from masschange.db.conn import get_db_cursor
 
 log = logging.getLogger()
 
-class IngestEmptyProductTestCase(ReaderTestCaseBase):
+
+class IngestEmptyProductTestCase(IngestTestCaseBase):
 
     def table_exists(self, table_name):
         with get_db_cursor() as cur:

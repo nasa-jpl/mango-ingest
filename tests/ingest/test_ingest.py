@@ -6,10 +6,10 @@ from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceF
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.ingest.executor.ingest import ingest_file_to_db
-from tests.ingest.datasets.base import ReaderTestCaseBase
+from tests.ingest.base import IngestTestCaseBase
 
 
-class DataOverwriteIngestTestCase(ReaderTestCaseBase):
+class DataOverwriteIngestTestCase(IngestTestCaseBase):
     """Test behaviour related to deleting old data when new overlapping data is ingested"""
     ingest_repetitions = 3
     input_dir = './tests/input_data/ingest/test_ingest/'
