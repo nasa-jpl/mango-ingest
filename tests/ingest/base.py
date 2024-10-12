@@ -53,7 +53,8 @@ def tearDown(database_name: str):
 #### FRESH DATABASE INITIALIZATION BEGIN ####
 for database_name in test_database_names:
     tearDown(database_name)
-    setUp(database_name)
+
+setUp(reader_tests_target_database)
 #### FRESH DATABASE INITIALIZATION END ####
 
 
