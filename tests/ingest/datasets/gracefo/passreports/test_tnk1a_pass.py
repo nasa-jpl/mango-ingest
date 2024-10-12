@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.passreports.tnk1a_pass import GraceFOTnk1APassDataProduct
-from tests.ingest.datasets.base import DatasetIngestTestCaseBase
+from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
-class GraceFOTnk1PassDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
+class GraceFOTnk1PassDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
 
     test_data_path = './tests/input_data/test_passreports/'
     data_is_zipped = False

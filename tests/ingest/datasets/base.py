@@ -5,12 +5,12 @@ from typing import Sequence, Type, Tuple
 from masschange.ingest.executor import ingest
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db.conn import get_db_cursor
-from tests.ingest.base import IngestTestCaseBase
+from tests.ingest.base import ReaderTestCaseBase
 
 log = logging.getLogger()
 
 
-class DatasetIngestTestCaseBase(IngestTestCaseBase):
+class DatasetReaderTestCaseBase(ReaderTestCaseBase):
     """
     Exists to allow efficient definition of regression tests for specific TimeSeriesDataset subclasses by inheriting
     from this base class and assigning values for the member variables.
@@ -27,7 +27,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
 
     def skip_if_abstract(self):
         """Prevent test case from running on instantiation of this abstract test class"""
-        if self.__class__ == DatasetIngestTestCaseBase:
+        if self.__class__ == DatasetReaderTestCaseBase:
             self.skipTest('abstract test case class')
 
 
@@ -36,7 +36,7 @@ class DatasetIngestTestCaseBase(IngestTestCaseBase):
         super().setUpClass()
 
         # Prevent attempt to run ingest on abstract base class
-        if cls is not DatasetIngestTestCaseBase:
+        if cls is not DatasetReaderTestCaseBase:
             ingest.run(product=cls.dataset_cls(), src=os.path.abspath(cls.test_data_path),
                        data_is_zipped=cls.data_is_zipped)
 

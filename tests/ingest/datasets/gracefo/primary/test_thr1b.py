@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.primary.thr1b import GraceFOThr1BDataProduct
-from tests.ingest.datasets.base import DatasetIngestTestCaseBase
+from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFOThr1BDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
+class GraceFOThr1BDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOThr1BDataProduct
     expected_table_names = ['gracefo_thr1b_04_c', 'gracefo_thr1b_04_d']
     expected_field_types = [int, int, str,

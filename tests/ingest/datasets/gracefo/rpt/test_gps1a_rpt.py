@@ -1,9 +1,9 @@
 import unittest
 from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.rpt.gps1a_rpt import GraceFOGps1ARptDataProduct
-from tests.ingest.datasets.base import DatasetIngestTestCaseBase
+from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
-class GraceFOGps1ARptDatasetDatasetIngestTestCaseBase(DatasetIngestTestCaseBase):
+class GraceFOGps1ARptDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
 
     dataset_cls = GraceFOGps1ARptDataProduct
     expected_table_names = ['gracefo_gps1a_rpt_04_c', 'gracefo_gps1a_rpt_04_d']

@@ -57,7 +57,7 @@ for database_name in test_database_names:
 #### FRESH DATABASE INITIALIZATION END ####
 
 
-class IngestTestCaseBase(unittest.TestCase):
+class ReaderTestCaseBase(unittest.TestCase):
     """
     Defines a base class for test cases which interact with the database - handles test db setup/teardown.
     """
