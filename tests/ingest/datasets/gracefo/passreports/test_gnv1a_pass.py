@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.passreports.gnv1a_pass import GraceFOGnv1APassDataProduct
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
-class GraceFOGnv1PassDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
+
+class GraceFOGnv1PassDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     test_data_path = './tests/input_data/test_passreports/'
     data_is_zipped = False
