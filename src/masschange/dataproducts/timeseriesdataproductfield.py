@@ -3,6 +3,7 @@ from collections.abc import Collection
 from datetime import datetime
 from typing import Union, Any, Dict, Type, Set
 
+from masschange.dataproducts.timeseriesdataproductfieldconfiguration import TimeSeriesDataProductFieldConfiguration
 from masschange.db.data.aggregations import Aggregation, TrivialAggregation
 
 
@@ -99,6 +100,15 @@ class TimeSeriesDataProductField(ABC):
 
         if self.is_constant:
             description['constant_value'] = self.const_value,
+        else:
+            try:
+                value_constraint = TimeSeriesDataProductFieldConfiguration.construct(None, self)
+                description['bounds'] = {
+                    'min': value_constraint.min_valid_value,
+                    'max': value_constraint.max_valid_value
+                }
+            except ValueError:
+                pass
 
         return description
 
