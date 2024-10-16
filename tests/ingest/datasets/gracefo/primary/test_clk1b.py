@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.primary.clk1b import GraceFOClk1BDataProduct
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
-class GraceFOClk1BDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
+
+class GraceFOClk1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOClk1BDataProduct
     expected_table_names = ['gracefo_clk1b_04_c', 'gracefo_clk1b_04_d']
     expected_field_types = [int, str, int, float, float, float, float,

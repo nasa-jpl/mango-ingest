@@ -4,7 +4,7 @@ from masschange.dataproducts.implementations.gracefo.primary.plt1a import GraceF
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFOPlt1ADatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
+class GraceFOPlt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     test_data_path = './tests/input_data/test_unzipped/'
     data_is_zipped = False
     dataset_cls = GraceFOPlt1ADataProduct

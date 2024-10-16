@@ -4,7 +4,8 @@ from masschange.dataproducts.implementations.gracefo.primary.mas1a import GraceF
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 from typing import Union
 
-class GraceFOMas1ADatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
+
+class GraceFOMas1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOMas1ADataProduct
     expected_table_names = ['gracefo_mas1a_04_c', 'gracefo_mas1a_04_d']
 

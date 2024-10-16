@@ -4,7 +4,7 @@ from masschange.dataproducts.implementations.gracefo.primary.gni1b import GraceF
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFOGni1BDatasetDatasetIngestTestCaseBase(DatasetReaderTestCaseBase):
+class GraceFOGni1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOGni1BDataProduct
     expected_table_names = ['gracefo_gni1b_04_c', 'gracefo_gni1b_04_d']
     expected_field_types = [int, str, str,
