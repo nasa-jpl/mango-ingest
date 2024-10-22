@@ -19,6 +19,7 @@ services:
     user: root
     command: conda run -n masschange /app/masschange/start_api.sh
   mango-db:
+    user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
     networks:
       - mango-backend

@@ -17,6 +17,10 @@ Gravity Missions Analysis Tool data ingestion and API
   export API_PROXY_HOST='***REMOVED***'
   ```
   
+## Staging Deployment (quick note)
+New env vars have been created in the docker-compose to handle user mapping.  These are `MANGO_UID` and `MANGO_GID` and should match the host-machine user with the necessary file access permissions for the db storage volume path.
+
+In bash, these may be set as expected.  On the staging server, we are currently limited to use of tcsh, which will require `setenv <key> <value>` syntax instead.
 
 ## Docker Quickstart (OUTDATED)
 1. Clone repository
