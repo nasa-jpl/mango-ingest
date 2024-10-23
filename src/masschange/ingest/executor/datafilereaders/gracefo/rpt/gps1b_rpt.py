@@ -23,21 +23,21 @@ class GraceFOGps1BRptDataFileReader(ReportFileReader):
         # TODO: units are not specified in the Level-1 Data Product User Handbook
         return [
 
-            AsciiDataFileReaderColumn(index=19, name='crms_CA', np_type=np.double, unit='m'),
-            AsciiDataFileReaderColumn(index=20, name='CA_nobs', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=19, name='crms_ca', np_type=np.double, unit='m'),
+            AsciiDataFileReaderColumn(index=20, name='ca_nobs', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=21, name='crms_L1', np_type=np.double, unit='m'),
-            AsciiDataFileReaderColumn(index=22, name='L1_nobs', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=21, name='crms_l1', np_type=np.double, unit='m'),
+            AsciiDataFileReaderColumn(index=22, name='l1_nobs', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=23, name='crms_L2', np_type=np.double, unit='m'),
-            AsciiDataFileReaderColumn(index=24, name='L2_nobs', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=23, name='crms_l2', np_type=np.double, unit='m'),
+            AsciiDataFileReaderColumn(index=24, name='l2_nobs', np_type=int, unit=None),
 
             AsciiDataFileReaderColumn(index=25, name='breaks', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=26, name='lowL1_snr', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=27, name='lowL2_snr', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=26, name='low_l1_snr', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=27, name='low_l2_snr', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=28, name='CAmisLock', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=28, name='ca_mis_lock', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=29, name='discards', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=30, name='nobs_in', np_type=int, unit=None)
 

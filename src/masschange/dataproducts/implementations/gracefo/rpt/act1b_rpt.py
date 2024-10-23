@@ -20,15 +20,15 @@ class GraceFOAct1BRptDataProduct(TimeSeriesRptDataProduct):
     @classmethod
     def get_sql_table_schema(cls):
         additional_columns_schema = '''
-            Nr_nodatagapfill int not null,
+            nr_no_data_gap_fill int not null,
             
-            CRMS_lin_accl_x double precision not null, 
-            CRMS_lin_accl_y double precision not null, 
-            CRMS_lin_accl_z	double precision not null, 
+            crms_lin_accl_x double precision not null, 
+            crms_lin_accl_y double precision not null, 
+            crms_lin_accl_z	double precision not null, 
             
-            CRMS_ang_accl_x	double precision not null, 
-            CRMS_ang_accl_y	double precision not null, 
-            CRMS_ang_accl_z	double precision not null, 
+            crms_ang_accl_x	double precision not null, 
+            crms_ang_accl_y	double precision not null, 
+            crms_ang_accl_z	double precision not null, 
             
             rel_bias_x double precision not null, 
             rel_bias_y double precision not null, 

@@ -17,6 +17,7 @@ class GraceFOGnv1BRptDataProduct(TimeSeriesRptDataProduct):
     time_series_interval = timedelta(days=1)
     processing_level = '1B'
 
+    @classmethod
     def get_sql_table_schema(cls):
         additional_columns_schema = '''
             npoints_start int not null,
