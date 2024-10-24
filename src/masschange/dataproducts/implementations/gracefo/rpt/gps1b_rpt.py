@@ -17,23 +17,24 @@ class GraceFOGps1BRptDataProduct(TimeSeriesRptDataProduct):
     time_series_interval = timedelta(days=1)
     processing_level = '1B'
 
+    @classmethod
     def get_sql_table_schema(cls):
         additional_columns_schema = '''
-            crms_CA double precision not null,
-            CA_nobs int not null,
+            crms_ca double precision not null,
+            ca_nobs int not null,
              
-            crms_L1 double precision not null, 
-            L1_nobs int not null,
+            crms_l1 double precision not null, 
+            l1_nobs int not null,
              
-            crms_L2 double precision not null,
-            L2_nobs int not null,
+            crms_l2 double precision not null,
+            l2_nobs int not null,
             
             breaks int not null,
             
-            lowL1_snr int not null,
-            lowL2_snr int not null,
+            low_l1_snr int not null,
+            low_l2_snr int not null,
             
-            CAmisLock int not null,
+            ca_mis_lock int not null,
             discards int not null,
             nobs_in int not null,
         '''

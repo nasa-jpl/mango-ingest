@@ -4,7 +4,7 @@ from masschange.dataproducts.implementations.gracefo.rpt.lhk1b_rpt import GraceF
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFORbr1BRptDatasetReaderTestCase(DatasetReaderTestCaseBase):
+class GraceFORLhk1BRptDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     dataset_cls = GraceFOLhk1BRptDataProduct
     expected_table_names = ['gracefo_lhk1b_rpt_04_c', 'gracefo_lhk1b_rpt_04_d']

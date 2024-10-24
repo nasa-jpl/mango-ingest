@@ -21,15 +21,15 @@ class GraceFOAct1BRptDataFileReader(ReportFileReader):
     @classmethod
     def get_rpt_custom_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            AsciiDataFileReaderColumn(index=19, name='Nr_nodatagapfill', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=19, name='nr_no_data_gap_fill', np_type=int, unit=None),
 
-            AsciiDataFileReaderColumn(index=20, name='CRMS_lin_accl_x',np_type=np.double, unit='m/s2'),
-            AsciiDataFileReaderColumn(index=21, name='CRMS_lin_accl_y', np_type=np.double, unit='m/s2'),
-            AsciiDataFileReaderColumn(index=22, name='CRMS_lin_accl_z', np_type=np.double, unit='m/s2'),
+            AsciiDataFileReaderColumn(index=20, name='crms_lin_accl_x',np_type=np.double, unit='m/s2'),
+            AsciiDataFileReaderColumn(index=21, name='crms_lin_accl_y', np_type=np.double, unit='m/s2'),
+            AsciiDataFileReaderColumn(index=22, name='crms_lin_accl_z', np_type=np.double, unit='m/s2'),
 
-            AsciiDataFileReaderColumn(index=23, name='CRMS_ang_accl_x', np_type=np.double, unit='rad/s2'),
-            AsciiDataFileReaderColumn(index=24, name='CRMS_ang_accl_y', np_type=np.double, unit='rad/s2'),
-            AsciiDataFileReaderColumn(index=25, name='CRMS_ang_accl_z', np_type=np.double, unit='rad/s2'),
+            AsciiDataFileReaderColumn(index=23, name='crms_ang_accl_x', np_type=np.double, unit='rad/s2'),
+            AsciiDataFileReaderColumn(index=24, name='crms_ang_accl_y', np_type=np.double, unit='rad/s2'),
+            AsciiDataFileReaderColumn(index=25, name='crms_ang_accl_z', np_type=np.double, unit='rad/s2'),
 
             AsciiDataFileReaderColumn(index=26, name='rel_bias_x', np_type=np.double, unit='m/s2'),
             AsciiDataFileReaderColumn(index=27, name='rel_bias_y', np_type=np.double, unit='m/s2'),
