@@ -101,12 +101,14 @@ class TimeSeriesDataProductField(ABC):
         if self.is_constant:
             description['constant_value'] = self.const_value,
         else:
+            # TODO: replace this stub construction with a proper implementation per https://<internal-github>/Mass-Change/gmat-ingest/issues/289
             try:
-                value_constraint = TimeSeriesDataProductFieldConfiguration.construct(None, self)
-                description['bounds'] = {
-                    'min': value_constraint.min_valid_value,
-                    'max': value_constraint.max_valid_value
-                }
+                stub_temporal_split = datetime(2022, 1, 1)
+                value_threshold_configurations = [
+                    TimeSeriesDataProductFieldConfiguration.construct(None, self, effective_to=stub_temporal_split),
+                    TimeSeriesDataProductFieldConfiguration.construct(None, self, effective_from=stub_temporal_split)
+                ]
+                description['value_threshold_configurations'] = [config.describe() for config in value_threshold_configurations]
             except ValueError:
                 pass
 
