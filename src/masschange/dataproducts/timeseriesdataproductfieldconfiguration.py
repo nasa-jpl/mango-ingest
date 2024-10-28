@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import datetime
-from typing import Union, Any
+from typing import Union, Any, Dict
+
 
 class TimeSeriesDataProductFieldConfiguration:
     """
@@ -49,3 +50,17 @@ class TimeSeriesDataProductFieldConfiguration:
         else:
             raise ValueError(
                 f'python type "{field.python_type.__name__}" not in supported python types (int, float, datetime, date)')
+
+    def describe(self) -> Dict:
+        return {
+            'effective_from': self.effective_from,
+            'effective_to': self.effective_to,
+            'limits': None if (self.min_valid_value is None and self.max_valid_value is None) else {
+                'lower': self.min_valid_value,
+                'upper': self.max_valid_value
+            },
+            'warnings': None if (self.lower_warn_threshold is None and self.upper_warn_threshold is None) else {
+                'lower': self.lower_warn_threshold,
+                'upper': self.upper_warn_threshold
+            }
+        }
