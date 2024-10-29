@@ -384,7 +384,7 @@ class TimeSeriesDataset:
 
         """
         if check_data_span:
-            extant_data_span = self.get_data_span()
+            extant_data_span = self.get_data_span(use_cache=True)
             span_duration = max(to_dt, extant_data_span.begin) - min(from_dt, extant_data_span.end)
         else:
             span_duration = to_dt - from_dt
