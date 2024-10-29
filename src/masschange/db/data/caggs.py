@@ -76,6 +76,10 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: b
     """
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
 
+    # TODO: consider optimising this to use metadata cache, as using min/max(timestamp) directly becomes expensive at
+    #  long data spans (60-120sec for 30 years, at time of testing) - this will require that the metadata is updated
+    #  *prior* to calling  refresh_continuous_aggregates() in all relevant contexts.
+    #  For safety, this really means a wrapper function that ensures ordering.
     data_span = dataset.get_data_span()
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(aggregation_level)

@@ -49,9 +49,22 @@ class TimeSeriesDataset:
 
         return metadata
 
-    def get_data_span(self) -> Union[TimeSpan, None]:
-        begin = self._get_data_begin()
-        end = self._get_data_end()
+    def get_data_span(self, use_cache: bool = False) -> Union[TimeSpan, None]:
+        """
+        Return the TimeSpan corresponding to the span of extant data, or None if no data exists
+        :param use_cache: Use stateful metadata cache rather than deriving the value from the data itself, which is
+                           expensive if the number of partitions is large.
+                           (~1-2min for 30 years, chunked at 24hr intervals, at time of testing)
+        :return:
+        """
+        if use_cache:
+            with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                metadata = self._get_basic_metadata(cur, ['data_begin', 'data_end'])
+            begin = metadata['data_begin']
+            end = metadata['data_end']
+        else:
+            begin = self._get_data_begin()
+            end = self._get_data_end()
 
         if begin is not None and end is not None:
             return TimeSpan(begin=begin, end=end)
