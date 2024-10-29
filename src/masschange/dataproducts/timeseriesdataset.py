@@ -370,8 +370,8 @@ class TimeSeriesDataset:
             accordingly. Gives absolute minimum aggregation level but is slower due to overhead
 
         """
-        extant_data_span = self.get_data_span()
         if check_data_span:
+            extant_data_span = self.get_data_span()
             span_duration = max(to_dt, extant_data_span.begin) - min(from_dt, extant_data_span.end)
         else:
             span_duration = to_dt - from_dt
