@@ -75,11 +75,12 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: b
     large span.
     """
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
+
+    data_span = dataset.get_data_span()
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
         if enable_chunking:
             chunk_max_row_count = 10e6
-            data_span = dataset.get_data_span()
             if data_span is None:
                 chunking_required = False
             else:
