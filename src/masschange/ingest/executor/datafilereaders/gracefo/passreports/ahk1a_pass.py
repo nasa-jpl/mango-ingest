@@ -22,13 +22,13 @@ class GraceFOAhk1APassDataFileReader(ReportFileReader):
     def get_rpt_custom_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
 
         return [
-            AsciiDataFileReaderColumn(index=19, name='nrec_read', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=20, name='nrec_read_used', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=21, name='nrec_written', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=22, name='nrec_nulled', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=23, name='nrec_non_incorporated', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=24, name='nrec_filled', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=25, name='nrec_consistency', np_type=int, unit=None)
+            AsciiDataFileReaderColumn(index=19, name='nrec_read', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=20, name='nrec_read_used', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=21, name='nrec_written', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=22, name='nrec_nulled', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=23, name='nrec_non_incorporated', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=24, name='nrec_filled', np_type=int, unit=None, const_value=0),
+            AsciiDataFileReaderColumn(index=25, name='nrec_consistency', np_type=int, unit=None, const_value=0)
         ]
 
 
