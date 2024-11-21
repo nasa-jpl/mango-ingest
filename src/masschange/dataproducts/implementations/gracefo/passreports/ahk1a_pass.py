@@ -16,17 +16,3 @@ class GraceFOAhk1APassDataProduct(TimeSeriesRptDataProduct):
     instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(hours=3)
     processing_level = '1A'
-
-    @classmethod
-    def get_sql_table_schema(cls):
-        additional_columns_schema = '''
-            nrec_read int not null,
-            nrec_read_used int not null,
-            nrec_written int not null,
-            nrec_nulled int not null,
-            nrec_non_incorporated int not null,
-            nrec_filled int not null,
-            nrec_consistency int not null,   
-            '''
-        return cls.insert_additional_columns_schema(super().get_sql_table_schema(),
-                                                    additional_columns_schema)
