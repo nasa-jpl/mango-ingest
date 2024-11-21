@@ -8,12 +8,14 @@ from masschange.utils.timespan import TimeSpan
 
 def update_metadata(dataset: TimeSeriesDataset,
                     data_span: Union[TimeSpan, None] = None,
-                    populate_versions = False):
+                    populate_versions=False,
+                    accumulate_data_span: bool = True):
     """
 
     :param dataset: the dataset for which to update metadata
     :param data_span: the data span, if any, to update the data with
     :param populate_versions: not yet implemented - currently unclear what this was intended to accomplish
+    :param accumulate_data_span: If True, update the metadata with the union of the provided data_span and the span
            already present in the db.  If False, overwrite the span with the provided data_span.
     :return:
     """
@@ -93,10 +95,16 @@ def update_metadata(dataset: TimeSeriesDataset,
 
     # Set dataset metadata according to arguments
     if data_span is not None:
+        begin_comparison_identifier = 'data_begin' if accumulate_data_span else 'null'
+        end_comparison_identifier = 'data_end' if accumulate_data_span else 'null'
+        sql = f"""
+                        UPDATE _meta_dataproducts_versions_instruments
+                        SET data_begin = LEAST({begin_comparison_identifier}, CAST(%(data_begin)s AS TIMESTAMP)), 
+                            data_end = GREATEST({end_comparison_identifier}, CAST(%(data_end)s AS TIMESTAMP)), 
+                            last_updated = %(last_updated)s
+                        WHERE _meta_dataproducts_versions_id = %(dataproduct)s AND _meta_instruments_id = %(instrument)s;
+                    """
+
         with get_db_cursor() as cur:
-            sql = """
-                UPDATE _meta_dataproducts_versions_instruments
-                SET data_begin = %(data_begin)s, data_end = %(data_end)s, last_updated = %(last_updated)s
-                WHERE _meta_dataproducts_versions_id = %(dataproduct)s AND _meta_instruments_id = %(instrument)s;
-            """
+
             cur.execute(sql, {'dataproduct': data_product_db_id, 'instrument': instrument_db_id, 'data_begin': data_span.begin, 'data_end': data_span.end, 'last_updated': datetime.now()})

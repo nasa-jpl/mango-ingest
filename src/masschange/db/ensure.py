@@ -41,7 +41,12 @@ def initialize_dataset(dataset, populate_dataproducts_versions):
     ensure_dataset_caggs_exist(dataset)
     log.info(f'Updating metadata for {dataset.get_table_name()}')
     data_span = dataset.get_data_span()
-    update_metadata(dataset, data_span=data_span, populate_versions=populate_dataproducts_versions)
+    update_metadata(
+        dataset,
+        data_span=data_span,
+        populate_versions=populate_dataproducts_versions,
+        accumulate_data_span=False
+    )
 
 
 def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False, is_database_init: bool = False):
