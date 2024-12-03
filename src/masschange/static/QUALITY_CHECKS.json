@@ -1,0 +1,2073 @@
+{
+  "ACC1A": {
+    "properties": {}
+  },
+  "ACC1A_PASS": {
+    "properties": {}
+  },
+  "ACC1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ACT1A": {
+    "properties": {}
+  },
+  "ACT1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "outlier_max_span": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 10
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ACT1B": {
+    "properties": {}
+  },
+  "ACT1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 86000,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "AHK1A": {
+    "properties": {}
+  },
+  "AHK1A_PASS": {
+    "properties": {}
+  },
+  "AHK1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "AHK1B": {
+    "properties": {}
+  },
+  "AHK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "CLK1A": {
+    "properties": {}
+  },
+  "CLK1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "CLK1B": {
+    "properties": {}
+  },
+  "CLK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GNI1B": {
+    "properties": {}
+  },
+  "GNI1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GNV1A": {
+    "properties": {}
+  },
+  "GNV1A_PASS": {
+    "properties": {}
+  },
+  "GNV1A_PRN": {
+    "properties": {}
+  },
+  "GNV1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GNV1B": {
+    "properties": {}
+  },
+  "GNV1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "lposrmsstart": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.025
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GPI1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GPS1A": {
+    "properties": {}
+  },
+  "GPS1A_PASS": {
+    "properties": {}
+  },
+  "GPS1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "GPS1B": {
+    "properties": {}
+  },
+  "GPS1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "HRT1A": {
+    "properties": {}
+  },
+  "HRT1A_PASS": {
+    "properties": {}
+  },
+  "HRT1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "HRT1B": {
+    "properties": {}
+  },
+  "IHK1A": {
+    "properties": {}
+  },
+  "IHK1A_PASS": {
+    "properties": {}
+  },
+  "IHK1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "IHK1B": {
+    "properties": {}
+  },
+  "IHK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ILG1A": {
+    "properties": {}
+  },
+  "ILG1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "IMU1A": {
+    "properties": {}
+  },
+  "IMU1A_PASS": {
+    "properties": {}
+  },
+  "IMU1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "IMU1B": {
+    "properties": {}
+  },
+  "IMU1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "KBR1A": {
+    "properties": {}
+  },
+  "KBR1A_PASS": {
+    "properties": {}
+  },
+  "KBR1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount5": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 1
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount6": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 10
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount7": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 100
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "KBR1B": {
+    "properties": {}
+  },
+  "KBR1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "arclength": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 23,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "residnobs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 17000,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "residrms": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 3.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "clkddnobs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 40,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "clkddmean": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 200
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "clkddsigma": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 100
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "clkddrms": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 200
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LHK1A": {
+    "properties": {}
+  },
+  "LHK1A_PASS": {
+    "properties": {}
+  },
+  "LHK1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LHK1B": {
+    "properties": {}
+  },
+  "LHK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LHM1A_PASS": {
+    "properties": {}
+  },
+  "LLG1A": {
+    "properties": {}
+  },
+  "LLG1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LLK1B": {
+    "properties": {}
+  },
+  "LLK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LLT1A": {
+    "properties": {}
+  },
+  "LRI1A": {
+    "properties": {}
+  },
+  "LRI1A_PASS": {
+    "properties": {}
+  },
+  "LRI1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LRI1B": {
+    "properties": {}
+  },
+  "LSM1A": {
+    "properties": {}
+  },
+  "LSM1A_PASS": {
+    "properties": {}
+  },
+  "LSM1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LSM1B": {
+    "properties": {}
+  },
+  "LSM1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "MAG1A": {
+    "properties": {}
+  },
+  "MAG1A_PASS": {
+    "properties": {}
+  },
+  "MAG1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "MAG1B": {
+    "properties": {}
+  },
+  "MAG1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "MAS1A": {
+    "properties": {}
+  },
+  "MAS1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "MAS1B": {
+    "properties": {}
+  },
+  "MAS1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "PCI1A": {
+    "properties": {}
+  },
+  "PCI1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "PLT1A": {
+    "properties": {}
+  },
+  "PLT1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "POE1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmsphase": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 5.6
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "nphase": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "perphaserej": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 6.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmsrange": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 63.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "nrange": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "perrangerej": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 7
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "QCP1B": {
+    "properties": {}
+  },
+  "QSA1B": {
+    "properties": {}
+  },
+  "SCA1A": {
+    "properties": {}
+  },
+  "SCA1A_PASS": {
+    "properties": {}
+  },
+  "SCA1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount4": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 100
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "SCA1B": {
+    "properties": {}
+  },
+  "SCA1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimux": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimuy": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimuz": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "SCI1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimux": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimuy": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "rmspostfitimuz": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 0.5
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "THR1A": {
+    "properties": {}
+  },
+  "THR1A_PASS": {
+    "properties": {}
+  },
+  "THR1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "THR1B": {
+    "properties": {}
+  },
+  "THR1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "TIM1A": {
+    "properties": {}
+  },
+  "TIM1A_PASS": {
+    "properties": {}
+  },
+  "TIM1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "TIM1B": {
+    "properties": {}
+  },
+  "TIM1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "TNK1A": {
+    "properties": {}
+  },
+  "TNK1A_PASS": {
+    "properties": {}
+  },
+  "TNK1A_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "TNK1B": {
+    "properties": {}
+  },
+  "TNK1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "USO1B": {
+    "properties": {}
+  },
+  "USO1B_RPT": {
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  "VGB1B": {
+    "properties": {}
+  },
+  "VGN1B": {
+    "properties": {}
+  },
+  "VGO1B": {
+    "properties": {}
+  },
+  "VKB1B": {
+    "properties": {}
+  },
+  "VSL1B": {
+    "properties": {}
+  }
+}
+
