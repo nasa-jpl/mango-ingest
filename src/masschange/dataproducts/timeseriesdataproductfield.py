@@ -105,11 +105,7 @@ class TimeSeriesDataProductField(ABC):
             description['constant_value'] = self.const_value,
         elif parent_product is not None:
             try:
-                value_constraint = TimeSeriesDataProductFieldConfiguration.construct(parent_product, self)
-                description['bounds'] = {
-                    'min': value_constraint.min_valid_value,
-                    'max': value_constraint.max_valid_value
-                }
+                description['qc_thresholds'] = [config.describe() for config in TimeSeriesDataProductFieldConfiguration.construct_list(parent_product, self)]
             except ValueError:
                 pass
 
