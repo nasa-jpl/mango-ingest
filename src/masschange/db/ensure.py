@@ -3,6 +3,7 @@ import os
 
 import psycopg2
 
+from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import get_time_series_dataproduct_classes
 from masschange.db.conn import get_db_connection
@@ -30,16 +31,18 @@ def ensure_database_exists(db_name: str) -> None:
     conn.close()
 
 
-def ensure_dataset(dataset: TimeSeriesDataset) -> None:
+def ensure_dataset(dataset: Dataset) -> None:
     ensure_dataset_table_exists(dataset)
-    ensure_dataset_caggs_exist(dataset)
+    if isinstance(dataset, TimeSeriesDataset):
+        ensure_dataset_caggs_exist(dataset)
 
 
 def initialize_dataset(dataset, populate_dataproducts_versions):
     log.info(f'Ensuring table for {dataset.get_table_name()}')
     ensure_dataset_table_exists(dataset)
-    log.info(f'Ensuring caggs for {dataset.get_table_name()}')
-    ensure_dataset_caggs_exist(dataset)
+    if isinstance(dataset, TimeSeriesDataset):
+        log.info(f'Ensuring caggs for {dataset.get_table_name()}')
+        ensure_dataset_caggs_exist(dataset)
     log.info(f'Updating metadata for {dataset.get_table_name()}')
     data_span = dataset.get_data_span()
     update_metadata(

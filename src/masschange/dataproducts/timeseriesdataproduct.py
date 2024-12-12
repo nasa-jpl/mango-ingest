@@ -5,6 +5,7 @@ from collections.abc import Collection, Sequence
 from datetime import timedelta
 from typing import Dict, Set, Type, List
 
+from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
@@ -15,7 +16,7 @@ from masschange.missions import Mission
 log = logging.getLogger()
 
 
-class TimeSeriesDataProduct(ABC):
+class TimeSeriesDataProduct(DataProduct):
     # TODO: Document this class properly
     description: str = ''
     mission: Type[Mission]
@@ -82,9 +83,6 @@ class TimeSeriesDataProduct(ABC):
 
         return description
 
-    @classmethod
-    def get_table_name_prefix(cls) -> str:
-        return cls.get_full_id().lower()
 
     @classmethod
     def validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDataProductField],

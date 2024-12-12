@@ -12,6 +12,8 @@ import pandas
 import pandas as pd
 import psycopg2
 
+from masschange.dataproducts.dataproduct import DataProduct
+from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.utils import resolve_dataset
@@ -122,7 +124,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
+def ingest_file_to_db(product: DataProduct, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
@@ -130,19 +132,25 @@ def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
 
 
     reader = product.get_reader()
-    dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
+    if isinstance(product, TimeSeriesDataProduct):
+        dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
+    else:
+        dataset = Dataset(product, reader.extract_dataset_version(src_filepath),
+                                    reader.extract_instrument_id(src_filepath))
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
 
     ensure_dataset_table_exists(dataset)
-    ensure_dataset_caggs_exist(dataset)
+    if isinstance(dataset, TimeSeriesDataset):
+        ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
+    if isinstance(dataset, TimeSeriesDataset):
+        refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
     update_metadata(dataset, data_temporal_span)
 
     if log.isEnabledFor(logging.DEBUG):

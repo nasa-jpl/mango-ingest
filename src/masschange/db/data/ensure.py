@@ -5,13 +5,14 @@ import psycopg2
 
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.dataset import Dataset
 from masschange.db.data.caggs import get_extant_continuous_aggregates, delete_caggs, \
     get_continuous_aggregate_create_statements, refresh_continuous_aggregates
 
 log = logging.getLogger()
 
 
-def ensure_dataset_table_exists(dataset: TimeSeriesDataset) -> None:
+def ensure_dataset_table_exists(dataset: Dataset) -> None:
     """
     Ensure that the table for this dataset exists, creating and configuring the table if it does not.
     """
@@ -31,11 +32,12 @@ def ensure_dataset_table_exists(dataset: TimeSeriesDataset) -> None:
         except psycopg2.errors.DuplicateTable:
             pass
 
-    chunk_time_interval_hours = math.ceil(dataset.product.get_chunk_time_interval().total_seconds() / 3600)
+    if isinstance(dataset, TimeSeriesDataset):
+        chunk_time_interval_hours = math.ceil(dataset.product.get_chunk_time_interval().total_seconds() / 3600)
 
-    with get_db_cursor() as cur:
-        cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
-        log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
+        with get_db_cursor() as cur:
+            cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
+            log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
     pass
 
 def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
