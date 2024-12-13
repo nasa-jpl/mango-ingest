@@ -57,7 +57,7 @@ class TimeSeriesDataProduct(ABC):
             'full_id': cls.get_full_id(),
             'processing_level': cls.processing_level,
             'instruments': sorted(cls.instrument_ids),
-            'available_fields': sorted([field.describe() for field in cls.get_available_fields()],
+            'available_fields': sorted([field.describe(cls) for field in cls.get_available_fields()],
                                        key=lambda description: description['name']),
             'available_resolutions': [
                 {

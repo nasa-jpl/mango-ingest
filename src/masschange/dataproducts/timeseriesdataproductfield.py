@@ -87,7 +87,10 @@ class TimeSeriesDataProductField(ABC):
     def __eq__(self, other):
         return self.name == other.name
 
-    def describe(self) -> Dict:
+    # TODO: see if it's possible to resolve the circular dependency issue requiring injection of the product here
+    #  ideally TimeSeriesDataProductFields could be assigned their relevant product at construction-time, but because
+    #  DataFileReaders have no concept of belonging to any particular product, this is currently impossible
+    def describe(self, parent_product = None) -> Dict:
         description = {
             'name': self.name,
             'type': self.python_type.__name__,
@@ -100,15 +103,13 @@ class TimeSeriesDataProductField(ABC):
 
         if self.is_constant:
             description['constant_value'] = self.const_value,
-        else:
-            # TODO: replace this stub construction with a proper implementation per https://<internal-github>/Mass-Change/gmat-ingest/issues/289
+        elif parent_product is not None:
             try:
-                stub_temporal_split = datetime(2022, 1, 1)
-                value_threshold_configurations = [
-                    TimeSeriesDataProductFieldConfiguration.construct(None, self, effective_to=stub_temporal_split),
-                    TimeSeriesDataProductFieldConfiguration.construct(None, self, effective_from=stub_temporal_split)
-                ]
-                description['value_threshold_configurations'] = [config.describe() for config in value_threshold_configurations]
+                value_constraint = TimeSeriesDataProductFieldConfiguration.construct(parent_product, self)
+                description['bounds'] = {
+                    'min': value_constraint.min_valid_value,
+                    'max': value_constraint.max_valid_value
+                }
             except ValueError:
                 pass
 
