@@ -130,13 +130,12 @@ def ingest_file_to_db(product: DataProduct, src_filepath: str):
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
-
     reader = product.get_reader()
     if isinstance(product, TimeSeriesDataProduct):
         dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
     else:
         dataset = Dataset(product, reader.extract_dataset_version(src_filepath),
-                                    reader.extract_instrument_id(src_filepath))
+                                        reader.extract_instrument_id(src_filepath))
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),

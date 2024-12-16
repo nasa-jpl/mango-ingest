@@ -27,53 +27,10 @@ log = logging.getLogger()
 
 
 class TimeSeriesDataset(Dataset):
-    product: TimeSeriesDataProduct
-    version: TimeSeriesDatasetVersion
-    instrument_id: str
 
-
-    def get_metadata_properties(self) -> Union[Dict, None]:
-        """Get available values from the _meta_dataproducts_versions_instruments table for the corresponding row"""
-        supported_properties = {'data_begin', 'data_end', 'last_updated'}
-
-        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            try:
-                metadata = self._get_basic_metadata(cur, supported_properties)
-                metadata['time_series_id_enums'] = self._enumerate_time_series_id_values(cur)
-            except Exception as err:
-                logging.warning(err)
-                return None
-
-        return metadata
-
-    def _get_basic_metadata(self, cur: Cursor, supported_properties: Collection[str]) -> Dict:
-        sql = f"""
-            SELECT {','.join(sorted(supported_properties))}
-            FROM _meta_dataproducts_versions_instruments as mdpvi
-            WHERE mdpvi._meta_dataproducts_versions_id in (
-                SELECT id 
-                FROM _meta_dataproducts_versions as mdpv
-                WHERE mdpv.name=%(version_name)s
-                AND mdpv._meta_dataproducts_id in (
-                    SELECT id
-                    FROM _meta_dataproducts as mdp
-                    WHERE mdp.name=%(data_product_name)s
-                )
-            )
-            AND mdpvi._meta_instruments_id in (
-                SELECT id 
-                FROM _meta_instruments as mi
-                WHERE mi.name=%(instrument_name)s
-            );
-            """
-        try:
-            cur.execute(sql, {'data_product_name': self.product.get_full_id(), 'version_name': self.version.value,
-                              'instrument_name': self.instrument_id})
-        except Exception as err:
-            raise err.__class__(f'query failed with {err}: {sql}')
-        result = cur.fetchone()
-        return result
-
+    """
+    TODO: this is in the child class because it uses aggregations
+    """
     def _enumerate_time_series_id_values(self, cur: Cursor) -> Dict:
         if not self.product.has_time_series_id_fields():
             return {}
@@ -102,29 +59,24 @@ class TimeSeriesDataset(Dataset):
 
         return metadata
 
-    @staticmethod
-    def _get_sql_select_columns_clause(column_names: Collection[str]):
-        """
-        Given a collection of column names, return a select clause to fetch those columns when querying SQL.
-        Processes special cases (in this case, just location) where some transformation must be applied between SQL-land
-        and Python-land.
+    """TODO: this method is overwritten in a child class because is 
+    uses  _enumerate_time_series_id_values which uses aggregations"""
+    def get_metadata_properties(self) -> Union[Dict, None]:
+        """Get available values from the _meta_dataproducts_versions_instruments table for the corresponding row"""
+        supported_properties = {'data_begin', 'data_end', 'last_updated'}
 
-        This type of behaviour may end up being necessary for fields other than location.  If this is necessary, this
-        should be refactored, as this implementation is a stopgap approach.
-        """
-        column_names = list(set(column_names))  # deduplicate and store in indexable format
-        clause = ''
-        for idx, column_name in enumerate(column_names):
-            if column_name == TimeSeriesDataProduct.LOCATION_COLUMN_NAME:
-                clause += f"st_x({TimeSeriesDataProduct.LOCATION_COLUMN_NAME}) as longitude, st_y({TimeSeriesDataProduct.LOCATION_COLUMN_NAME}) as latitude"
-            else:
-                clause += column_name
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            try:
+                metadata = self._get_basic_metadata(cur, supported_properties)
+                metadata['time_series_id_enums'] = self._enumerate_time_series_id_values(cur)
+            except Exception as err:
+                logging.warning(err)
+                return None
 
-            if idx < len(column_names) - 1:
-                clause += ", "
+        return metadata
 
-        return clause
-
+    """TODO: this method is overwritten in the child class because it 
+    uses aggregations"""
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
                limit_data_span: bool = True, resolve_location: bool = False,
@@ -238,8 +190,6 @@ class TimeSeriesDataset(Dataset):
         table_base_name = super().get_table_name()
 
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
-
-
 
     def attach_lat_lon(self, from_dt: datetime, to_dt: datetime, data: Iterable[Dict]) -> None:
         """
