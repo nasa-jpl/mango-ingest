@@ -25,6 +25,7 @@ def ensure_database_exists(db_name: str) -> None:
             log.info(f'Created missing database: "{db_name}"')
         except psycopg2.errors.DuplicateDatabase:
             pass
+        cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
         cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
     conn.close()
 
