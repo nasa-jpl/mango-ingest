@@ -39,7 +39,7 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
     version = TimeSeriesDatasetVersion(version_id)
 
     if instrument_id not in product.instrument_ids:
-        raise ValueError(f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
+        raise HTTPException(status_code=400, detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
 
     return TimeSeriesDataset(product, version, instrument_id)
 
