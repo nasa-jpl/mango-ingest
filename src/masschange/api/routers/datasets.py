@@ -62,7 +62,11 @@ def instantiate_filters(product: TimeSeriesDataProduct,
 @router.get('/versions/{version_id}/instruments/{instrument_id}', tags=['metadata'])
 async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)]):
     metadata = dataset.product.describe(exclude_available_versions=True)
+
     dataset_specific_metadata = dataset.get_metadata_properties()
+    if dataset_specific_metadata is None:
+        raise HTTPException(status_code=404, detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
+
     additional_fields_metadata = dataset_specific_metadata.pop('time_series_id_enums')
     for field_name, enumeration in additional_fields_metadata.items():
         field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
