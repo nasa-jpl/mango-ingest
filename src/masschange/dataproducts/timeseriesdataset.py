@@ -391,5 +391,8 @@ class TimeSeriesDataset:
         full_res_data_count = span_duration / self.product.time_series_interval
         downsampling_factor_lower_bound = full_res_data_count / self.product.query_result_limit
         # return the lowest index for all factors which meet or exceed the lower bound
-        return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if
+        try:
+            return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if
                    f >= downsampling_factor_lower_bound)
+        except ValueError:
+            raise TooMuchDataRequestedError(f'No available downsampling factor can reduce query span below {self.product.query_result_limit} expected hits. Please request a smaller data span.')

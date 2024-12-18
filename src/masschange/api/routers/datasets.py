@@ -97,7 +97,11 @@ async def get_data(
 
     # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
     if downsampling_factor is None:
-        aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        try:
+            aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+        except TooMuchDataRequestedError as err:
+            raise HTTPException(status_code=400, detail=str(err))
+
         downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
     elif downsampling_factor not in product.get_available_downsampling_factors():
         raise ValueError(
