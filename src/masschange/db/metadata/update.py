@@ -102,9 +102,9 @@ def update_metadata(dataset: TimeSeriesDataset,
                         SET data_begin = LEAST({begin_comparison_identifier}, CAST(%(data_begin)s AS TIMESTAMP)), 
                             data_end = GREATEST({end_comparison_identifier}, CAST(%(data_end)s AS TIMESTAMP)), 
                             last_updated = %(last_updated)s
-                        WHERE _meta_dataproducts_versions_id = %(dataproduct)s AND _meta_instruments_id = %(instrument)s;
+                        WHERE _meta_dataproducts_versions_id = %(dataproduct_version)s AND _meta_instruments_id = %(instrument)s;
                     """
 
         with get_db_cursor() as cur:
 
-            cur.execute(sql, {'dataproduct': data_product_db_id, 'instrument': instrument_db_id, 'data_begin': data_span.begin, 'data_end': data_span.end, 'last_updated': datetime.now()})
+            cur.execute(sql, {'dataproduct_version': dataproducts_versions_id, 'instrument': instrument_db_id, 'data_begin': data_span.begin, 'data_end': data_span.end, 'last_updated': datetime.now()})
