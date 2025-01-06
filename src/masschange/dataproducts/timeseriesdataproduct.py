@@ -26,13 +26,14 @@ class TimeSeriesDataProduct(DataProduct):
         useful or necessary for querying it.
         """
 
-        description = super().description()
+        description = super().describe()
         description['available_resolutions'] = [
             {
                 'downsampling_factor': factor,
                 'nominal_data_interval_seconds': cls.time_series_interval.total_seconds() * factor
             } for factor in cls.get_available_downsampling_factors()
         ]
+        return description
 
     @classmethod
     def get_required_aggregation_level_count(cls) -> int:

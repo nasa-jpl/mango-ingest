@@ -162,7 +162,7 @@ class Dataset:
         clause = ''
         for idx, column_name in enumerate(column_names):
             if column_name == DataProduct.LOCATION_COLUMN_NAME:
-                clause += f"st_x({DataProduct.LOCATION_COLUMN_NAME}) as longitude, st_y({TimeSeriesDataProduct.LOCATION_COLUMN_NAME}) as latitude"
+                clause += f"st_x({DataProduct.LOCATION_COLUMN_NAME}) as longitude, st_y({DataProduct.LOCATION_COLUMN_NAME}) as latitude"
             else:
                 clause += column_name
 

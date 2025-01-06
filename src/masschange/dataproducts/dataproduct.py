@@ -8,6 +8,7 @@ from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataPro
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.db.conn import get_db_cursor
 
 log = logging.getLogger()
 
@@ -42,6 +43,7 @@ class DataProduct(ABC):
         An object which describes this dataset's attributes/configuration to an end-user, providing details which are
         useful or necessary for querying it.
         """
+
         description = {
             'description': cls.description,
             'mission': cls.mission.id,
@@ -51,12 +53,6 @@ class DataProduct(ABC):
             'instruments': sorted(cls.instrument_ids),
             'available_fields': sorted([field.describe(cls) for field in cls.get_available_fields()],
                                        key=lambda description: description['name']),
-            'available_resolutions': [
-                {
-                    'downsampling_factor': factor,
-                    'nominal_data_interval_seconds': cls.time_series_interval.total_seconds() * factor
-                } for factor in cls.get_available_downsampling_factors()
-            ],
             'timestamp_field': cls.TIMESTAMP_COLUMN_NAME,
             'query_result_limit': cls.query_result_limit
         }

@@ -50,7 +50,7 @@ class DataFileReader(ABC):
     @classmethod
     def extract_dataset_version(cls, filepath: str) -> TimeSeriesDatasetVersion:
         """Extract version id from unzipped input file"""
-        filename = os.path.split(filepath)[-1]:qqq
+        filename = os.path.split(filepath)[-1]
         dataset_version_id = re.search(cls.get_input_file_default_regex(), filename).group('dataset_version')
         return TimeSeriesDatasetVersion(dataset_version_id)
 
