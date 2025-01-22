@@ -1,4 +1,6 @@
+import logging
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -8,8 +10,25 @@ from starlette.responses import HTMLResponse
 from masschange.api.routers.missions import router as missions_router
 from masschange.api.routers.dataproducts import router as dataproducts_router
 from masschange.api.routers.datasets import router as datasets_router
+from masschange.api.utils.memleak import run_memleak_cleanup_thread
 
-app = FastAPI()
+# Set log level to INFO by default - this may need to be refined later
+logging.root.setLevel(logging.INFO)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Runs anything before the yield prior to app startup, and runs anything after the yield upon app exit"""
+
+    # Run a memory cleanup service to compensate for a memory leak inherent to Python
+    # See details at https://github.com/python/cpython/issues/109534
+    logging.info('Running memory cleanup thread in background')
+    run_memleak_cleanup_thread()
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
     "***REMOVED***",
