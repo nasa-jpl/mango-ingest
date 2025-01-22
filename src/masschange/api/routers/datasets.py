@@ -18,6 +18,7 @@ from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproducts
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.utils.misc import get_human_readable_timedelta
 
 router = APIRouter(tags=['datasets'])
@@ -41,10 +42,8 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
 
     if instrument_id not in product.instrument_ids:
         raise HTTPException(status_code=400, detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
-    if isinstance(product, TimeSeriesDataProduct):
-        return TimeSeriesDataset(product, version, instrument_id)
-    else:
-        return Dataset(product, version, instrument_id)
+
+    return DatasetFactory.create(product, version, instrument_id)
 
 
 def instantiate_filters(product: TimeSeriesDataProduct,
@@ -69,7 +68,7 @@ async def describe_dataset_instance(dataset: Annotated[Dataset, Depends(dataset_
     dataset_specific_metadata = dataset.get_metadata_properties()
     if dataset_specific_metadata is None:
         raise HTTPException(status_code=404, detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
-    if isinstance(dataset, TimeSeriesDataset):
+    if dataset.is_time_series_dataset():
         additional_fields_metadata = dataset_specific_metadata.pop('time_series_id_enums')
         for field_name, enumeration in additional_fields_metadata.items():
             field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
@@ -99,12 +98,85 @@ async def get_data(
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
 
     filters = instantiate_filters(product, filter)
-
     field_names = fields
-    fields = set()
-    dataset_fields_by_name = {field.name: field for field in product.get_available_fields()}
+    downsampling_factor = _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp)
 
-    if isinstance(product, TimeSeriesDataProduct):
+    fields = _get_fields(dataset, field_names, downsampling_factor)
+    aggregation_level = _get_aggregation_level(product, downsampling_factor)
+    dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+    resolve_location = dataset_fields_by_name.get(dataset.product.LOCATION_COLUMN_NAME) in fields
+
+    try:
+        query_start = datetime.now()
+        results = dataset.select(
+            from_isotimestamp,
+            to_isotimestamp,
+            fields=fields,
+            aggregation_level=aggregation_level,
+            resolve_location=resolve_location,
+            filters=filters
+        )
+
+        query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
+    except TooMuchDataRequestedError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    except Exception as err:  # TODO: Make this specific
+        raise HTTPException(status_code=500, detail=str(err))
+
+    return _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp,
+                                      results, query_elapsed_ms, downsampling_factor)
+
+def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, results, query_elapsed_ms, downsampling_factor ):
+    data = {
+            'from_isotimestamp': from_isotimestamp.isoformat(),
+            'to_isotimestamp': to_isotimestamp.isoformat(),
+            'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+            'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+            'data_count': len(results),
+            'query_elapsed_ms': query_elapsed_ms,
+            'data': results}
+    if product.is_time_series_dataproduct():
+          data['downsampling_factor'] = downsampling_factor
+          aggregation_level = _get_aggregation_level(product, downsampling_factor)
+          data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
+
+    return data
+
+
+def _get_fields(dataset, field_names, downsampling_factor):
+    fields = set()
+    dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+
+    for field_name in field_names:
+        try:
+            field = dataset_fields_by_name[field_name]
+            if dataset.is_time_series_dataset():
+                using_aggregations = downsampling_factor > 1
+
+                # when downsampling, only pick valid aggregable fields
+                # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
+                # fields value, which would be a loss since it significantly improves the docs
+                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
+                    fields.add(field)
+            else:
+                fields.add(field)
+        except KeyError:
+            raise HTTPException(status_code=400,
+                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+
+    #  ensure that timestamp column name is always present in query
+    fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])
+
+    return fields
+
+def _get_aggregation_level(product, downsampling_factor):
+    if product.is_time_series_dataproduct():
+        return product.get_available_downsampling_factors().index(downsampling_factor)
+    else:
+        return None
+
+def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp):
+    if dataset.is_time_series_dataset():
         # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
         if downsampling_factor is None:
             try:
@@ -113,88 +185,12 @@ async def get_data(
                 raise HTTPException(status_code=400, detail=str(err))
 
             downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
-        elif downsampling_factor not in product.get_available_downsampling_factors():
+        elif downsampling_factor not in dataset.product.get_available_downsampling_factors():
             raise ValueError(
-                f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(product.get_available_downsampling_factors())})')
-
-        aggregation_level = dataset.product.get_available_downsampling_factors().index(downsampling_factor)
-
-
-        using_aggregations = downsampling_factor > 1
-        for field_name in field_names:
-            try:
-                field = dataset_fields_by_name[field_name]
-                # when downsampling, only pick valid aggregable fields
-                # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
-                # fields value, which would be a loss since it significantly improves the docs
-                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
-                    fields.add(field)
-            except KeyError:
-                raise HTTPException(status_code=400,
-                                    detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+                f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(dataset.product.get_available_downsampling_factors())})')
+        return downsampling_factor
     else:
-        for field_name in field_names:
-            try:
-                field = dataset_fields_by_name[field_name]
-                fields.add(field)
-            except KeyError:
-                raise HTTPException(status_code=400,
-                        detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
-
-
-    #  ensure that timestamp column name is always present in query
-    fields.add(dataset_fields_by_name[product.TIMESTAMP_COLUMN_NAME])
-
-    resolve_location = dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME) in fields
-
-    try:
-        query_start = datetime.now()
-        if isinstance(product, TimeSeriesDataProduct):
-            results = dataset.select(
-                from_isotimestamp,
-                to_isotimestamp,
-                fields=fields,
-                aggregation_level=aggregation_level,
-                resolve_location=resolve_location,
-                filters=filters
-            )
-        else:
-            results = dataset.select(
-                from_isotimestamp,
-                to_isotimestamp,
-                fields=fields,
-                filters=filters
-            )
-        query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
-    except TooMuchDataRequestedError as err:
-        raise HTTPException(status_code=400, detail=str(err))
-    except Exception as err:  # TODO: Make this specific
-        raise HTTPException(status_code=500, detail=str(err))
-
-    if isinstance(product, TimeSeriesDataProduct):
-        return {
-            'from_isotimestamp': from_isotimestamp.isoformat(),
-            'to_isotimestamp': to_isotimestamp.isoformat(),
-            'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_count': len(results),
-            'downsampling_factor': downsampling_factor,
-            'nominal_data_interval_seconds': product.get_nominal_data_interval(aggregation_level).total_seconds(),
-            'query_elapsed_ms': query_elapsed_ms,
-            'data': results
-        }
-    else:
-        return {
-            'from_isotimestamp': from_isotimestamp.isoformat(),
-            'to_isotimestamp': to_isotimestamp.isoformat(),
-            'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_count': len(results),
-            'query_elapsed_ms': query_elapsed_ms,
-            'data': results
-        }
-
-
+        return None
 
 SupportedStatisticsEnum = StrEnum('SupportedStatistics',
                                   sorted({'avg', 'min', 'max', 'count', 'stddev_pop', 'var_pop'}))

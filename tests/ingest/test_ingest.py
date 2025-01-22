@@ -6,6 +6,7 @@ from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceF
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.ingest.executor.ingest import ingest_file_to_db
 from tests.ingest.base import IngestTestCaseBase
 
@@ -21,10 +22,7 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
     instrument_id = 'C'
 
     def setUp(self):
-        if isinstance(self.product, TimeSeriesDataProduct):
-            self.dataset = TimeSeriesDataset(self.product, self.version, self.instrument_id)
-        else:
-            self.dataset = Dataset(self.product, self.version, self.instrument_id)
+        self.dataset = DatasetFactory.create(self.product, self.version, self.instrument_id)
 
         self.input_filepaths = [os.path.join(self.input_dir, fn) for fn in os.listdir(self.input_dir)]
         super().__init__()

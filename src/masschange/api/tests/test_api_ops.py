@@ -10,10 +10,8 @@ from masschange.api.tests.utils import is_nearly_equal, permute_all_datasets
 from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-
 
 client = TestClient(app)
 
@@ -44,7 +42,7 @@ timeseries_id_additional_parameters = {
 
 
 @pytest.mark.parametrize("ds", permute_all_datasets())
-def test_gracefo_data_select(ds: TimeSeriesDataset):
+def test_gracefo_data_select(ds: Dataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
@@ -69,7 +67,7 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     # Currently, anything not 1Hz or 10Hz is assumed to be variable, though this is not always true
     # TODO: Update once variable data span is implemented properly in dataset classes
 
-    if isinstance(ds.product, TimeSeriesDataProduct):
+    if ds.is_time_series_dataset():
         if data_span is not None and (ds.product.time_series_interval == timedelta(
                 milliseconds=100) or ds.product.time_series_interval == timedelta(seconds=1)):
             if ds.product.id_suffix == 'AHK1A':
@@ -78,14 +76,12 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
             else:
                 expected_data_count = (test_span_end - test_span_begin) / ds.product.time_series_interval
             assert is_nearly_equal(expected_data_count, content['data_count'])
-        expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'data_begin', 'data_end', 'data_count',
-                               'downsampling_factor', 'nominal_data_interval_seconds', 'query_elapsed_ms', 'data']
-    else:
 
-        # no expected data count for non-time-series products
-        # no 'downsampling_factor', 'nominal_data_interval_seconds' for non-time-series products
-        expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'data_begin', 'data_end', 'data_count',
-                             'query_elapsed_ms', 'data']
+    expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'data_begin', 'data_end', 'data_count',
+                           'query_elapsed_ms', 'data']
+    if ds.is_time_series_dataset():
+        expected_attributes.extend(['downsampling_factor', 'nominal_data_interval_seconds'])
+
     for k in expected_attributes:
         assert k in content
 
@@ -164,6 +160,46 @@ def test_location_lookup():
     assert -180.0 <= longitude <= 180.0
 
 
+def test_downsampled_location_lookup():
+    product = GraceFOAcc1ADataProduct()
+    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset_data_span = dataset.get_data_span()
+
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_data_span = gnv_dataset.get_data_span()
+
+    assert dataset_data_span is not None
+    assert gnv_data_span is not None
+
+    test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
+    test_span_end = test_span_begin + timedelta(minutes=1)
+    full_res_path = f'/missions/{dataset.product.mission.id}/products/{dataset.product.id_suffix}/versions/{dataset.version}/instruments/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location'
+    full_res_response = client.get(full_res_path)
+    assert full_res_response.status_code == 200
+    full_res_content = full_res_response.json()
+
+    downsampling_factor = dataset.product.get_available_downsampling_factors()[2]
+    downsampled_path = f'/missions/{dataset.product.mission.id}/products/{dataset.product.id_suffix}/versions/{dataset.version}/instruments/{dataset.instrument_id}/data?fromisotimestamp={test_span_begin.isoformat()}&toisotimestamp={test_span_end.isoformat()}&fields=location&downsampling_factor={downsampling_factor}'
+    downsampled_response = client.get(downsampled_path)
+    assert downsampled_response.status_code == 200
+    downsampled_content = downsampled_response.json()
+
+    downsampled_datum = downsampled_content['data'][1]
+    downsampled_bucket_interval = timedelta(seconds=downsampled_content['nominal_data_interval_seconds'])
+    bucket_start = datetime.fromisoformat(downsampled_datum['timestamp'])
+    bucket_end = bucket_start + downsampled_bucket_interval
+    full_res_data = [d for d in full_res_content['data'] if
+                     bucket_start <= datetime.fromisoformat(d['timestamp']) < bucket_end]
+
+    # Crude check that downsampled location is at least within the bounding box encompassing its constituent points
+    full_res_min_latitude = min(d['location']['latitude'] for d in full_res_data)
+    full_res_max_latitude = max(d['location']['latitude'] for d in full_res_data)
+    full_res_min_longitude = min(d['location']['longitude'] for d in full_res_data)
+    full_res_max_longitude = max(d['location']['longitude'] for d in full_res_data)
+    assert full_res_min_latitude <= downsampled_datum['location']['latitude'] <= full_res_max_latitude
+    assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
+
+
 def test_product_metadata_basic():
     path = f'/missions/GRACEFO/products/'
     response = client.get(path)
@@ -188,14 +224,12 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
         print(json.dumps(content))
     assert response.status_code == 200
 
-    if isinstance(ds.product, TimeSeriesDataProduct):
-        expected_attributes = ['description', 'mission', 'id', 'full_id', 'processing_level', 'instruments',
-                           'available_fields', 'available_resolutions', 'timestamp_field', 'query_result_limit',
+    expected_attributes = ['description', 'mission', 'id', 'full_id', 'processing_level', 'instruments',
+                           'available_fields', 'timestamp_field', 'query_result_limit',
                            'data_begin', 'data_end', 'last_updated']
-    else:
-        expected_attributes = ['description', 'mission', 'id', 'full_id', 'processing_level', 'instruments',
-                               'available_fields', 'timestamp_field', 'query_result_limit',
-                               'data_begin', 'data_end', 'last_updated']
+
+    if ds.is_time_series_dataset():
+        expected_attributes.extend( ['available_resolutions'])
 
     for k in expected_attributes:
         assert k in content

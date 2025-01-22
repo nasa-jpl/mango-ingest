@@ -17,6 +17,8 @@ class TimeSeriesDataProduct(DataProduct):
     # be a multiple of their input view/table bucket spans, so the 8Hz IMU1A/1B, for example, is incompatible.
     aligned_bucket_span: timedelta = timedelta(seconds=10)
 
+    max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
+
     @classmethod
     def describe(cls, exclude_available_versions: bool = False,  metadata_cache: List[Dict] = None) -> Dict:
         """
@@ -132,3 +134,11 @@ class TimeSeriesDataProduct(DataProduct):
             return timedelta(days=365)  # chosen arbitrarily
         else:
             return timedelta(days=365 * 30)  # basically just for those datasets which are actually not time-series - this will be cleaned up when an abstraction is created for those
+
+    @classmethod
+    def has_time_series_id_fields(cls) -> bool:
+        return len([f.name for f in cls.get_available_fields() if f.is_time_series_id_column]) > 0
+
+    @classmethod
+    def is_time_series_dataproduct(cls) -> bool:
+        return True

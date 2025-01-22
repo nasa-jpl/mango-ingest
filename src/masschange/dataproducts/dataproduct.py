@@ -21,10 +21,10 @@ class DataProduct(ABC):
     instrument_ids: Set[str]
     processing_level: str
 
-    max_data_span = timedelta(weeks=52 * 30)  # extent of full data span for determining aggregation steps
     query_result_limit = 36000
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
+    # TODO: find a way to move it to the base class - non-timeseries datasets should support location as well
     LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
 
     @classmethod
@@ -175,10 +175,6 @@ class DataProduct(ABC):
                              f'(valid names are {[f.name for f in cls.get_available_fields()]})')
 
     @classmethod
-    def has_time_series_id_fields(cls) -> bool:
-        return len([f.name for f in cls.get_available_fields() if f.is_time_series_id_column]) > 0
-
-    @classmethod
     def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
         with get_db_cursor() as cur:
             data_product_name = cls.get_full_id()
@@ -196,3 +192,7 @@ class DataProduct(ABC):
             results = [row[0] for row in cur.fetchall()]
 
         return {TimeSeriesDatasetVersion(version_name) for version_name in results}
+
+    @classmethod
+    def is_time_series_dataproduct(cls) -> bool:
+        return False

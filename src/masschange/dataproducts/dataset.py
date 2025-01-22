@@ -147,7 +147,6 @@ class Dataset:
         result = cur.fetchone()
         return result
 
-
     @staticmethod
     def _get_sql_select_columns_clause(column_names: Collection[str]):
         """
@@ -172,33 +171,52 @@ class Dataset:
         return clause
 
     def select(self, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDataProductField] = None, # aggregation_level: int = None, #TODO: how to deal with different signature of 'select' in the child?
-               limit_data_span: bool = True, # resolve_location: bool = False,
+               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
+               limit_data_span: bool = True, resolve_location: bool = False,
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
-
         filters = filters or []
+
+        aggregation_level = self.get_aggregation_level(aggregation_level, from_dt, to_dt)
+
+        using_aggregations = aggregation_level > 0
 
         if fields is None:
             fields = {f for f in self.product.get_available_fields() \
                       if not f.is_constant \
-                      and not f.is_lookup_field}
+                      and not f.is_lookup_field \
+                      and (f.has_aggregations or not using_aggregations)}
+            if resolve_location:
+                try:
+                    location_lookup_field = next(
+                        f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
+                    fields.add(location_lookup_field)
+                except StopIteration:
+                    pass
 
         non_lookup_fields = [f for f in fields if not f.is_lookup_field]
 
-        self.product.validate_requested_fields(non_lookup_fields, using_aggregations=False)
+        self.product.validate_requested_fields(non_lookup_fields, using_aggregations=using_aggregations)
 
-        column_names = {field.name for field in non_lookup_fields}
+        if not using_aggregations:
+            column_names = {field.name for field in non_lookup_fields}
+        else:
+            column_names = set()
+            for field in non_lookup_fields:
+                if field.has_aggregations:
+                    aggregate_column_names = {agg.get_aggregated_name(field.name) for agg in field.aggregations}
+                    column_names.update(aggregate_column_names)
+                else:
+                    column_names.add(field.name)
 
-        max_query_temporal_span = timedelta(days=31)  # TODO: set to 31 days for now
-
+        downsampling_factor = self.get_downsampling_factor(aggregation_level, )
+        max_query_temporal_span = self.get_max_query_temporal_span(downsampling_factor)
         requested_temporal_span = to_dt - from_dt
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
             raise TooMuchDataRequestedError(
-                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} '
-                f' exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
+                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            table_name = self.get_table_name()
+            table_name = self.get_table_or_view_name(aggregation_level)
             select_columns_clause = self._get_sql_select_columns_clause(column_names)
 
             parameters = prepare_where_clause_parameters(from_dt, to_dt, filters)
@@ -229,4 +247,26 @@ class Dataset:
                 logging.warning(f'query failed with {err}: {sql}')
                 raise Exception
 
-        return [self.product.structure_results(fields, False, result) for result in results]
+        try:
+            if resolve_location:
+                self.attach_lat_lon(from_dt, to_dt, results)
+        except psycopg2.Error as err:
+            log.error(f'Failed to resolve location data for {self.get_table_name()} over span ({from_dt}, {to_dt}) '
+                      f'due to {err}')
+
+        return [self.product.structure_results(fields, using_aggregations, result) for result in results]
+
+    def get_aggregation_level(self, aggregation_level, from_dt, to_dt):
+        return 0
+
+    def get_downsampling_factor(self, aggregation_level):
+        return 1
+
+    def get_max_query_temporal_span(self, downsampling_factor):
+        return timedelta(days=31)  # TODO: set to 31 days for now
+    def get_table_or_view_name(self, aggregation_depth: int) -> str:
+        return self.get_table_name()
+
+    @classmethod
+    def is_time_series_dataset(cls) -> bool:
+        return False

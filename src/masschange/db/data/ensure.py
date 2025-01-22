@@ -32,13 +32,12 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
         except psycopg2.errors.DuplicateTable:
             pass
 
-    if isinstance(dataset, TimeSeriesDataset):
+    if dataset.is_time_series_dataset():
         chunk_time_interval_hours = math.ceil(dataset.product.get_chunk_time_interval().total_seconds() / 3600)
 
         with get_db_cursor() as cur:
             cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
             log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
-    pass
 
 def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
     """

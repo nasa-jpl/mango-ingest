@@ -7,21 +7,11 @@ from typing import List, Dict, Union, Iterable
 import psycopg2
 from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
-from psycopg2.sql import SQL
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.api.utils.misc import KeyValueQueryParameter
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
-    TimeSeriesDataProductLocationLookupField
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, \
-    prepare_where_clause_conditions, prepare_where_clause_parameters
-from masschange.utils.misc import get_human_readable_timedelta
-from masschange.utils.timespan import TimeSpan
 
 log = logging.getLogger()
 
@@ -75,94 +65,16 @@ class TimeSeriesDataset(Dataset):
 
         return metadata
 
-    """TODO: this method is overwritten in the child class because it 
-    uses aggregations"""
-    def select(self, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
-               limit_data_span: bool = True, resolve_location: bool = False,
-               filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
-        filters = filters or []
-
+    def get_aggregation_level(self, aggregation_level, from_dt, to_dt):
         if aggregation_level is None:
             aggregation_level = self.get_minimum_aggregation_level(from_dt, to_dt)
+        return aggregation_level
 
-        using_aggregations = aggregation_level > 0
+    def get_downsampling_factor(self, aggregation_level):
+        return self.product.aggregation_step_factor ** aggregation_level
 
-        if fields is None:
-            fields = {f for f in self.product.get_available_fields() \
-                      if not f.is_constant \
-                      and not f.is_lookup_field \
-                      and (f.has_aggregations or not using_aggregations)}
-            if resolve_location:
-                try:
-                    location_lookup_field = next(
-                        f for f in fields if isinstance(f, TimeSeriesDataProductLocationLookupField))
-                    fields.add(location_lookup_field)
-                except StopIteration:
-                    pass
-
-        non_lookup_fields = [f for f in fields if not f.is_lookup_field]
-
-        self.product.validate_requested_fields(non_lookup_fields, using_aggregations=using_aggregations)
-
-        if not using_aggregations:
-            column_names = {field.name for field in non_lookup_fields}
-        else:
-            column_names = set()
-            for field in non_lookup_fields:
-                if field.has_aggregations:
-                    aggregate_column_names = {agg.get_aggregated_name(field.name) for agg in field.aggregations}
-                    column_names.update(aggregate_column_names)
-                else:
-                    column_names.add(field.name)
-
-        downsampling_factor = self.product.aggregation_step_factor ** aggregation_level
-        max_query_temporal_span = self.product.query_result_limit * self.product.time_series_interval * downsampling_factor
-        requested_temporal_span = to_dt - from_dt
-        if limit_data_span and requested_temporal_span > max_query_temporal_span:
-            raise TooMuchDataRequestedError(
-                f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} at 1:{downsampling_factor} aggregation exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
-
-        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            table_name = self.get_table_or_view_name(aggregation_level)
-            select_columns_clause = self._get_sql_select_columns_clause(column_names)
-
-            parameters = prepare_where_clause_parameters(from_dt, to_dt, filters)
-            conditions = prepare_where_clause_conditions(self.product.TIMESTAMP_COLUMN_NAME, filters)
-            where_clause = SQL(' AND ').join(conditions).as_string(cur.connection)
-
-            try:
-                sql = f"""
-                    SELECT {select_columns_clause}
-                    FROM {table_name}
-                    WHERE {where_clause}
-                    ORDER BY {self.product.TIMESTAMP_COLUMN_NAME}
-                    """
-                cur.execute(sql, parameters)
-                results = cur.fetchall()
-            except psycopg2.errors.UndefinedTable as err:
-                logging.warning(f'Query failed with {err}: {sql}')
-                raise RuntimeError(
-                    f'Table {table_name} is not present in db.  Files may not been ingested for this dataset.')
-            except psycopg2.errors.UndefinedColumn as err:
-                logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
-                available_columns = list_db_table_columns(table_name)
-                missing_columns = {f.name for f in self.product.get_available_fields() if
-                                   f.name not in available_columns and not f.is_lookup_field}
-                raise ValueError(
-                    f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
-            except Exception as err:
-                logging.warning(f'query failed with {err}: {sql}')
-                raise Exception
-
-        try:
-            if resolve_location:
-                self.attach_lat_lon(from_dt, to_dt, results)
-        except psycopg2.Error as err:
-            log.error(f'Failed to resolve location data for {self.get_table_name()} over span ({from_dt}, {to_dt}) '
-                      f'due to {err}')
-
-        return [self.product.structure_results(fields, using_aggregations, result) for result in results]
+    def get_max_query_temporal_span(self, downsampling_factor):
+        return self.product.query_result_limit * self.product.time_series_interval * downsampling_factor
 
     def get_table_name(self) -> str:
         """Return the name of the SQL table storing the data for this dataset for a given instruments"""
@@ -191,6 +103,7 @@ class TimeSeriesDataset(Dataset):
 
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
 
+    # TODO: Find a way to move it to a base class. The problem is that GraceFOGnv1ADataProduct is a time-series product
     def attach_lat_lon(self, from_dt: datetime, to_dt: datetime, data: Iterable[Dict]) -> None:
         """
         Assign approximate locations to a set of results from TimeSeriesDataset.select(), using ingested GNV data to map
@@ -279,3 +192,7 @@ class TimeSeriesDataset(Dataset):
                    f >= downsampling_factor_lower_bound)
         except ValueError:
             raise TooMuchDataRequestedError(f'No available downsampling factor can reduce query span below {self.product.query_result_limit} expected hits. Please request a smaller data span.')
+
+    @classmethod
+    def is_time_series_dataset(cls) -> bool:
+        return True

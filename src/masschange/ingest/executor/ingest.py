@@ -13,9 +13,9 @@ import pandas as pd
 import psycopg2
 
 from masschange.dataproducts.dataproduct import DataProduct
-from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
 from masschange.utils.misc import get_human_readable_elapsed_since
@@ -28,6 +28,7 @@ from masschange.db.metadata.update import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
+
 
 log = logging.getLogger()
 
@@ -131,25 +132,22 @@ def ingest_file_to_db(product: DataProduct, src_filepath: str):
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
     reader = product.get_reader()
-    if isinstance(product, TimeSeriesDataProduct):
-        dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
-    else:
-        dataset = Dataset(product, reader.extract_dataset_version(src_filepath),
-                                        reader.extract_instrument_id(src_filepath))
+
+    dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
+                                    reader.extract_instrument_id(src_filepath))
+
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
 
     ensure_dataset_table_exists(dataset)
-    if isinstance(dataset, TimeSeriesDataset):
-        ensure_dataset_caggs_exist(dataset)
+    ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    if isinstance(dataset, TimeSeriesDataset):
-        refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
+    refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
     update_metadata(dataset, data_temporal_span)
 
     if log.isEnabledFor(logging.DEBUG):
