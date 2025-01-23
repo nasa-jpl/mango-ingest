@@ -8,6 +8,7 @@ from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
 
 from masschange.api.errors import TooMuchDataRequestedError
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
@@ -16,6 +17,8 @@ log = logging.getLogger()
 
 
 class TimeSeriesDataset(Dataset):
+
+    product: TimeSeriesDataProduct
 
     """
     TODO: this is in the child class because it uses aggregations
