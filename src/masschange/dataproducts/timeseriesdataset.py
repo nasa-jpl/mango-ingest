@@ -64,10 +64,9 @@ class TimeSeriesDataset(Dataset):
 
         return metadata
 
-    def get_valid_aggregation_level(self, aggregation_level: Union[str, None], from_dt, to_dt) -> int:
-        if aggregation_level is None:
-            aggregation_level = self.get_minimum_aggregation_level(from_dt, to_dt)
-        return aggregation_level
+    def validate_requested_aggregation_level(self, requested_aggregation_level: int, from_dt: datetime,
+                                             to_dt: datetime) -> int:
+        return max(requested_aggregation_level, self.get_minimum_aggregation_level(from_dt, to_dt))
 
     def get_downsampling_factor(self, aggregation_level: int) -> int:
         return self.product.aggregation_step_factor ** aggregation_level
