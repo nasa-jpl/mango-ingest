@@ -8,6 +8,7 @@ from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
 
 from masschange.api.errors import TooMuchDataRequestedError
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
@@ -16,6 +17,8 @@ log = logging.getLogger()
 
 
 class TimeSeriesDataset(Dataset):
+
+    product: TimeSeriesDataProduct
 
     """
     TODO: this is in the child class because it uses aggregations
@@ -28,7 +31,7 @@ class TimeSeriesDataset(Dataset):
                                        f.is_time_series_id_column]
         # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
         # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
-        view_depth = min(([0] + self.product.get_available_aggregation_levels())[-1], 5)
+        view_depth = min(([0, *self.product.get_available_aggregation_levels()])[-1], 5)
         sql = f"""
             SELECT DISTINCT {','.join(sorted(time_series_id_column_names))}
             FROM {self.get_table_or_view_name(view_depth)};
@@ -64,10 +67,9 @@ class TimeSeriesDataset(Dataset):
 
         return metadata
 
-    def get_valid_aggregation_level(self, aggregation_level: Union[str, None], from_dt, to_dt) -> int:
-        if aggregation_level is None:
-            aggregation_level = self.get_minimum_aggregation_level(from_dt, to_dt)
-        return aggregation_level
+    def validate_requested_aggregation_level(self, requested_aggregation_level: int, from_dt: datetime,
+                                             to_dt: datetime) -> int:
+        return max(requested_aggregation_level, self.get_minimum_aggregation_level(from_dt, to_dt))
 
     def get_downsampling_factor(self, aggregation_level: int) -> int:
         return self.product.aggregation_step_factor ** aggregation_level

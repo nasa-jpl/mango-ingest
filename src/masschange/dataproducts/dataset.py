@@ -175,8 +175,8 @@ class Dataset:
                limit_data_span: bool = True, resolve_location: bool = False,
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
         filters = filters or []
-
-        aggregation_level = self.get_valid_aggregation_level(aggregation_level, from_dt, to_dt)
+        requested_aggregation_level = aggregation_level or 0
+        aggregation_level = self.validate_requested_aggregation_level(requested_aggregation_level, from_dt, to_dt)
 
         using_aggregations = aggregation_level > 0
 
@@ -256,25 +256,26 @@ class Dataset:
 
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
 
-    def get_valid_aggregation_level(self, aggregation_level: Union[int, None],
-                                    from_dt: datetime, to_dt: datetime) -> int:
+    def validate_requested_aggregation_level(self, requested_aggregation_level: int,
+                                             from_dt: datetime, to_dt: datetime) -> int:
         """
-        A helper method to use in self.select(...) to avoid overwriting the self.select(...) method in a derived class
-        A derived class should overwrite the get_valid_aggregation_level(...) method instead.
-        The method takes aggregation_level as an argument and returns aggregation_level that relevant for the type
-        of the dataset.
-        For non-timeseries dataset, the default value is 0. This value indicates that the dataset
-        does not support aggregation
+       Given a requested_aggregation_level and a timespan, check that the requested_aggregation_level is valid for the
+       timespan and Dataset class/subclass.  Return it if valid, else return the lowest allowable value.
+
+       For non-timeseries datasets (which do not support aggregation), this will always be 0.
         """
         return 0
 
     def get_downsampling_factor(self, aggregation_level: int) -> int:
         """
-        A helper method to use in self.select(...) to avoid overwriting the self.select(...) method in a derived class
-        A derived class should overwrite the get_downsampling_factor(...) method instead.
+        Given an aggregation level, return the corresponding downsampling factor for the Dataset class/subclass.
 
-        For non-timeseries dataset, the downsampling_factor value is always 1, meaning that no downsampling is applied
+        For non-timeseries datasets (which do not support aggregation), this will always be 1, and requesting a nonzero
+        aggregation level is not valid.
         """
+        if aggregation_level is not 0:
+            raise ValueError(
+                f'{self.__name__} is a non-timeseries dataset and so get_downsampling_factor() does not accept a nonzero argument - argument "{aggregation_level}" indicates a code error')
         return 1
 
     def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
