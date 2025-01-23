@@ -1,7 +1,7 @@
 import logging
 
 from abc import ABC, abstractmethod
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Set, Type, List, Dict, Collection
 from masschange.missions import Mission
 from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
@@ -196,3 +196,31 @@ class DataProduct(ABC):
     @classmethod
     def is_time_series_dataproduct(cls) -> bool:
         return False
+
+    @staticmethod
+    def validate_requested_aggregation_level(requested_aggregation_level: int,
+                                             from_dt: datetime, to_dt: datetime) -> int:
+        """
+       Given a requested_aggregation_level and a timespan, check that the requested_aggregation_level is valid for the
+       timespan and Dataproduct class/subclass.  Return it if valid, else return the lowest allowable value.
+
+       For non-timeseries data products (which do not support aggregation), this will always be 0.
+        """
+        return 0
+
+    @classmethod
+    def get_downsampling_factor(cls, aggregation_level: int) -> int:
+        """
+        Given an aggregation level, return the corresponding downsampling factor for the Dataset class/subclass.
+
+        For non-timeseries datasets (which do not support aggregation), this will always be 1, and requesting a nonzero
+        aggregation level is not valid.
+        """
+        if aggregation_level is not 0:
+            raise ValueError(
+                f'{cls.__name__} is a non-timeseries dataset and so get_downsampling_factor() does not accept a nonzero argument - argument "{aggregation_level}" indicates a code error')
+        return 1
+
+    @staticmethod
+    def get_max_query_temporal_span(downsampling_factor: int) -> timedelta:
+        return timedelta(days=31)  # TODO: set to 31 days for now

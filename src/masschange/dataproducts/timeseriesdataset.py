@@ -1,13 +1,12 @@
 import logging
 
-from datetime import datetime, timedelta
-from typing import List, Dict, Union, Iterable
+from datetime import datetime
+from typing import Dict, Union, Iterable
 
 import psycopg2
 from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
 
-from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.dataset import Dataset
@@ -66,16 +65,6 @@ class TimeSeriesDataset(Dataset):
                 return None
 
         return metadata
-
-    def validate_requested_aggregation_level(self, requested_aggregation_level: int, from_dt: datetime,
-                                             to_dt: datetime) -> int:
-        return max(requested_aggregation_level, self.get_minimum_aggregation_level(from_dt, to_dt))
-
-    def get_downsampling_factor(self, aggregation_level: int) -> int:
-        return self.product.aggregation_step_factor ** aggregation_level
-
-    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
-        return self.product.query_result_limit * self.product.time_series_interval * downsampling_factor
 
     def get_table_name(self) -> str:
         """Return the name of the SQL table storing the data for this dataset for a given instruments"""
@@ -166,33 +155,6 @@ class TimeSeriesDataset(Dataset):
         # Assign null location to all data after end of available GNV data
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
-
-    def get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime, check_data_span: bool = False):
-        """
-        Given a query span, return the lowest aggregation level required to limit the result to the product's query
-        result limit
-
-        Parameters
-        ----------
-        from_dt: datetime
-        to_dt: datetime
-        check_data_span: bool - if true, will query the db for actual data span and trim the requested bounds
-            accordingly. Gives absolute minimum aggregation level but is slower due to overhead
-
-        """
-        if check_data_span:
-            extant_data_span = self.get_data_span(use_cache=True)
-            span_duration = max(to_dt, extant_data_span.begin) - min(from_dt, extant_data_span.end)
-        else:
-            span_duration = to_dt - from_dt
-        full_res_data_count = span_duration / self.product.time_series_interval
-        downsampling_factor_lower_bound = full_res_data_count / self.product.query_result_limit
-        # return the lowest index for all factors which meet or exceed the lower bound
-        try:
-            return min(i for i, f in enumerate(self.product.get_available_downsampling_factors()) if
-                   f >= downsampling_factor_lower_bound)
-        except ValueError:
-            raise TooMuchDataRequestedError(f'No available downsampling factor can reduce query span below {self.product.query_result_limit} expected hits. Please request a smaller data span.')
 
     @classmethod
     def is_time_series_dataset(cls) -> bool:
