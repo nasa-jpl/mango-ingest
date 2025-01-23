@@ -1,8 +1,6 @@
 import logging
-from datetime import timedelta
 import psycopg2
 from psycopg2 import extras
-from psycopg2.extensions import cursor as Cursor
 from typing import List
 from psycopg2.sql import SQL
 from collections.abc import Collection
@@ -176,7 +174,7 @@ class Dataset:
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
         filters = filters or []
         requested_aggregation_level = aggregation_level or 0
-        aggregation_level = self.validate_requested_aggregation_level(requested_aggregation_level, from_dt, to_dt)
+        aggregation_level = self.product.validate_requested_aggregation_level(requested_aggregation_level, from_dt, to_dt)
 
         using_aggregations = aggregation_level > 0
 
@@ -255,31 +253,6 @@ class Dataset:
                       f'due to {err}')
 
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
-
-    def validate_requested_aggregation_level(self, requested_aggregation_level: int,
-                                             from_dt: datetime, to_dt: datetime) -> int:
-        """
-       Given a requested_aggregation_level and a timespan, check that the requested_aggregation_level is valid for the
-       timespan and Dataset class/subclass.  Return it if valid, else return the lowest allowable value.
-
-       For non-timeseries datasets (which do not support aggregation), this will always be 0.
-        """
-        return 0
-
-    def get_downsampling_factor(self, aggregation_level: int) -> int:
-        """
-        Given an aggregation level, return the corresponding downsampling factor for the Dataset class/subclass.
-
-        For non-timeseries datasets (which do not support aggregation), this will always be 1, and requesting a nonzero
-        aggregation level is not valid.
-        """
-        if aggregation_level is not 0:
-            raise ValueError(
-                f'{self.__name__} is a non-timeseries dataset and so get_downsampling_factor() does not accept a nonzero argument - argument "{aggregation_level}" indicates a code error')
-        return 1
-
-    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
-        return timedelta(days=31)  # TODO: set to 31 days for now
 
     def get_table_or_view_name(self, aggregation_depth: int) -> str:
         return self.get_table_name()

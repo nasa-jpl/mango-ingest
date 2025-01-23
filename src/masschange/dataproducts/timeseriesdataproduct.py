@@ -1,8 +1,9 @@
 
-from collections.abc import Collection, Sequence
-from datetime import timedelta
+from collections.abc import Sequence
+from datetime import timedelta, datetime
 from typing import Dict, List
 
+from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.dataproduct import DataProduct
 
 
@@ -36,6 +37,38 @@ class TimeSeriesDataProduct(DataProduct):
             } for factor in cls.get_available_downsampling_factors()
         ]
         return description
+
+    def validate_requested_aggregation_level(self, requested_aggregation_level: int, from_dt: datetime,
+                                             to_dt: datetime) -> int:
+        return max(requested_aggregation_level, self.get_minimum_aggregation_level(from_dt, to_dt))
+
+    def get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime):
+        """
+        Given a query span, return the lowest aggregation level required to limit the result to the product's query
+        result limit
+
+        Parameters
+        ----------
+        from_dt: datetime
+        to_dt: datetime
+        """
+
+        span_duration = to_dt - from_dt
+
+        full_res_data_count = span_duration / self.time_series_interval
+        downsampling_factor_lower_bound = full_res_data_count / self.query_result_limit
+        # return the lowest index for all factors which meet or exceed the lower bound
+        try:
+            return min(i for i, f in enumerate(self.get_available_downsampling_factors()) if
+                   f >= downsampling_factor_lower_bound)
+        except ValueError:
+            raise TooMuchDataRequestedError(f'No available downsampling factor can reduce query span below {self.query_result_limit} expected hits. Please request a smaller data span.')
+
+    def get_downsampling_factor(self, aggregation_level: int) -> int:
+        return self.aggregation_step_factor ** aggregation_level
+
+    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
+        return self.query_result_limit * self.time_series_interval * downsampling_factor
 
     @classmethod
     def get_required_aggregation_level_count(cls) -> int:
