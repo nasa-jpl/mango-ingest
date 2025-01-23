@@ -31,7 +31,7 @@ class TimeSeriesDataset(Dataset):
                                        f.is_time_series_id_column]
         # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
         # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
-        view_depth = min(([0] + self.product.get_available_aggregation_levels())[-1], 5)
+        view_depth = min(([0, *self.product.get_available_aggregation_levels()])[-1], 5)
         sql = f"""
             SELECT DISTINCT {','.join(sorted(time_series_id_column_names))}
             FROM {self.get_table_or_view_name(view_depth)};
