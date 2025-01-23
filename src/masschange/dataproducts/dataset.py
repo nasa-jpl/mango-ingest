@@ -206,8 +206,8 @@ class Dataset:
                 else:
                     column_names.add(field.name)
 
-        downsampling_factor = self.get_downsampling_factor(aggregation_level)
-        max_query_temporal_span = self.get_max_query_temporal_span(downsampling_factor)
+        downsampling_factor = self.product.get_downsampling_factor(aggregation_level)
+        max_query_temporal_span = self.product.get_max_query_temporal_span(downsampling_factor)
         requested_temporal_span = to_dt - from_dt
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
             raise TooMuchDataRequestedError(
