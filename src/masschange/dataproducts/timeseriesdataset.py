@@ -7,6 +7,7 @@ import psycopg2
 from psycopg2 import extras
 from psycopg2.extensions import cursor as Cursor
 
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.dataset import Dataset
@@ -92,69 +93,6 @@ class TimeSeriesDataset(Dataset):
         table_base_name = super().get_table_name()
 
         return (table_base_name if aggregation_depth == 0 else f'{table_base_name}_{aggregation_suffix}').lower()
-
-    # TODO: Find a way to move it to a base class. The problem is that GraceFOGnv1ADataProduct is a time-series product
-    def attach_lat_lon(self, from_dt: datetime, to_dt: datetime, data: Iterable[Dict]) -> None:
-        """
-        Assign approximate locations to a set of results from TimeSeriesDataset.select(), using ingested GNV data to map
-        datum timestamps to a lat/lon.  The format is 'location': {'latitude': $value, 'longitude': $value}
-        The maximal error will be equal to +/- the satellite's movement in one second (i.e. half the temporal resolution
-        of the GNV dataset).
-        A value of None will be assigned to input data for which there is no GNV data available.
-        """
-        gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), self.version, self.instrument_id)
-        gnv_field_names = {gnv_dataset.product.TIMESTAMP_COLUMN_NAME, 'location'}
-        gnv_fields = [f for f in gnv_dataset.product.get_available_fields() if f.name in gnv_field_names]
-
-        # Need to ensure that the GNV data span fully encloses the input data span
-        gnv_from_dt = from_dt - GraceFOGnv1ADataProduct.time_series_interval
-        gnv_to_dt = to_dt + GraceFOGnv1ADataProduct.time_series_interval
-        gnv_data = gnv_dataset.select(gnv_from_dt, gnv_to_dt, gnv_fields)
-
-        try:
-            data_iter = iter(data)
-            geo_iter = iter(gnv_data)
-
-            data_el = next(data_iter)
-            gnv_pair_begin = None
-            gnv_pair_end = next(geo_iter)
-
-            # DEV WARNING: Here be dragons - the nested iteration is easy to mess up and unit tests don't exist yet.
-            while True:  # iterate until a StopIteration
-                gnv_pair_begin = gnv_pair_end
-                gnv_pair_end = next(geo_iter)
-
-                gnv_begin_ts = gnv_pair_begin[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
-                gnv_end_ts = gnv_pair_end[GraceFOGnv1ADataProduct.TIMESTAMP_COLUMN_NAME]
-                el_ts = data_el[self.product.TIMESTAMP_COLUMN_NAME]
-
-                # If datum exists before start of the GNV pair, assign it a null value and move on
-                # This should ONLY occur for the first GNV pair, and should loop through all data elements with
-                # timestamps earlier than the available GNV data
-                if (el_ts < gnv_begin_ts):
-                    data_el[self.product.LOCATION_COLUMN_NAME] = None
-                    data_el = next(data_iter)
-                    continue
-
-                # for each datum falling within the timespan bounded by the gnv pair, assign it the location of
-                #  the closest bounding gnv record
-                while (gnv_begin_ts <= el_ts <= gnv_end_ts):
-                    if abs(el_ts - gnv_begin_ts) <= abs(el_ts - gnv_end_ts):
-                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_begin[
-                            GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
-                    else:
-                        data_el[self.product.LOCATION_COLUMN_NAME] = gnv_pair_end[
-                            GraceFOGnv1ADataProduct.LOCATION_COLUMN_NAME]
-
-                    data_el = next(data_iter)
-                    el_ts = data_el[self.product.TIMESTAMP_COLUMN_NAME]
-
-        except StopIteration:
-            pass
-
-        # Assign null location to all data after end of available GNV data
-        while (data_el := next(data_iter, None)) is not None:
-            data_el[self.product.LOCATION_COLUMN_NAME] = None
 
     @classmethod
     def is_time_series_dataset(cls) -> bool:
