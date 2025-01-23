@@ -167,7 +167,7 @@ class TimeSeriesDataset(Dataset):
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
 
-    def get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime, check_data_span: bool = False):
+    def get_minimum_aggregation_level(self, from_dt: datetime, to_dt: datetime):
         """
         Given a query span, return the lowest aggregation level required to limit the result to the product's query
         result limit
@@ -176,15 +176,10 @@ class TimeSeriesDataset(Dataset):
         ----------
         from_dt: datetime
         to_dt: datetime
-        check_data_span: bool - if true, will query the db for actual data span and trim the requested bounds
-            accordingly. Gives absolute minimum aggregation level but is slower due to overhead
-
         """
-        if check_data_span:
-            extant_data_span = self.get_data_span(use_cache=True)
-            span_duration = max(to_dt, extant_data_span.begin) - min(from_dt, extant_data_span.end)
-        else:
-            span_duration = to_dt - from_dt
+
+        span_duration = to_dt - from_dt
+
         full_res_data_count = span_duration / self.product.time_series_interval
         downsampling_factor_lower_bound = full_res_data_count / self.product.query_result_limit
         # return the lowest index for all factors which meet or exceed the lower bound
