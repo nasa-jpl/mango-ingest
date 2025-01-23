@@ -1,7 +1,6 @@
 import logging
-import math
-from collections.abc import Collection
-from datetime import datetime
+
+from datetime import datetime, timedelta
 from typing import List, Dict, Union, Iterable
 
 import psycopg2
@@ -65,15 +64,15 @@ class TimeSeriesDataset(Dataset):
 
         return metadata
 
-    def get_aggregation_level(self, aggregation_level, from_dt, to_dt):
+    def get_valid_aggregation_level(self, aggregation_level: Union[str, None], from_dt, to_dt) -> int:
         if aggregation_level is None:
             aggregation_level = self.get_minimum_aggregation_level(from_dt, to_dt)
         return aggregation_level
 
-    def get_downsampling_factor(self, aggregation_level):
+    def get_downsampling_factor(self, aggregation_level: int) -> int:
         return self.product.aggregation_step_factor ** aggregation_level
 
-    def get_max_query_temporal_span(self, downsampling_factor):
+    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
         return self.product.query_result_limit * self.product.time_series_interval * downsampling_factor
 
     def get_table_name(self) -> str:

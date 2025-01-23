@@ -133,7 +133,7 @@ class TimeSeriesDataProduct(DataProduct):
         elif cls.time_series_interval <= timedelta(hours=1):
             return timedelta(days=365)  # chosen arbitrarily
         else:
-            return timedelta(days=365 * 30)  # basically just for those datasets which are actually not time-series - this will be cleaned up when an abstraction is created for those
+            raise ValueError(f'Unexpected time_series_interval value:  {cls.time_series_interval}')
 
     @classmethod
     def has_time_series_id_fields(cls) -> bool:

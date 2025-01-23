@@ -176,7 +176,7 @@ class Dataset:
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
         filters = filters or []
 
-        aggregation_level = self.get_aggregation_level(aggregation_level, from_dt, to_dt)
+        aggregation_level = self.get_valid_aggregation_level(aggregation_level, from_dt, to_dt)
 
         using_aggregations = aggregation_level > 0
 
@@ -208,7 +208,7 @@ class Dataset:
                 else:
                     column_names.add(field.name)
 
-        downsampling_factor = self.get_downsampling_factor(aggregation_level, )
+        downsampling_factor = self.get_downsampling_factor(aggregation_level)
         max_query_temporal_span = self.get_max_query_temporal_span(downsampling_factor)
         requested_temporal_span = to_dt - from_dt
         if limit_data_span and requested_temporal_span > max_query_temporal_span:
@@ -256,14 +256,30 @@ class Dataset:
 
         return [self.product.structure_results(fields, using_aggregations, result) for result in results]
 
-    def get_aggregation_level(self, aggregation_level, from_dt, to_dt):
+    def get_valid_aggregation_level(self, aggregation_level: Union[int, None],
+                                    from_dt: datetime, to_dt: datetime) -> int:
+        """
+        A helper method to use in self.select(...) to avoid overwriting the self.select(...) method in a derived class
+        A derived class should overwrite the get_valid_aggregation_level(...) method instead.
+        The method takes aggregation_level as an argument and returns aggregation_level that relevant for the type
+        of the dataset.
+        For non-timeseries dataset, the default value is 0. This value indicates that the dataset
+        does not support aggregation
+        """
         return 0
 
-    def get_downsampling_factor(self, aggregation_level):
+    def get_downsampling_factor(self, aggregation_level: int) -> int:
+        """
+        A helper method to use in self.select(...) to avoid overwriting the self.select(...) method in a derived class
+        A derived class should overwrite the get_downsampling_factor(...) method instead.
+
+        For non-timeseries dataset, the downsampling_factor value is always 1, meaning that no downsampling is applied
+        """
         return 1
 
-    def get_max_query_temporal_span(self, downsampling_factor):
+    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
         return timedelta(days=31)  # TODO: set to 31 days for now
+
     def get_table_or_view_name(self, aggregation_depth: int) -> str:
         return self.get_table_name()
 

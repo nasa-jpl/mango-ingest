@@ -46,7 +46,6 @@ def test_gracefo_data_select(ds: Dataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
-
     print(
         f'test_gracefo_data_select() for {ds.product.get_full_id()} version {ds.version} instruments {ds.instrument_id}')
     path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}/data?from_isotimestamp=' \
