@@ -16,7 +16,7 @@ from masschange.dataproducts.db.utils import list_table_columns as list_db_table
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.dataset import Dataset
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.dataproducts.utils import get_time_series_dataproducts
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.utils.misc import get_human_readable_timedelta
@@ -38,7 +38,7 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
     #     validated_version_id = next(v for v in product.get_available_versions() if v == version_id)
     # except StopIteration:
     #     raise HTTPException(status_code=404, detail=f'No version with id {version_id} found for product {product_id}')
-    version = TimeSeriesDatasetVersion(version_id)
+    version = DatasetVersion(version_id)
 
     if instrument_id not in product.instrument_ids:
         raise HTTPException(status_code=400, detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
@@ -180,7 +180,7 @@ def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to
         # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
         if downsampling_factor is None:
             try:
-                aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+                aggregation_level = dataset.product.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
             except TooMuchDataRequestedError as err:
                 raise HTTPException(status_code=400, detail=str(err))
 

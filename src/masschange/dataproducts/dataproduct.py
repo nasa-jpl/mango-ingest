@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
 from typing import Set, Type, List, Dict, Collection
 from masschange.missions import Mission
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
+from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.db.conn import get_db_cursor
 
 log = logging.getLogger()
@@ -71,7 +71,7 @@ class DataProduct(ABC):
         return description
 
     @classmethod
-    def validate_requested_fields(cls, requested_fields: Collection[TimeSeriesDataProductField],
+    def validate_requested_fields(cls, requested_fields: Collection[DataProductField],
                                   using_aggregations: bool) -> None:
         requested_fields = set(requested_fields)
         available_fields = {f for f in cls.get_available_fields() \
@@ -98,7 +98,7 @@ class DataProduct(ABC):
             raise ValueError(msg)
 
     @classmethod
-    def structure_results(cls, requested_fields: Collection[TimeSeriesDataProductField], using_aggregations: bool,
+    def structure_results(cls, requested_fields: Collection[DataProductField], using_aggregations: bool,
                           result: Dict) -> Dict:
         structured_result = {}
         for field in requested_fields:
@@ -136,15 +136,15 @@ class DataProduct(ABC):
         return structured_result
 
     @classmethod
-    def get_available_fields(cls) -> Set[TimeSeriesDataProductField]:
-        timestamp_field: TimeSeriesDataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
+    def get_available_fields(cls) -> Set[DataProductField]:
+        timestamp_field: DataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
                                                                                           'n/a')
 
         special_fields = {timestamp_field}
         if cls.LOCATION_COLUMN_NAME not in [field.name for field in cls.get_reader().get_fields()]:
             # GNV products have an inherent location field.  Other products require the addition of a field for the
             # query-time location lookup sourced from the GNV data
-            location_lookup_field: TimeSeriesDataProductField = TimeSeriesDataProductLocationLookupField(
+            location_lookup_field: DataProductField = TimeSeriesDataProductLocationLookupField(
                 cls.LOCATION_COLUMN_NAME,
                 'Latitude/Longitude (EPSG:4326)')
             special_fields.add(location_lookup_field)
@@ -167,7 +167,7 @@ class DataProduct(ABC):
         pass
 
     @classmethod
-    def get_field_by_name(cls, field_name: str) -> TimeSeriesDataProductField:
+    def get_field_by_name(cls, field_name: str) -> DataProductField:
         try:
             return next(f for f in cls.get_available_fields() if f.name == field_name)
         except StopIteration:
@@ -175,7 +175,7 @@ class DataProduct(ABC):
                              f'(valid names are {[f.name for f in cls.get_available_fields()]})')
 
     @classmethod
-    def get_available_versions(cls) -> Set[TimeSeriesDatasetVersion]:
+    def get_available_versions(cls) -> Set[DatasetVersion]:
         with get_db_cursor() as cur:
             data_product_name = cls.get_full_id()
 
@@ -191,7 +191,7 @@ class DataProduct(ABC):
             cur.execute(sql, {'data_product_name': data_product_name})
             results = [row[0] for row in cur.fetchall()]
 
-        return {TimeSeriesDatasetVersion(version_name) for version_name in results}
+        return {DatasetVersion(version_name) for version_name in results}
 
     @classmethod
     def is_time_series_dataproduct(cls) -> bool:

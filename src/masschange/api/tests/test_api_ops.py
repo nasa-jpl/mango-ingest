@@ -11,7 +11,7 @@ from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceF
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.dataset import Dataset
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 
 client = TestClient(app)
 
@@ -131,10 +131,10 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
 
 def test_location_lookup():
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     dataset_data_span = dataset.get_data_span()
 
-    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), DatasetVersion('04'), 'C')
     gnv_data_span = gnv_dataset.get_data_span()
 
     assert dataset_data_span is not None
@@ -161,10 +161,10 @@ def test_location_lookup():
 
 def test_downsampled_location_lookup():
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     dataset_data_span = dataset.get_data_span()
 
-    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), DatasetVersion('04'), 'C')
     gnv_data_span = gnv_dataset.get_data_span()
 
     assert dataset_data_span is not None
@@ -245,7 +245,7 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
 def test_statistics_basic():
     """Just tests one field of one dataset to ensure endpoints are generally working"""
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     stat_span_begin = dataset.get_data_span().begin
     stat_span_end = stat_span_begin + timedelta(days=7)
 

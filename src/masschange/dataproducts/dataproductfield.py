@@ -3,11 +3,11 @@ from collections.abc import Collection
 from datetime import datetime
 from typing import Union, Any, Dict, Type, Set
 
-from masschange.dataproducts.timeseriesdataproductfieldconfiguration import TimeSeriesDataProductFieldConfiguration
+from masschange.dataproducts.dataproductfieldconfiguration import ProductFieldConfiguration
 from masschange.db.data.aggregations import Aggregation, TrivialAggregation
 
 
-class TimeSeriesDataProductField(ABC):
+class DataProductField(ABC):
     """
     An abstract class for encapsulating field information common to both reader and presentation/API.
 
@@ -105,14 +105,14 @@ class TimeSeriesDataProductField(ABC):
             description['constant_value'] = self.const_value,
         elif parent_product is not None:
             try:
-                description['qc_thresholds'] = [config.describe() for config in TimeSeriesDataProductFieldConfiguration.construct_list(parent_product, self)]
+                description['qc_thresholds'] = [config.describe() for config in ProductFieldConfiguration.construct_list(parent_product, self)]
             except ValueError:
                 pass
 
         return description
 
 
-class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
+class TimeSeriesDataProductTimestampField(DataProductField):
     def __init__(self, name: str, unit: Union[str, None], description: str = "", aggregations: Collection[str] = None,
                  const_value: Union[Any, None] = None):
 
@@ -129,7 +129,7 @@ class TimeSeriesDataProductTimestampField(TimeSeriesDataProductField):
         return datetime
 
 
-class TimeSeriesDataProductLocationLookupField(TimeSeriesDataProductField):
+class TimeSeriesDataProductLocationLookupField(DataProductField):
     """Location field which is dynamically resolved at query-time, loading values from the GNV data tables."""
 
     def __init__(self, name: str, unit: Union[str, None], description: str = "", aggregations: Collection[str] = None,

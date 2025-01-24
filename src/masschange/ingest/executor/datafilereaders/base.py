@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 
 from masschange.ingest.executor.errors import EmptyProductException
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.dataproductfield import DataProductField
+from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.db.data.aggregations import Aggregation
 
 
@@ -48,11 +48,11 @@ class DataFileReader(ABC):
         return satellite_id_char
 
     @classmethod
-    def extract_dataset_version(cls, filepath: str) -> TimeSeriesDatasetVersion:
+    def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         """Extract version id from unzipped input file"""
         filename = os.path.split(filepath)[-1]
         dataset_version_id = re.search(cls.get_input_file_default_regex(), filename).group('dataset_version')
-        return TimeSeriesDatasetVersion(dataset_version_id)
+        return DatasetVersion(dataset_version_id)
 
     @classmethod
     @abstractmethod
@@ -71,7 +71,7 @@ class DataFileReader(ABC):
 
     @classmethod
     @abstractmethod
-    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
+    def get_fields(cls) -> Collection[DataProductField]:
         """Return implementation-agnostic definitions for the fields ingested by the reader"""
         pass
 
@@ -187,7 +187,7 @@ class AsciiDataFileReader(DataFileReader):
                              f'expected: "{expected_value}", was: "{first_bad}"')
 
     @classmethod
-    def get_fields(cls) -> Collection[TimeSeriesDataProductField]:
+    def get_fields(cls) -> Collection[DataProductField]:
         return cls.get_input_column_defs()
 
 
@@ -546,7 +546,7 @@ class LogFileReader(AsciiDataFileReader):
 
 
 
-class AsciiDataFileReaderColumn(TimeSeriesDataProductField):
+class AsciiDataFileReaderColumn(DataProductField):
     """
     Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
 

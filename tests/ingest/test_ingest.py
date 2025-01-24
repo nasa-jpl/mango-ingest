@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.ingest.executor.ingest import ingest_file_to_db
 from tests.ingest.base import IngestTestCaseBase
@@ -18,7 +18,7 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
     expected_record_count = 20  # ten from each of two files
 
     product = GraceFOAcc1ADataProduct()
-    version = TimeSeriesDatasetVersion('04')
+    version = DatasetVersion('04')
     instrument_id = 'C'
 
     def setUp(self):

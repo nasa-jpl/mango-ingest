@@ -8,7 +8,7 @@ from typing import Dict
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.utils.timespan import TimeSpan
 from typing import Union
 from datetime import datetime
@@ -18,7 +18,7 @@ from masschange.api.errors import TooMuchDataRequestedError
 from masschange.utils.misc import get_human_readable_timedelta
 from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, \
     prepare_where_clause_conditions, prepare_where_clause_parameters
-from masschange.dataproducts.timeseriesdataproductfield import TimeSeriesDataProductField, \
+from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductLocationLookupField
 from masschange.api.utils.misc import KeyValueQueryParameter
 
@@ -27,10 +27,10 @@ log = logging.getLogger()
 
 class Dataset:
     product: DataProduct
-    version: TimeSeriesDatasetVersion
+    version: DatasetVersion
     instrument_id: str
 
-    def __init__(self, product: DataProduct, version: TimeSeriesDatasetVersion, instrument_id: str):
+    def __init__(self, product: DataProduct, version: DatasetVersion, instrument_id: str):
         self.product = product
         self.version = version
         self.instrument_id = instrument_id
@@ -171,7 +171,7 @@ class Dataset:
         return clause
 
     def select(self, from_dt: datetime, to_dt: datetime,
-               fields: Collection[TimeSeriesDataProductField] = None, aggregation_level: int = None,
+               fields: Collection[DataProductField] = None, aggregation_level: int = None,
                limit_data_span: bool = True, resolve_location: bool = False,
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
         filters = filters or []

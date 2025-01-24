@@ -1,11 +1,11 @@
 
 from masschange.dataproducts.dataproduct import DataProduct
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.datasetversion import DatasetVersion
 
 
 class DatasetFactory:
     @classmethod
-    def create(cls, product: DataProduct, version: TimeSeriesDatasetVersion, instrument_id: str):
+    def create(cls, product: DataProduct, version: DatasetVersion, instrument_id: str):
         # TODO: check whether using local imports this way to avoid circular imports is an anti-pattern
         #  if so, revert the choice to make them local and extract Dataset.attach_lat_lon() to a separate
         #  location-attaching class, avoiding the Dataset<->DatasetFactory circular import issue
