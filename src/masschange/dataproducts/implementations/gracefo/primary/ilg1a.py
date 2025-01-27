@@ -7,6 +7,9 @@ from masschange.dataproducts.dataproduct import DataProduct
 
 
 class GraceFOIlg1ADataProduct(DataProduct):
+    """
+    This is not a time-series dataproduct; measurement intervals are irregular
+    """
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOIlg1ADataFileReader()
