@@ -174,10 +174,13 @@ class Dataset:
                fields: Collection[DataProductField] = None, aggregation_level: int = None,
                limit_data_span: bool = True, resolve_location: bool = False,
                filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
+
         filters = filters or []
         requested_aggregation_level = aggregation_level or 0
-        aggregation_level = self.product.validate_requested_aggregation_level(requested_aggregation_level, from_dt, to_dt)
 
+        # validate aggregation level if limit_data_span is True
+        if limit_data_span:
+            aggregation_level = self.product.validate_requested_aggregation_level(requested_aggregation_level, from_dt, to_dt)
         using_aggregations = aggregation_level > 0
 
         if fields is None:

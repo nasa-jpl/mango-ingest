@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Collection, Set
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.dataset import Dataset
 from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
@@ -67,7 +68,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+def refresh_continuous_aggregates(dataset: Dataset, enable_chunking: bool = False):
     """
     Refresh all continuous aggregates for a given TimeSeriesDataset.
     Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.

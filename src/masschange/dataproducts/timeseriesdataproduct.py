@@ -165,6 +165,8 @@ class TimeSeriesDataProduct(DataProduct):
             return timedelta(days=100)
         elif cls.time_series_interval <= timedelta(hours=1):
             return timedelta(days=365)  # chosen arbitrarily
+        elif cls.time_series_interval <= timedelta(days=1):
+            return timedelta(days=365*50)  # chosen arbitrarily
         else:
             raise ValueError(f'Unexpected time_series_interval value:  {cls.time_series_interval}')
 

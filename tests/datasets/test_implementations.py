@@ -11,8 +11,10 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
                 self.assertIsNotNone(implementation.mission)
                 self.assertIsNotNone(implementation.id_suffix)
                 self.assertLess(0, len(implementation.instrument_ids))
-                self.assertIsNotNone(implementation.time_series_interval)
+
                 self.assertIsNotNone(implementation.processing_level)
+                if implementation.is_time_series_dataproduct():
+                    self.assertIsNotNone(implementation.time_series_interval)
             except AttributeError as err:
                 raise NotImplementedError(str(err))
 
