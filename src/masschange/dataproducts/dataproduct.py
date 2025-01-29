@@ -1,5 +1,6 @@
 import logging
 
+from collections.abc import Sequence
 from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
 from typing import Set, Type, List, Dict, Collection
@@ -216,7 +217,7 @@ class DataProduct(ABC):
         For non-timeseries datasets (which do not support aggregation), this will always be 1, and requesting a nonzero
         aggregation level is not valid.
         """
-        if aggregation_level is not 0:
+        if aggregation_level != 0:
             raise ValueError(
                 f'{cls.__name__} is a non-timeseries dataset and so get_downsampling_factor() does not accept a nonzero argument - argument "{aggregation_level}" indicates a code error')
         return 1
@@ -224,3 +225,13 @@ class DataProduct(ABC):
     @staticmethod
     def get_max_query_temporal_span(downsampling_factor: int) -> timedelta:
         return timedelta(days=31)  # TODO: set to 31 days for now
+
+    @classmethod
+    def get_available_aggregation_levels(cls) -> Sequence[int]:
+        """
+        Return the sorted levels (hierarchical level, not decimation factor) of aggregation which exist for this dataset
+        , *exclusive* of level 0 (full-resolution)
+
+        For non-timeseries datasets (which do not support aggregation), this will always be an empty list
+        """
+        return []
