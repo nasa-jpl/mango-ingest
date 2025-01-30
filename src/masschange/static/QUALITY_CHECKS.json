@@ -22,6 +22,22 @@
             }
           }
         ]
+      },
+      "time_gap_max" : {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 2.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 0.1
+            }
+          }
+        ]
       }
     }
   },
@@ -57,7 +73,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 5
             }
           }
         ]
@@ -79,7 +95,7 @@
               "upper": null
             },
             "warnings": {
-              "lower": null,
+              "lower": 86398,
               "upper": null
             }
           }
@@ -93,6 +109,22 @@
             "limits": {
               "lower": 0,
               "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_max" : {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 1.0
             },
             "warnings": {
               "lower": null,
@@ -362,7 +394,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 0.004
             }
           }
         ]
@@ -886,7 +918,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 0.3
             }
           }
         ]
@@ -934,7 +966,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 50
             }
           }
         ]
@@ -950,7 +982,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 75
             }
           }
         ]
@@ -1530,7 +1562,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 60
             }
           }
         ]
@@ -1539,23 +1571,47 @@
         "thresholds": [
           {
             "effective_since": null,
+            "effective_until": "2020-02-13T23:59:59",
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": 80000,
+              "upper": null
+            }
+          },
+          {
+            "effective_since": "2020-02-14T00:00:00",
+            "effective_until": "2021-07-21T23:59:59",
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": 70000,
+              "upper": null
+            }
+          },
+          {
+            "effective_since": "2021-07-22T00:00:00",
             "effective_until": null,
             "limits": {
               "lower": 2500,
               "upper": null
             },
             "warnings": {
-              "lower": null,
+              "lower": 80000,
               "upper": null
             }
           }
         ]
       },
-      "perrangerej": {
+      "per_range_rej": {
         "thresholds": [
           {
             "effective_since": null,
-            "effective_until": null,
+            "effective_until": "2020-02-13T23:59:59",
             "limits": {
               "lower": null,
               "upper": 7
@@ -1563,6 +1619,30 @@
             "warnings": {
               "lower": null,
               "upper": null
+            }
+          },
+          {
+            "effective_since": "2020-02-14T00:00:00",
+            "effective_until": "2021-07-21T23:59:59",
+            "limits": {
+              "lower": null,
+              "upper": 9
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 7.5
+            }
+          },
+          {
+            "effective_since": "2021-07-22T00:00:00",
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 7
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 5.5
             }
           }
         ]
