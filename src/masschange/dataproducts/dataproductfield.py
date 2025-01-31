@@ -20,8 +20,8 @@ class DataProductField(ABC):
         aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled.
         is_lookup_field (bool): True if this field resolved at query-time from a source other than the dataset table,
          i.e. location, which is resolved from the GNV data using the timestamp
-        is_time_series_id_column (bool): True if this field contains an identifier which differentiates distinct
-         time-series (ex. sensor id)
+        is_channel_id_column (bool): True if this field contains an identifier which differentiates distinct
+        series (ex. sensor id)
 
     """
 
@@ -31,19 +31,19 @@ class DataProductField(ABC):
     const_value: Union[Any, None]
     aggregations: Set[Aggregation]
     is_lookup_field: bool = False  # only True via subclass override
-    is_time_series_id_column = False
+    is_channel_id_column = False
 
     VALID_BASIC_AGGREGATIONS: Set[str] = {'min', 'max', 'avg'}
 
     def __init__(self, name: str, unit: Union[str, None], description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None,
-                 const_value: Union[Any, None] = None, is_lookup_field: bool = False, is_time_series_id_column: bool = False):
+                 const_value: Union[Any, None] = None, is_lookup_field: bool = False, is_channel_id_column: bool = False):
         self.name = name.lower()
         self.unit = unit
         self.description = description
         self.const_value = const_value
         self.is_lookup_field = is_lookup_field
-        self.is_time_series_id_column = is_time_series_id_column
+        self.is_channel_id_column = is_channel_id_column
         self.aggregations = set()
 
         if aggregations is not None:
@@ -98,7 +98,7 @@ class DataProductField(ABC):
             'unit': self.unit,
             'supported_aggregations': sorted([agg.describe(self.name) for agg in self.aggregations],
                                              key=lambda agg_dict: agg_dict.get('type')),
-            'is_time_series_id': self.is_time_series_id_column
+            'is_channel_id': self.is_channel_id_column
         }
 
         if self.is_constant:

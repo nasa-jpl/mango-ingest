@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, date, time, timezone
 import logging
-from typing import Annotated, List, Union
-
+from typing import Annotated, List, Union, Dict
+from psycopg2.extensions import cursor as Cursor
 import psycopg2
 from fastapi import APIRouter, HTTPException, Query, Path
 from fastapi.params import Depends
@@ -54,7 +54,7 @@ def instantiate_filters(product: TimeSeriesDataProduct,
         filters = []
 
     extant_filter_keys = {f.key for f in filters}
-    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_time_series_id_column}
+    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_channel_id_column}
     if not expected_filter_keys.issubset(extant_filter_keys):
         raise HTTPException(status_code=400,
                             detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
@@ -68,11 +68,10 @@ async def describe_dataset_instance(dataset: Annotated[Dataset, Depends(dataset_
     dataset_specific_metadata = dataset.get_metadata_properties()
     if dataset_specific_metadata is None:
         raise HTTPException(status_code=404, detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
-    if dataset.is_time_series_dataset():
-        additional_fields_metadata = dataset_specific_metadata.pop('time_series_id_enums')
-        for field_name, enumeration in additional_fields_metadata.items():
-            field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
-            field_metadata['enum_values'] = enumeration
+    additional_fields_metadata = dataset_specific_metadata.pop('channel_id_enums')
+    for field_name, enumeration in additional_fields_metadata.items():
+        field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
+        field_metadata['enum_values'] = enumeration
     metadata.update(dataset_specific_metadata)
     return metadata
 
@@ -269,3 +268,4 @@ async def get_statistic_for_field(
         'result': result[0],
         'query_elapsed_ms': query_elapsed_ms,
     }
+

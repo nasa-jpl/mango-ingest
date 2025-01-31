@@ -21,7 +21,7 @@ def test_root():
     assert response.status_code == 200
 
 
-timeseries_id_additional_parameters = {
+timechannel_id_additional_parameters = {
     'TNK1A': '&filter=tank_id=1',
     'TNK1B': '&filter=tank_id=1',
     'SCA1A': '&filter=sca_id=1',
@@ -52,8 +52,8 @@ def test_gracefo_data_select(ds: Dataset):
            f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
     # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-    if ds.product.id_suffix in timeseries_id_additional_parameters:
-        path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
+    if ds.product.id_suffix in timechannel_id_additional_parameters:
+        path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
 
     response = client.get(path)
     content = response.json()
@@ -114,8 +114,8 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
                f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
         # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-        if ds.product.id_suffix in timeseries_id_additional_parameters:
-            path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
+        if ds.product.id_suffix in timechannel_id_additional_parameters:
+            path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
 
         response = client.get(path)
         content = response.json()
@@ -234,11 +234,11 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
         assert k in content
 
     expected_field_attributes = ['name', 'type', 'description', 'unit', 'supported_aggregations',
-                                 'is_time_series_id']
+                                 'is_channel_id']
     for field in content['available_fields']:
         for k in expected_field_attributes:
             assert k in field
-        if field['is_time_series_id'] is True:
+        if field['is_channel_id'] is True:
             assert 'enum_values' in field
 
 

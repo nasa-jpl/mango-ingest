@@ -23,8 +23,8 @@ class GraceFOLlt1ADataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='rcv_id', np_type='U1', unit=None, is_time_series_id_column=True),
-            AsciiDataFileReaderColumn(index=2, name='trx_id', np_type='U1', unit=None, is_time_series_id_column=True),
+            AsciiDataFileReaderColumn(index=1, name='rcv_id', np_type='U1', unit=None, is_channel_id_column=True),
+            AsciiDataFileReaderColumn(index=2, name='trx_id', np_type='U1', unit=None, is_channel_id_column=True),
 
             AsciiDataFileReaderColumn(index=3, name='tau', np_type=np.double, unit='s',
                                       aggregations=['min', 'max']),

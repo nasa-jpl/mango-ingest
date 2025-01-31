@@ -171,9 +171,5 @@ class TimeSeriesDataProduct(DataProduct):
             raise ValueError(f'Unexpected time_series_interval value:  {cls.time_series_interval}')
 
     @classmethod
-    def has_time_series_id_fields(cls) -> bool:
-        return len([f.name for f in cls.get_available_fields() if f.is_time_series_id_column]) > 0
-
-    @classmethod
     def is_time_series_dataproduct(cls) -> bool:
         return True

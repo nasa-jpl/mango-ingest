@@ -235,3 +235,7 @@ class DataProduct(ABC):
         For non-timeseries datasets (which do not support aggregation), this will always be an empty list
         """
         return []
+
+    @classmethod
+    def has_channel_id_fields(cls) -> bool:
+        return len([f.name for f in cls.get_available_fields() if f.is_channel_id_column]) > 0

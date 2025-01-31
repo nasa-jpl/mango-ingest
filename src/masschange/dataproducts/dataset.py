@@ -113,12 +113,13 @@ class Dataset:
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             try:
                 metadata = self._get_basic_metadata(cur, supported_properties)
+                metadata['channel_id_enums'] = self._enumerate_channel_id_values(cur)
             except Exception as err:
                 logging.warning(err)
                 return None
 
         return metadata
-
+    
     def _get_basic_metadata(self, cur: Cursor, supported_properties: Collection[str]) -> Dict:
         sql = f"""
             SELECT {','.join(sorted(supported_properties))}
@@ -329,3 +330,31 @@ class Dataset:
         # Assign null location to all data after end of available GNV data
         while (data_el := next(data_iter, None)) is not None:
             data_el[self.product.LOCATION_COLUMN_NAME] = None
+
+    def _enumerate_channel_id_values(self, cur: Cursor) -> Dict:
+        if not self.product.has_channel_id_fields():
+            return {}
+
+        channel_id_column_names = [f.name for f in self.product.get_available_fields() if
+                                       f.is_channel_id_column]
+        # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
+        # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
+        view_depth = min(([0, *self.product.get_available_aggregation_levels()])[-1], 5)
+        sql = f"""
+            SELECT DISTINCT {','.join(sorted(channel_id_column_names))}
+            FROM {self.get_table_or_view_name(view_depth)};
+            """
+        try:
+            cur.execute(sql)
+        except Exception as err:
+            raise err.__class__(f'query failed with {err}: {sql}')
+
+        metadata = {column: set() for column in channel_id_column_names}
+        for row in cur.fetchall():
+            for column in channel_id_column_names:
+                metadata[column].add(row[column])
+
+        for column in channel_id_column_names:
+            metadata[column] = sorted(metadata[column])
+
+        return metadata

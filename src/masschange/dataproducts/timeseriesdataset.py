@@ -20,52 +20,6 @@ class TimeSeriesDataset(Dataset):
 
     product: TimeSeriesDataProduct
 
-    """
-    TODO: this is in the child class because it uses aggregations
-    """
-    def _enumerate_time_series_id_values(self, cur: Cursor) -> Dict:
-        if not self.product.has_time_series_id_fields():
-            return {}
-
-        time_series_id_column_names = [f.name for f in self.product.get_available_fields() if
-                                       f.is_time_series_id_column]
-        # To avoid long queries, a view is used rather than the full-res dataset.  The level must be low enough that it
-        # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
-        view_depth = min(([0, *self.product.get_available_aggregation_levels()])[-1], 5)
-        sql = f"""
-            SELECT DISTINCT {','.join(sorted(time_series_id_column_names))}
-            FROM {self.get_table_or_view_name(view_depth)};
-            """
-        try:
-            cur.execute(sql)
-        except Exception as err:
-            raise err.__class__(f'query failed with {err}: {sql}')
-
-        metadata = {column: set() for column in time_series_id_column_names}
-        for row in cur.fetchall():
-            for column in time_series_id_column_names:
-                metadata[column].add(row[column])
-
-        for column in time_series_id_column_names:
-            metadata[column] = sorted(metadata[column])
-
-        return metadata
-
-    """TODO: this method is overwritten in a child class because is 
-    uses  _enumerate_time_series_id_values which uses aggregations"""
-    def get_metadata_properties(self) -> Union[Dict, None]:
-        """Get available values from the _meta_dataproducts_versions_instruments table for the corresponding row"""
-        supported_properties = {'data_begin', 'data_end', 'last_updated'}
-
-        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            try:
-                metadata = self._get_basic_metadata(cur, supported_properties)
-                metadata['time_series_id_enums'] = self._enumerate_time_series_id_values(cur)
-            except Exception as err:
-                logging.warning(err)
-                return None
-
-        return metadata
 
     def get_table_name(self) -> str:
         """Return the name of the SQL table storing the data for this dataset for a given instruments"""

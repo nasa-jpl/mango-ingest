@@ -569,7 +569,7 @@ class AsciiDataFileReaderColumn(DataProductField):
 
         const_value(Any | None): an optional assumed_constant value for the column, which is validated during ingestion
 
-        is_time_series_id_column (bool): True if this field contains an identifier which differentiates distinct
+        is_channel_id_column (bool): True if this field contains an identifier which differentiates distinct
 
     """
 
@@ -579,9 +579,9 @@ class AsciiDataFileReaderColumn(DataProductField):
 
     def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: Union[str, None], description: str = "",
                  aggregations: Collection[Union[str, Aggregation]] = None, transform: Union[Callable[[Any], Any], None] = None,
-                 const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
+                 const_value: Optional[Any] = None, is_channel_id_column: bool = False):
         super().__init__(name, unit, description=description, aggregations=aggregations, const_value=const_value,
-                         is_time_series_id_column=is_time_series_id_column)
+                         is_channel_id_column=is_channel_id_column)
         self.index = index
         self.np_dtype = np.dtype(np_type)
         self.transform = transform or self._no_op
@@ -623,9 +623,9 @@ class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
 
     def __init__(self, prod_flag_bit_index: int, name: str, np_type: Union[Type, str], unit: Union[str, None], description='',
                  aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
-                 const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
+                 const_value: Optional[Any] = None, is_channel_id_column: bool = False):
         super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
-                         const_value=const_value, is_time_series_id_column=is_time_series_id_column)
+                         const_value=const_value, is_channel_id_column=is_channel_id_column)
         self.prod_flag_bit_index = prod_flag_bit_index
 
 
@@ -637,12 +637,12 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
     """
 
     def __init__(self, name: str, np_type: Union[Type, str], unit: Union[str, None], description='', aggregations: Collection[Union[str, Aggregation]] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None, is_time_series_id_column: bool = False):
+                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None, is_channel_id_column: bool = False):
         if const_value is not None:
             raise ValueError(f'it is not valid to instantiate a DerivedAsciiDataFileReaderColumn with a const value')
 
         super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
-                         const_value=None, is_time_series_id_column=is_time_series_id_column)
+                         const_value=None, is_channel_id_column=is_channel_id_column)
 
 
 
