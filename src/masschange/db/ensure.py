@@ -4,8 +4,8 @@ import os
 import psycopg2
 
 from masschange.dataproducts.dataset import Dataset
-from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.utils import get_time_series_dataproduct_classes
+from masschange.dataproducts.datasetfactory import DatasetFactory
+from masschange.dataproducts.utils import get_dataproduct_classes
 from masschange.db.conn import get_db_connection
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
@@ -66,11 +66,11 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     ensure_ingest_manager_tables_exist()
 
     if not is_database_init:
-        for product_cls in get_time_series_dataproduct_classes():
+        for product_cls in get_dataproduct_classes():
             product = product_cls()
             for version in product_cls.get_available_versions():
                 for instrument_id in product_cls.instrument_ids:
-                    dataset = TimeSeriesDataset(product, version, instrument_id)
+                    dataset = DatasetFactory.create(product, version, instrument_id)
                     initialize_dataset(dataset, populate_dataproducts_versions)
 
 

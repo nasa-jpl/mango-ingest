@@ -24,19 +24,25 @@ def get_all_subclasses(cls: Type) -> Collection[Type]:
 
     return all_subclasses
 
-# TODO: Switch all calls to get_time_series_dataproducts()
-def get_time_series_dataproduct_classes() -> Collection[Type[DataProduct]]:
+
+def get_dataproduct_classes() -> Collection[Type[DataProduct]]:
     """
     Get all concrete subclasses of DataProduct
     """
     import_submodules(datasetimplementations)
-    return [subclass for subclass in get_all_subclasses(DataProduct) if not inspect.isabstract(subclass)]
+    return [subclass for subclass in get_all_subclasses(DataProduct) if not inspect.isabstract(subclass)]  # TODO: fix inspection warning
+
+
+def get_time_series_dataproduct_classes() -> Collection[Type[DataProduct]]:
+    return [cls for cls in get_dataproduct_classes() if cls.is_time_series_dataproduct()]
+
 
 def get_time_series_dataproducts() -> Collection[DataProduct]:
     return [cls() for cls in get_time_series_dataproduct_classes()]
 
+
 def resolve_dataset(dataset_id: str) -> DataProduct:
-    datasets_by_name = {ds().get_full_id(): ds() for ds in get_time_series_dataproduct_classes()}
+    datasets_by_name = {ds().get_full_id(): ds() for ds in get_dataproduct_classes()}
     dataset = datasets_by_name.get(dataset_id)
     if dataset is not None:
         return dataset
