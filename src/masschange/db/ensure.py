@@ -41,7 +41,7 @@ def initialize_dataset(dataset, populate_dataproducts_versions):
     ensure_dataset_table_exists(dataset)
     if dataset.is_time_series_dataset():
         log.info(f'Ensuring caggs for {dataset.get_table_name()}')
-    ensure_dataset_caggs_exist(dataset)
+        ensure_dataset_caggs_exist(dataset)
     log.info(f'Updating metadata for {dataset.get_table_name()}')
     data_span = dataset.get_data_span()
     update_metadata(
