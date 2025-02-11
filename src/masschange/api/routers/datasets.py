@@ -17,7 +17,7 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.datasetversion import DatasetVersion
-from masschange.dataproducts.utils import get_time_series_dataproducts
+from masschange.dataproducts.utils import get_dataproducts
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.utils.misc import get_human_readable_timedelta
 
@@ -27,7 +27,7 @@ router = APIRouter(tags=['datasets'])
 def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
                        instrument_id: str) -> Dataset:
     try:
-        product = next(p for p in get_time_series_dataproducts() if
+        product = next(p for p in get_dataproducts() if
                        p.mission.id == mission_id and p.id_suffix == product_id_suffix)
     except StopIteration:
         raise HTTPException(status_code=404,
