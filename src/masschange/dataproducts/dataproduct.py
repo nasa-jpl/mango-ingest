@@ -234,7 +234,7 @@ class DataProduct(ABC):
 
     @staticmethod
     def get_max_query_temporal_span(downsampling_factor: int) -> timedelta:
-        return timedelta(days=31)  # TODO: set to 31 days for now
+        return timedelta(days=365 * 10)  # TODO: set to 10 years for now for development - ***REMOVED***
 
     @classmethod
     def get_available_aggregation_levels(cls) -> Sequence[int]:
