@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Union
 
-from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.dataset import Dataset
 from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
 
-def update_metadata(dataset: TimeSeriesDataset,
+def update_metadata(dataset: Dataset,
                     data_span: Union[TimeSpan, None] = None,
                     populate_versions=False,
                     accumulate_data_span: bool = True):

@@ -13,8 +13,8 @@ import pandas as pd
 import psycopg2
 
 from masschange.dataproducts.dataproduct import DataProduct
+from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
@@ -59,6 +59,7 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
         except EmptyProductException as e:
             log.warning(f'{e} Skipping ingestion of the file...')
 
+
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,
                               filename_match_regex: str) -> Iterable[str]:
@@ -94,7 +95,7 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 
-def delete_overlapping_data(dataset: TimeSeriesDataset, data_temporal_span: TimeSpan):
+def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
     with get_db_cursor() as cur:
         sql = f"""
