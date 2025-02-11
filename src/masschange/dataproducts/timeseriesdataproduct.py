@@ -30,6 +30,9 @@ class TimeSeriesDataProduct(DataProduct):
         """
 
         description = super().describe(exclude_available_versions, metadata_cache)
+
+        # TODO: (not urgent) consolidate the concept of "available resolutions" into something common to all DataProduct
+        #  as the current approach of using a default in the parent class and overwriting it here is a bit messy.
         description['available_resolutions'] = [
             {
                 'downsampling_factor': factor,

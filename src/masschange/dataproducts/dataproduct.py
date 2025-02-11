@@ -58,6 +58,16 @@ class DataProduct(ABC):
             'query_result_limit': cls.query_result_limit
         }
 
+        # TODO: (not urgent) consolidate the concept of "available resolutions" into something common to all DataProduct
+        #  as the current approach of using a default in the parent class and overwriting it TimeSeriesDataProduct is a
+        #  bit messy.
+        description['available_resolutions'] = [
+            {
+                'downsampling_factor': 1,
+                'nominal_data_interval_seconds': None
+            }
+        ]
+
         try:
             if metadata_cache is not None:
                 datasets = [ds for ds in metadata_cache if ds['product'] == cls.get_full_id()]
