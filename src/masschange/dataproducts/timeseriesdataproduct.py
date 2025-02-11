@@ -29,7 +29,7 @@ class TimeSeriesDataProduct(DataProduct):
         useful or necessary for querying it.
         """
 
-        description = super().describe()
+        description = super().describe(exclude_available_versions, metadata_cache)
         description['available_resolutions'] = [
             {
                 'downsampling_factor': factor,
