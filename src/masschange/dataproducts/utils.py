@@ -37,6 +37,10 @@ def get_time_series_dataproduct_classes() -> Collection[Type[DataProduct]]:
     return [cls for cls in get_dataproduct_classes() if cls.is_time_series_dataproduct()]
 
 
+def get_dataproducts() -> Collection[DataProduct]:
+    return [cls() for cls in get_dataproduct_classes()]
+
+
 def get_time_series_dataproducts() -> Collection[DataProduct]:
     return [cls() for cls in get_time_series_dataproduct_classes()]
 
