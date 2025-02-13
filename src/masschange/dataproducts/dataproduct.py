@@ -63,7 +63,7 @@ class DataProduct(ABC):
         #  bit messy.
         description['available_resolutions'] = [
             {
-                'downsampling_factor': 1,
+                'downsampling_factor': [1],
                 'nominal_data_interval_seconds': None
             }
         ]

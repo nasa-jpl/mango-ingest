@@ -3,10 +3,10 @@ from typing import Iterable, Type
 from fastapi import APIRouter, HTTPException
 
 from masschange.api.utils.db.queries import fetch_bulk_metadata
-from masschange.dataproducts.utils import get_time_series_dataproduct_classes, get_dataproducts
+from masschange.dataproducts.utils import get_dataproduct_classes, get_dataproducts
 from masschange.missions import Mission
 
-available_missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_time_series_dataproduct_classes()}
+available_missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_dataproduct_classes()}
 
 router = APIRouter()
 
