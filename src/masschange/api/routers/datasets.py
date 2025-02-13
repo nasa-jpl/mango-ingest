@@ -135,9 +135,9 @@ def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, resu
             'query_elapsed_ms': query_elapsed_ms,
             'data': results,
             'downsampling_factor': downsampling_factor}
-
-    aggregation_level = _get_aggregation_level(product, downsampling_factor)
-    data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
+    if product.is_time_series_dataproduct():
+        aggregation_level = _get_aggregation_level(product, downsampling_factor)
+        data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
 
     return data
 
