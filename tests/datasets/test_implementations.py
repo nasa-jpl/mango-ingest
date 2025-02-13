@@ -1,18 +1,20 @@
 import unittest
 
-from masschange.dataproducts.utils import get_time_series_dataproduct_classes
+from masschange.dataproducts.utils import get_dataproduct_classes
 
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
-        dataset_implementations = get_time_series_dataproduct_classes()
+        dataset_implementations = get_dataproduct_classes()
         for implementation in dataset_implementations:
             try:
                 self.assertIsNotNone(implementation.mission)
                 self.assertIsNotNone(implementation.id_suffix)
                 self.assertLess(0, len(implementation.instrument_ids))
-                self.assertIsNotNone(implementation.time_series_interval)
+
                 self.assertIsNotNone(implementation.processing_level)
+                if implementation.is_time_series_dataproduct():
+                    self.assertIsNotNone(implementation.time_series_interval)
             except AttributeError as err:
                 raise NotImplementedError(str(err))
 
@@ -21,7 +23,7 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
             'instrument_id',
             'dataset_version'
         }
-        dataset_implementations = get_time_series_dataproduct_classes()
+        dataset_implementations = get_dataproduct_classes()
         for implementation in dataset_implementations:
             for capture_group_name in mandatory_capture_group_names:
                 try:

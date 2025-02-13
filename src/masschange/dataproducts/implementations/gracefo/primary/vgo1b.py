@@ -3,10 +3,11 @@ from datetime import timedelta
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.vgo1b import GraceFOVgo1BDataFileReader
 from masschange.missions import GraceFO
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.dataproduct import DataProduct
 
 
-class GraceFOVgo1BDataProduct(TimeSeriesDataProduct):
+class GraceFOVgo1BDataProduct(DataProduct):
+    # TODO: Only one file is available. The sample file has 2 rows with the same time.
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOVgo1BDataFileReader()
@@ -14,7 +15,6 @@ class GraceFOVgo1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'VGO1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(days=365)  # TODO: Not a time series dataset. The sample file has 2 rows with the same time.
     processing_level = '1B'
 
     @classmethod

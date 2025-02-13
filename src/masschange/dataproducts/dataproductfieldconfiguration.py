@@ -8,7 +8,7 @@ from importlib import resources
 from typing import Union, Any, List
 
 
-class TimeSeriesDataProductFieldConfiguration:
+class ProductFieldConfiguration:
     """
     Contains configurable (i.e. stateful, stored in db) metadata relating to a TimeSeriesDataProductField.
     The only currently-known example of this is an optional min and max value for validity-checking
@@ -28,7 +28,7 @@ class TimeSeriesDataProductFieldConfiguration:
         self.effective_until = effective_until
 
     @staticmethod
-    def construct_list(product, field) -> List[TimeSeriesDataProductFieldConfiguration]:
+    def construct_list(product, field) -> List[ProductFieldConfiguration]:
         """
         This is a stub to instantiate plausible min/max values for those types which are intended to be supported.
         TODO: In the future, this will fetch the values, if present, from the database.  It will be necessary to create
@@ -90,12 +90,12 @@ class TimeSeriesDataProductFieldConfiguration:
             # end Not currently used
 
             if field.python_type is int:
-                result.append(TimeSeriesDataProductFieldConfiguration(
+                result.append(ProductFieldConfiguration(
                     int(limit_lower) if limit_lower is not None else None,
                     int(limit_upper) if limit_upper is not None else None,
                     effective_since, effective_until))
             elif field.python_type is float:
-                result.append(TimeSeriesDataProductFieldConfiguration(
+                result.append(ProductFieldConfiguration(
                     float(limit_lower) if limit_lower is not None else None,
                     float(limit_upper) if limit_upper is not None else None,
                     effective_since, effective_until))

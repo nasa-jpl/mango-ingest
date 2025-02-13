@@ -26,7 +26,7 @@ class GraceFOUso1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='uso_id', np_type=int, unit=None, is_time_series_id_column=True),
+            AsciiDataFileReaderColumn(index=2, name='uso_id', np_type=int, unit=None, is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='uso_freq', np_type=np.double, unit='Hz'),
             AsciiDataFileReaderColumn(index=4, name='K_freq', np_type=np.double, unit='Hz'),
             AsciiDataFileReaderColumn(index=5, name='Ka_freq', np_type=np.double, unit='Hz'),

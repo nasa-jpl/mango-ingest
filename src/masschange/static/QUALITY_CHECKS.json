@@ -3,7 +3,40 @@
     "properties": {}
   },
   "ACC1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_max": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 2.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 0.1
+            }
+          }
+        ]
+      }
+    }
   },
   "ACC1A_RPT": {
     "properties": {
@@ -19,6 +52,22 @@
             "warnings": {
               "lower": null,
               "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_max": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 2.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 0.1
             }
           }
         ]
@@ -57,7 +106,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 5
             }
           }
         ]
@@ -79,7 +128,7 @@
               "upper": null
             },
             "warnings": {
-              "lower": null,
+              "lower": 86398,
               "upper": null
             }
           }
@@ -100,6 +149,22 @@
             }
           }
         ]
+      },
+      "time_gap_max": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 1.0
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
       }
     }
   },
@@ -107,7 +172,24 @@
     "properties": {}
   },
   "AHK1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "AHK1A_RPT": {
     "properties": {
@@ -289,7 +371,24 @@
     "properties": {}
   },
   "GNV1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "GNV1A_PRN": {
     "properties": {}
@@ -362,7 +461,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 0.004
             }
           }
         ]
@@ -409,7 +508,40 @@
     "properties": {}
   },
   "GPS1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "GPS1A_RPT": {
     "properties": {
@@ -490,7 +622,40 @@
     "properties": {}
   },
   "HRT1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "HRT1A_RPT": {
     "properties": {
@@ -535,7 +700,40 @@
     "properties": {}
   },
   "IHK1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "IHK1A_RPT": {
     "properties": {
@@ -655,7 +853,24 @@
     "properties": {}
   },
   "IMU1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "IMU1A_RPT": {
     "properties": {
@@ -720,7 +935,88 @@
     "properties": {}
   },
   "KBR1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount5": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 1
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount6": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 10
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount7": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 100
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "KBR1A_RPT": {
     "properties": {
@@ -886,7 +1182,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 0.3
             }
           }
         ]
@@ -934,7 +1230,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 50
             }
           }
         ]
@@ -950,7 +1246,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 75
             }
           }
         ]
@@ -961,7 +1257,24 @@
     "properties": {}
   },
   "LHK1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "LHK1A_RPT": {
     "properties": {
@@ -1110,7 +1423,24 @@
     "properties": {}
   },
   "LRI1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "LRI1A_RPT": {
     "properties": {
@@ -1139,7 +1469,24 @@
     "properties": {}
   },
   "LSM1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "LSM1A_RPT": {
     "properties": {
@@ -1204,7 +1551,40 @@
     "properties": {}
   },
   "MAG1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "MAG1A_RPT": {
     "properties": {
@@ -1530,7 +1910,7 @@
             },
             "warnings": {
               "lower": null,
-              "upper": null
+              "upper": 60
             }
           }
         ]
@@ -1539,23 +1919,47 @@
         "thresholds": [
           {
             "effective_since": null,
+            "effective_until": "2020-02-13T23:59:59",
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": 80000,
+              "upper": null
+            }
+          },
+          {
+            "effective_since": "2020-02-14T00:00:00",
+            "effective_until": "2021-07-21T23:59:59",
+            "limits": {
+              "lower": 2500,
+              "upper": null
+            },
+            "warnings": {
+              "lower": 70000,
+              "upper": null
+            }
+          },
+          {
+            "effective_since": "2021-07-22T00:00:00",
             "effective_until": null,
             "limits": {
               "lower": 2500,
               "upper": null
             },
             "warnings": {
-              "lower": null,
+              "lower": 80000,
               "upper": null
             }
           }
         ]
       },
-      "perrangerej": {
+      "per_range_rej": {
         "thresholds": [
           {
             "effective_since": null,
-            "effective_until": null,
+            "effective_until": "2020-02-13T23:59:59",
             "limits": {
               "lower": null,
               "upper": 7
@@ -1563,6 +1967,30 @@
             "warnings": {
               "lower": null,
               "upper": null
+            }
+          },
+          {
+            "effective_since": "2020-02-14T00:00:00",
+            "effective_until": "2021-07-21T23:59:59",
+            "limits": {
+              "lower": null,
+              "upper": 9
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 7.5
+            }
+          },
+          {
+            "effective_since": "2021-07-22T00:00:00",
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 7
+            },
+            "warnings": {
+              "lower": null,
+              "upper": 5.5
             }
           }
         ]
@@ -1579,7 +2007,40 @@
     "properties": {}
   },
   "SCA1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "bitcount4": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": null,
+              "upper": 100
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "SCA1A_RPT": {
     "properties": {
@@ -1792,7 +2253,24 @@
     "properties": {}
   },
   "THR1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "THR1A_RPT": {
     "properties": {
@@ -1857,7 +2335,40 @@
     "properties": {}
   },
   "TIM1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "TIM1A_RPT": {
     "properties": {
@@ -1938,7 +2449,40 @@
     "properties": {}
   },
   "TNK1A_PASS": {
-    "properties": {}
+    "properties": {
+      "n_recs": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 1,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      },
+      "time_gap_min": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": null
+            },
+            "warnings": {
+              "lower": null,
+              "upper": null
+            }
+          }
+        ]
+      }
+    }
   },
   "TNK1A_RPT": {
     "properties": {
@@ -2070,4 +2614,3 @@
     "properties": {}
   }
 }
-

@@ -24,7 +24,7 @@ class GraceFOTim1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='obctime', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='TS_suppid', np_type=int, unit=None, is_time_series_id_column=True),
+            AsciiDataFileReaderColumn(index=2, name='TS_suppid', np_type=int, unit=None, is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=4, name='rcvtime_frac', np_type=np.uint, unit='nanoseconds'),
             AsciiDataFileReaderColumn(index=5, name='first_icu_blknr', np_type=int, unit=None),

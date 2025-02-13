@@ -10,7 +10,8 @@ from masschange.api.tests.utils import is_nearly_equal, permute_all_datasets
 from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
+from masschange.dataproducts.dataset import Dataset
+from masschange.dataproducts.datasetversion import DatasetVersion
 
 client = TestClient(app)
 
@@ -20,7 +21,7 @@ def test_root():
     assert response.status_code == 200
 
 
-timeseries_id_additional_parameters = {
+timechannel_id_additional_parameters = {
     'TNK1A': '&filter=tank_id=1',
     'TNK1B': '&filter=tank_id=1',
     'SCA1A': '&filter=sca_id=1',
@@ -41,7 +42,7 @@ timeseries_id_additional_parameters = {
 
 
 @pytest.mark.parametrize("ds", permute_all_datasets())
-def test_gracefo_data_select(ds: TimeSeriesDataset):
+def test_gracefo_data_select(ds: Dataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
     test_span_end = test_span_begin + timedelta(minutes=1)
@@ -51,8 +52,8 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
            f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
     # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-    if ds.product.id_suffix in timeseries_id_additional_parameters:
-        path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
+    if ds.product.id_suffix in timechannel_id_additional_parameters:
+        path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
 
     response = client.get(path)
     content = response.json()
@@ -64,17 +65,22 @@ def test_gracefo_data_select(ds: TimeSeriesDataset):
     # Omit variable-data-span-datasets from the test as the expected data count is unknown
     # Currently, anything not 1Hz or 10Hz is assumed to be variable, though this is not always true
     # TODO: Update once variable data span is implemented properly in dataset classes
-    if data_span is not None and (ds.product.time_series_interval == timedelta(
-            milliseconds=100) or ds.product.time_series_interval == timedelta(seconds=1)):
-        if ds.product.id_suffix == 'AHK1A':
-            # AHK1A is 1Hz cadence, but with ten rows per 'tick', each covering different fields
-            expected_data_count = 600
-        else:
-            expected_data_count = (test_span_end - test_span_begin) / ds.product.time_series_interval
-        assert is_nearly_equal(expected_data_count, content['data_count'])
+
+    if ds.is_time_series_dataset():
+        if data_span is not None and (ds.product.time_series_interval == timedelta(
+                milliseconds=100) or ds.product.time_series_interval == timedelta(seconds=1)):
+            if ds.product.id_suffix == 'AHK1A':
+                # AHK1A is 1Hz cadence, but with ten rows per 'tick', each covering different fields
+                expected_data_count = 600
+            else:
+                expected_data_count = (test_span_end - test_span_begin) / ds.product.time_series_interval
+            assert is_nearly_equal(expected_data_count, content['data_count'])
 
     expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'data_begin', 'data_end', 'data_count',
-                           'downsampling_factor', 'nominal_data_interval_seconds', 'query_elapsed_ms', 'data']
+                           'query_elapsed_ms', 'data']
+    if ds.is_time_series_dataset():
+        expected_attributes.extend(['downsampling_factor', 'nominal_data_interval_seconds'])
+
     for k in expected_attributes:
         assert k in content
 
@@ -108,8 +114,8 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
                f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
         # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-        if ds.product.id_suffix in timeseries_id_additional_parameters:
-            path += f'{timeseries_id_additional_parameters[ds.product.id_suffix]}'
+        if ds.product.id_suffix in timechannel_id_additional_parameters:
+            path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
 
         response = client.get(path)
         content = response.json()
@@ -125,10 +131,10 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
 
 def test_location_lookup():
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     dataset_data_span = dataset.get_data_span()
 
-    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), DatasetVersion('04'), 'C')
     gnv_data_span = gnv_dataset.get_data_span()
 
     assert dataset_data_span is not None
@@ -155,10 +161,10 @@ def test_location_lookup():
 
 def test_downsampled_location_lookup():
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     dataset_data_span = dataset.get_data_span()
 
-    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), TimeSeriesDatasetVersion('04'), 'C')
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), DatasetVersion('04'), 'C')
     gnv_data_span = gnv_dataset.get_data_span()
 
     assert dataset_data_span is not None
@@ -218,24 +224,28 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
     assert response.status_code == 200
 
     expected_attributes = ['description', 'mission', 'id', 'full_id', 'processing_level', 'instruments',
-                           'available_fields', 'available_resolutions', 'timestamp_field', 'query_result_limit',
+                           'available_fields', 'timestamp_field', 'query_result_limit',
                            'data_begin', 'data_end', 'last_updated']
+
+    if ds.is_time_series_dataset():
+        expected_attributes.extend( ['available_resolutions'])
+
     for k in expected_attributes:
         assert k in content
 
     expected_field_attributes = ['name', 'type', 'description', 'unit', 'supported_aggregations',
-                                 'is_time_series_id']
+                                 'is_channel_id']
     for field in content['available_fields']:
         for k in expected_field_attributes:
             assert k in field
-        if field['is_time_series_id'] is True:
+        if field['is_channel_id'] is True:
             assert 'enum_values' in field
 
 
 def test_statistics_basic():
     """Just tests one field of one dataset to ensure endpoints are generally working"""
     product = GraceFOAcc1ADataProduct()
-    dataset = TimeSeriesDataset(product, TimeSeriesDatasetVersion('04'), 'C')
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
     stat_span_begin = dataset.get_data_span().begin
     stat_span_end = stat_span_begin + timedelta(days=7)
 

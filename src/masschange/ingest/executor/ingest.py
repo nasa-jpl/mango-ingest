@@ -12,8 +12,10 @@ import pandas
 import pandas as pd
 import psycopg2
 
+from masschange.dataproducts.dataproduct import DataProduct
+from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
 from masschange.utils.misc import get_human_readable_elapsed_since
@@ -26,6 +28,7 @@ from masschange.db.metadata.update import update_metadata
 from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
+
 
 log = logging.getLogger()
 
@@ -55,6 +58,7 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
             ingest_file_to_db(product, fp)
         except EmptyProductException as e:
             log.warning(f'{e} Skipping ingestion of the file...')
+
 
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,
@@ -91,7 +95,7 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 
-def delete_overlapping_data(dataset: TimeSeriesDataset, data_temporal_span: TimeSpan):
+def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
     with get_db_cursor() as cur:
         sql = f"""
@@ -122,15 +126,17 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(product: TimeSeriesDataProduct, src_filepath: str):
+def ingest_file_to_db(product: DataProduct, src_filepath: str):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
 
-
     reader = product.get_reader()
-    dataset = TimeSeriesDataset(product, reader.extract_dataset_version(src_filepath), reader.extract_instrument_id(src_filepath))
+
+    dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
+                                    reader.extract_instrument_id(src_filepath))
+
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),

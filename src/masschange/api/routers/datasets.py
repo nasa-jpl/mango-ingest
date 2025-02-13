@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, date, time, timezone
 import logging
-from typing import Annotated, List, Union
-
+from typing import Annotated, List, Union, Dict
+from psycopg2.extensions import cursor as Cursor
 import psycopg2
 from fastapi import APIRouter, HTTPException, Query, Path
 from fastapi.params import Depends
@@ -15,17 +15,19 @@ from masschange.dataproducts.db.utils import list_table_columns as list_db_table
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.timeseriesdatasetversion import TimeSeriesDatasetVersion
-from masschange.dataproducts.utils import get_time_series_dataproducts
+from masschange.dataproducts.dataset import Dataset
+from masschange.dataproducts.datasetversion import DatasetVersion
+from masschange.dataproducts.utils import get_dataproducts
+from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.utils.misc import get_human_readable_timedelta
 
 router = APIRouter(tags=['datasets'])
 
 
 def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
-                       instrument_id: str) -> TimeSeriesDataset:
+                       instrument_id: str) -> Dataset:
     try:
-        product = next(p for p in get_time_series_dataproducts() if
+        product = next(p for p in get_dataproducts() if
                        p.mission.id == mission_id and p.id_suffix == product_id_suffix)
     except StopIteration:
         raise HTTPException(status_code=404,
@@ -36,12 +38,12 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
     #     validated_version_id = next(v for v in product.get_available_versions() if v == version_id)
     # except StopIteration:
     #     raise HTTPException(status_code=404, detail=f'No version with id {version_id} found for product {product_id}')
-    version = TimeSeriesDatasetVersion(version_id)
+    version = DatasetVersion(version_id)
 
     if instrument_id not in product.instrument_ids:
         raise HTTPException(status_code=400, detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
 
-    return TimeSeriesDataset(product, version, instrument_id)
+    return DatasetFactory.create(product, version, instrument_id)
 
 
 def instantiate_filters(product: TimeSeriesDataProduct,
@@ -52,7 +54,7 @@ def instantiate_filters(product: TimeSeriesDataProduct,
         filters = []
 
     extant_filter_keys = {f.key for f in filters}
-    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_time_series_id_column}
+    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_channel_id_column}
     if not expected_filter_keys.issubset(extant_filter_keys):
         raise HTTPException(status_code=400,
                             detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
@@ -60,14 +62,13 @@ def instantiate_filters(product: TimeSeriesDataProduct,
     return filters
 
 @router.get('/versions/{version_id}/instruments/{instrument_id}', tags=['metadata'])
-async def describe_dataset_instance(dataset: Annotated[TimeSeriesDataset, Depends(dataset_parameters)]):
+async def describe_dataset_instance(dataset: Annotated[Dataset, Depends(dataset_parameters)]):
     metadata = dataset.product.describe(exclude_available_versions=True)
 
     dataset_specific_metadata = dataset.get_metadata_properties()
     if dataset_specific_metadata is None:
         raise HTTPException(status_code=404, detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
-
-    additional_fields_metadata = dataset_specific_metadata.pop('time_series_id_enums')
+    additional_fields_metadata = dataset_specific_metadata.pop('channel_id_enums')
     for field_name, enumeration in additional_fields_metadata.items():
         field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
         field_metadata['enum_values'] = enumeration
@@ -95,42 +96,14 @@ async def get_data(
     if fields == None:
         fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
 
-    # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
-    if downsampling_factor is None:
-        try:
-            aggregation_level = dataset.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
-        except TooMuchDataRequestedError as err:
-            raise HTTPException(status_code=400, detail=str(err))
-
-        downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
-    elif downsampling_factor not in product.get_available_downsampling_factors():
-        raise ValueError(
-            f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(product.get_available_downsampling_factors())})')
-
-    aggregation_level = dataset.product.get_available_downsampling_factors().index(downsampling_factor)
-
     filters = instantiate_filters(product, filter)
-
     field_names = fields
-    fields = set()
-    dataset_fields_by_name = {field.name: field for field in product.get_available_fields()}
-    using_aggregations = downsampling_factor > 1
-    for field_name in field_names:
-        try:
-            field = dataset_fields_by_name[field_name]
-            # when downsampling, only pick valid aggregable fields
-            # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
-            # fields value, which would be a loss since it significantly improves the docs
-            if not using_aggregations or field.has_aggregations or field.is_lookup_field:
-                fields.add(field)
-        except KeyError:
-            raise HTTPException(status_code=400,
-                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+    downsampling_factor = _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp)
 
-    #  ensure that timestamp column name is always present in query
-    fields.add(dataset_fields_by_name[product.TIMESTAMP_COLUMN_NAME])
-
-    resolve_location = dataset_fields_by_name.get(product.LOCATION_COLUMN_NAME) in fields
+    fields = _get_fields(dataset, field_names, downsampling_factor)
+    aggregation_level = _get_aggregation_level(product, downsampling_factor)
+    dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+    resolve_location = dataset_fields_by_name.get(dataset.product.LOCATION_COLUMN_NAME) in fields
 
     try:
         query_start = datetime.now()
@@ -142,24 +115,80 @@ async def get_data(
             resolve_location=resolve_location,
             filters=filters
         )
+
         query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
     except TooMuchDataRequestedError as err:
         raise HTTPException(status_code=400, detail=str(err))
     except Exception as err:  # TODO: Make this specific
         raise HTTPException(status_code=500, detail=str(err))
 
-    return {
-        'from_isotimestamp': from_isotimestamp.isoformat(),
-        'to_isotimestamp': to_isotimestamp.isoformat(),
-        'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-        'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-        'data_count': len(results),
-        'downsampling_factor': downsampling_factor,
-        'nominal_data_interval_seconds': product.get_nominal_data_interval(aggregation_level).total_seconds(),
-        'query_elapsed_ms': query_elapsed_ms,
-        'data': results
-    }
+    return _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp,
+                                      results, query_elapsed_ms, downsampling_factor)
 
+def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, results, query_elapsed_ms, downsampling_factor ):
+    data = {
+            'from_isotimestamp': from_isotimestamp.isoformat(),
+            'to_isotimestamp': to_isotimestamp.isoformat(),
+            'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+            'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+            'data_count': len(results),
+            'query_elapsed_ms': query_elapsed_ms,
+            'data': results,
+            'downsampling_factor': downsampling_factor}
+    if product.is_time_series_dataproduct():
+        aggregation_level = _get_aggregation_level(product, downsampling_factor)
+        data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
+
+    return data
+
+def _get_fields(dataset, field_names, downsampling_factor):
+    fields = set()
+    dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+
+    for field_name in field_names:
+        try:
+            field = dataset_fields_by_name[field_name]
+            if dataset.is_time_series_dataset():
+                using_aggregations = downsampling_factor > 1
+
+                # when downsampling, only pick valid aggregable fields
+                # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
+                # fields value, which would be a loss since it significantly improves the docs
+                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
+                    fields.add(field)
+            else:
+                fields.add(field)
+        except KeyError:
+            raise HTTPException(status_code=400,
+                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+
+    #  ensure that timestamp column name is always present in query
+    fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])
+
+    return fields
+
+def _get_aggregation_level(product, downsampling_factor):
+    if product.is_time_series_dataproduct():
+        return product.get_available_downsampling_factors().index(downsampling_factor)
+    else:
+        return 0  # always full resolution
+
+def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp):
+    if dataset.is_time_series_dataset():
+        # Resolve an appropriate downsampling factor, or check the provided value if present in qparams
+        if downsampling_factor is None:
+            try:
+                aggregation_level = dataset.product.get_minimum_aggregation_level(from_isotimestamp, to_isotimestamp)
+            except TooMuchDataRequestedError as err:
+                raise HTTPException(status_code=400, detail=str(err))
+
+            downsampling_factor = dataset.product.get_available_downsampling_factors()[aggregation_level]
+        elif downsampling_factor not in dataset.product.get_available_downsampling_factors():
+            raise ValueError(
+                f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(dataset.product.get_available_downsampling_factors())})')
+        return downsampling_factor
+    else:
+        return 1
 
 SupportedStatisticsEnum = StrEnum('SupportedStatistics',
                                   sorted({'avg', 'min', 'max', 'count', 'stddev_pop', 'var_pop'}))
@@ -194,7 +223,7 @@ async def get_statistic_for_field(
             f'Requested temporal span {get_human_readable_timedelta(requested_temporal_span)} exceeds maximum allowed by server ({get_human_readable_timedelta(max_query_temporal_span)})')
 
     with get_db_cursor() as cur:
-        table_name = dataset.get_table_or_view_name(aggregation_depth=0)
+        table_name = dataset.get_table_name()
         select_clause = SQL('{}({})').format(SQL(statistic), Identifier(field_name)).as_string(cur.connection)
 
         parameters = prepare_where_clause_parameters(from_isotimestamp, to_isotimestamp, filters)
@@ -238,3 +267,4 @@ async def get_statistic_for_field(
         'result': result[0],
         'query_elapsed_ms': query_elapsed_ms,
     }
+

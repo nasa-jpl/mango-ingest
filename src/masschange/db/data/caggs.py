@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Collection, Set
 
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
+from masschange.dataproducts.dataset import Dataset
 from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
@@ -45,16 +46,16 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
             agg_column_exprs.append(column_expr)
 
     bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.{dataset.product.TIMESTAMP_COLUMN_NAME})"
-    time_series_id_columns = sorted(field.name for field in dataset.product.get_available_fields() if field.is_time_series_id_column)
-    time_series_id_select_block = ''.join(f'{column}, ' for column in time_series_id_columns)
-    group_by_expr =', '.join([bucket_expr] + time_series_id_columns)
+    channel_id_columns = sorted(field.name for field in dataset.product.get_available_fields() if field.is_channel_id_column)
+    channel_id_select_block = ''.join(f'{column}, ' for column in channel_id_columns)
+    group_by_expr =', '.join([bucket_expr] + channel_id_columns)
     agg_columns_block = ',\n'.join(agg_column_exprs)
 
     return f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
-        SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME}, {time_series_id_select_block}
+        SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME}, {channel_id_select_block}
         {agg_columns_block}
         FROM {source_name} as src
         GROUP BY {group_by_expr}
@@ -67,7 +68,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+def refresh_continuous_aggregates(dataset: Dataset, enable_chunking: bool = False):
     """
     Refresh all continuous aggregates for a given TimeSeriesDataset.
     Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
