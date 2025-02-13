@@ -133,14 +133,13 @@ def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, resu
             'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
             'data_count': len(results),
             'query_elapsed_ms': query_elapsed_ms,
-            'data': results}
-    if product.is_time_series_dataproduct():
-          data['downsampling_factor'] = downsampling_factor
-          aggregation_level = _get_aggregation_level(product, downsampling_factor)
-          data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
+            'data': results,
+            'downsampling_factor': downsampling_factor}
+
+    aggregation_level = _get_aggregation_level(product, downsampling_factor)
+    data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
 
     return data
-
 
 def _get_fields(dataset, field_names, downsampling_factor):
     fields = set()
@@ -172,7 +171,7 @@ def _get_aggregation_level(product, downsampling_factor):
     if product.is_time_series_dataproduct():
         return product.get_available_downsampling_factors().index(downsampling_factor)
     else:
-        return None
+        return 0  # always full resolution
 
 def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp):
     if dataset.is_time_series_dataset():
@@ -189,7 +188,7 @@ def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to
                 f'Provided downsampling_factor "{downsampling_factor}" not in allowed values ({sorted(dataset.product.get_available_downsampling_factors())})')
         return downsampling_factor
     else:
-        return None
+        return 1
 
 SupportedStatisticsEnum = StrEnum('SupportedStatistics',
                                   sorted({'avg', 'min', 'max', 'count', 'stddev_pop', 'var_pop'}))
