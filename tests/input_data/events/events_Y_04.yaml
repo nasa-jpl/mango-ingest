@@ -1,0 +1,75 @@
+- spacecraftevent: IPU
+  time: 2020-12-21 10:57:05 GPS
+  created: Mon Dec 21 14:14:36 2020
+  createdby: operator
+  data:
+    spacecraft: GRACED
+    meta: 3  1 1292583425.0 1
+
+- spacecraftevent: IPUR
+  time: 2020-12-22 10:57:05 GPS
+  created: Mon Dec 21 14:14:36 2021
+  createdby: operator
+  data:
+    # With yaml, we can add comments. For example here I'm commenting
+    # that for an SOE type event I wouldn't just put a "meta" tag,
+    # but a dictionary with meaningful names to describe the information
+    # on the event
+    spacecraft: GRACEC
+    meta: 3  1 1292583425.0 1
+
+- operator: comment
+  time: 2024-12-22
+  eventBegin: 2024-12-21 11:21:00 GPS
+  eventEnd: 2024-12-23 13:11:00 GPS
+  createdby: ellmer
+  text: |
+    this is a freeform indented verbatim text where I can write
+    whatever I want and newlines, indentation, and formatting is
+    preserved
+     * at least as far as I understand it?
+     * you can do what you want here
+     * the formatting of a file like this is a bit more verbose
+       than the current operator files, but by defining a grammar
+       of the types of events we allow and automatically validating
+       that shouldn't be too too bad.
+    Thinking about it more, maybe instead of having one file with all
+    info, have two:
+      * One auto-generated, SOE type entries from automated processes
+      * One with manual edits and comments by operators
+    Then, these two would be automatically interleaved and published
+    to mango or elsewhere on commit.
+- operator: maneuver
+  time: 2024-07-13
+  createdby: cmccullo
+  spacecraft: GF1 # This is the kind of inconsistency we can much more easily eradicate by having defined (but easily extensible) event types and allowed values
+  summary: An in-plane maneuver to minimize the risk of collision with another satellite was performed on GF1. Science operations were interrupted from 2024-07-13 01:30 to 02:44
+  eventBegin: 2024.07.13 (DoY 195) 01:20:17
+  eventEnd: 2024.07.13 (DoY 195) 02:43:43
+  description: |
+    Execute an in-plane orbit maneuver (+0 deg yaw / flight direction)
+    Maneuver input from FDS:
+        -- DeltaV = 3.0 cm/s,
+        -- COB = 2024-07-13 02:07:00 UTC (1720836420 unixTimeInSeconds)
+        -- 206 sec on-time BOTH OCT starting at t0
+        -- t0 = 2024-07-13 02:05:17 UTC
+        -- m0 = 595.223 kg (taken from latest PVT analysis 2024/DOY192.5)
+    The complete SSF is based on the Ground Operations Procedure GOP_NFOS_1300 - Create a maneuver sequence, Step 4.2 (Leader, Backward Flying, 180deg yaw bias, inflight direction maneuver):
+        01:20:17 - GF1_NAOC_7120 - Thruster and NOM Ctrl parameters [LEOP default] to DPG
+        01:30:17 - GF1_NAOC_4150 - Rotate S/C of 180 deg (yaw) - ASP60650 = 0.0
+        02:01:17 - GF1_NPUS_7100 - Set rate of SPID 21112 (SID 36) to 1 Hz
+        02:02:47 - GF1_NAOC_2200 - Transition NOM to OCM
+        02:05:17 - GF1_NAOC_4050 - - Initiate the burn with OCT11 and OCT22 thruster
+        # Thruster burn between 02:05:17 and 02:08:43 #
+        02:08:43 - GF1_NAOC_4060 - Disable OCT driver and perform OCT mech check
+        02:09:23 - GF1_NAOC_2300 - Transition from OCM to NOM
+        02:11:53 - GF1_NPUS_7100 - Set rate of SPID 21112 (SID 36) to the default rate of 1/6 Hz
+        02:12:13 - GF1_NAOC_4150 - Rotate S/C of 180 deg (yaw) - ASP60650 = 3.14159
+        02:43:43 - GF1_NAOC_7111 - Thruster and NOM Ctrl parameters [set-4] to DPG
+- spacecraftevent: LRIDATATION
+  time: 2020-12-25 09:45:20 GPS
+  created: Sat Dec 26 21:20:53 2020
+  createdby: cmccullo
+  data:
+    spacecraft: GRACED
+    meta: 1  -10935419
