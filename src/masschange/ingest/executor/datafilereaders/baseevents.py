@@ -53,7 +53,7 @@ class EventsFileReader(AsciiDataFileReader):
         Returns the value or None if the key does not exist
 
         If the key is not unique through all nested dictionaries (which should newer happen in the
-        'event' yaml file with re-defined format), the first encountered string value will be returned
+        'event' yaml file with pre-defined format), the first encountered string value will be returned
         """
 
         if target_key in events_dict:
