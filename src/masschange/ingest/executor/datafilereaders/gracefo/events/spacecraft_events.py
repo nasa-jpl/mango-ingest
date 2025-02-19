@@ -36,12 +36,15 @@ class GraceFOSpacecraftEventsDataFileReader(EventsFileReader):
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
         """Converts GPS time represented as a string in format 'YYYY-MM-DD HH:MM:SS GPS'
-        to TAI time (datetime object)."""
+        to datetime object in GPS time."""
         try:
             return datetime.strptime(row.time, '%Y-%m-%d %H:%M:%S GPS')
-        except ValueError:
-            f"Error converting spacecraft event time: {row.time} to a time object..."
-
+        except ValueError as err:
+            # ValueError is raised if the date_string and format can’t be parsed by time.strptime()
+            # or if it returns a value which isn’t a time tuple.
+            msg = f" Unsupported format for spacecraft event time in Event yaml file: {row.time}.\n \
+            Supported format: 'YYYY-MM-DD HH:MM:SS GPS'"
+            raise ValueError(msg)
     @classmethod
     def get_event_type_filter(cls) -> str:
         return 'spacecraftevent'
