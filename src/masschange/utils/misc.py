@@ -67,6 +67,6 @@ def flatten_nested_dict(d: Dict, ignore_key_collisions: bool = False) -> Dict:
         if ignore_key_collisions or k not in result:
             result[k] = v
         else:
-            raise ValueError(f'Encountered duplicate key {"k"} when attempting to flatten nested dict')
+            raise ValueError(f'Encountered duplicate key "{k}" when attempting to flatten nested dict')
 
     return result
