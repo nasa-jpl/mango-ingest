@@ -14,8 +14,9 @@ class GraceFOSpacecraftEventsDataProduct(DataProduct):
     mission = GraceFO
     id_suffix = 'SPACECRAFT_EVNT'
     instrument_ids = {'Y'}
-    processing_level = ''  # TODO: events does not have processing level.
+    processing_level = None  # Events does not have a processing level.
 
+    @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
             spacecraftevent VARCHAR(100),
