@@ -18,11 +18,7 @@ class EventsFileReader(AsciiDataFileReader):
         content = yaml.safe_load(raw)
 
         # filter content to get data only for the desired event type
-        filtered_content = []
-        for event in content:
-            if cls.get_event_type_filter() in event:
-                filtered_content.append(event)
-
+        filtered_content = [event for event in content if cls.get_event_type_filter() in event]
         column_defs = cls.get_input_column_defs()
 
         # create np.recarray to hold data for the events
@@ -40,10 +36,7 @@ class EventsFileReader(AsciiDataFileReader):
         """
         Given a list of keys, return a list of values from the dictionary. Some values could be None.
         """
-        data = []
-        for column_name in keys:
-            data.append(cls._get_value_by_key_recursively(events_dict, column_name))
-        return data
+        return [cls._get_value_by_key_recursively(events_dict, k) for k in keys]
 
     @classmethod
     def _get_value_by_key_recursively(cls, events_dict: Dict, target_key: str) -> Union[List[str], None]:
