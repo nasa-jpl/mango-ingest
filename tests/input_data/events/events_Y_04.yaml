@@ -3,7 +3,7 @@
   created: Mon Dec 21 14:14:36 2020
   createdby: operator
   data:
-    spacecraft: GRACED
+    spacecraft: D
     meta: 3  1 1292583425.0 1
 
 - spacecraftevent: IPUR
@@ -15,7 +15,7 @@
     # that for an SOE type event I wouldn't just put a "meta" tag,
     # but a dictionary with meaningful names to describe the information
     # on the event
-    spacecraft: GRACEC
+    spacecraft: C
     meta: 3  1 1292583425.0 1
 
 - operator: comment
@@ -71,5 +71,5 @@
   created: Sat Dec 26 21:20:53 2020
   createdby: cmccullo
   data:
-    spacecraft: GRACED
+    spacecraft: D
     meta: 1  -10935419
