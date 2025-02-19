@@ -2,7 +2,7 @@ import functools
 import logging
 import random
 from datetime import timedelta, datetime
-from typing import Callable
+from typing import Callable, Dict, Tuple, Hashable, Any
 
 
 def get_human_readable_timedelta(td: timedelta) -> str:
@@ -47,3 +47,26 @@ def log_elapsed_time(label: str = None, log_f: Callable = logging.getLogger().in
 
 def get_human_readable_elapsed_since(begin: datetime) -> str:
     return get_human_readable_timedelta(datetime.now() - begin)
+
+
+def iterate_nested_dict(d: Dict) -> Tuple[Hashable, Any]:
+    """Yields all non-dict-valued items within the given dict, recursing into any dict-valued items"""
+    for k, v in d.items():
+        if isinstance(v, dict):
+            for k_inner, v_inner in iterate_nested_dict(v):
+                yield k_inner, v_inner
+        else:
+            yield k, v
+
+
+def flatten_nested_dict(d: Dict, ignore_key_collisions: bool = False) -> Dict:
+    result = dict()
+
+    for k, v in iterate_nested_dict(d):
+
+        if ignore_key_collisions or k not in result:
+            result[k] = v
+        else:
+            raise ValueError(f'Encountered duplicate key {"k"} when attempting to flatten nested dict')
+
+    return result

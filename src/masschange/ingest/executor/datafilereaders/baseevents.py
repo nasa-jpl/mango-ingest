@@ -5,7 +5,7 @@ import numpy as np
 import yaml
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-
+from masschange.utils.misc import flatten_nested_dict
 
 class EventsFileReader(AsciiDataFileReader):
     """
@@ -22,11 +22,10 @@ class EventsFileReader(AsciiDataFileReader):
         column_defs = cls.get_input_column_defs()
 
         # create np.recarray to hold data for the events
-        data_rec = np.recarray(len(filtered_content),
-                                     dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
+        data_rec = np.recarray(len(filtered_content), dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
 
         for i, event in enumerate(filtered_content):
-            data = np.array(cls._get_values_by_keys(event, [col.name for col in column_defs]))
+            data = np.array(cls._get_values_by_keys(flatten_nested_dict(event), [col.name for col in column_defs]))
             data_row = np.core.records.fromarrays(data, dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
             data_rec[i-1] = data_row
         return data_rec
@@ -36,28 +35,7 @@ class EventsFileReader(AsciiDataFileReader):
         """
         Given a list of keys, return a list of values from the dictionary. Some values could be None.
         """
-        return [cls._get_value_by_key_recursively(events_dict, k) for k in keys]
-
-    @classmethod
-    def _get_value_by_key_recursively(cls, events_dict: Dict, target_key: str) -> Union[List[str], None]:
-
-        """
-        Get a string value by key from the dictionary recursively.
-        Returns the value or None if the key does not exist
-
-        If the key is not unique through all nested dictionaries (which should newer happen in the
-        'event' yaml file with pre-defined format), the first encountered string value will be returned
-        """
-
-        if target_key in events_dict:
-            val = events_dict[target_key]
-            if not isinstance(val, dict):
-                return events_dict[target_key]
-
-        for value in events_dict.values():
-            if isinstance(value, dict):
-                return cls._get_value_by_key_recursively(value, target_key)
-        return None
+        return [events_dict.get(k) for k in keys]
 
     @classmethod
     @abstractmethod
