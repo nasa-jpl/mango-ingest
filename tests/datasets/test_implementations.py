@@ -1,7 +1,7 @@
 import unittest
 
 from masschange.dataproducts.utils import get_dataproduct_classes
-
+from masschange.ingest.executor.datafilereaders.baseevents import EventsFileReader
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
@@ -11,8 +11,10 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
                 self.assertIsNotNone(implementation.mission)
                 self.assertIsNotNone(implementation.id_suffix)
                 self.assertLess(0, len(implementation.instrument_ids))
-
-                self.assertIsNotNone(implementation.processing_level)
+                if not isinstance(implementation.get_reader(), EventsFileReader):
+                    self.assertIsNotNone(implementation.processing_level)
+                else:
+                    self.assertIsNone(implementation.processing_level)
                 if implementation.is_time_series_dataproduct():
                     self.assertIsNotNone(implementation.time_series_interval)
             except AttributeError as err:

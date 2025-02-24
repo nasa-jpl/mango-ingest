@@ -3,7 +3,7 @@ import logging
 from collections.abc import Sequence
 from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
-from typing import Set, Type, List, Dict, Collection
+from typing import Set, Type, List, Dict, Collection, Union
 from masschange.missions import Mission
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
@@ -20,7 +20,7 @@ class DataProduct(ABC):
     mission: Type[Mission]
     id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     instrument_ids: Set[str]
-    processing_level: str
+    processing_level: Union[str, None]
 
     query_result_limit = 36000
 
