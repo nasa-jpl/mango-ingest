@@ -75,7 +75,7 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False
     :return:
     """
     ensure_database_exists(database_name)
-    ensure_metadata_tables_exist(database_name)
+    ensure_metadata_tables_exist()
     ensure_prototype_json_store()
 
     ensure_ingest_manager_tables_exist()

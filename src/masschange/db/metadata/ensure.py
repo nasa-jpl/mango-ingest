@@ -4,7 +4,7 @@ from masschange.db.conn import get_db_cursor
 
 log = logging.getLogger()
 
-def ensure_metadata_tables_exist(db_name: str) -> None:
+def ensure_metadata_tables_exist():
     """
     Ensure existence of metadata tables used to track inherent dataset properties (such as column definitions), as well
     as mutable properties like extant data span and extant dataset versions.
