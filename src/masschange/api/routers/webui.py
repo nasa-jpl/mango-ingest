@@ -34,7 +34,7 @@ def store_data(key: str, data_model: DataModel):
             raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fetch/{key}", tags=['json-store'])
+@router.get("/fetch/{key}", tags=['json-store'], responses={404: {'detail': 'Key not found'}})
 def fetch_data(key: str):
     """Fetches a JSON blob from the database by its unique key."""
     with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
