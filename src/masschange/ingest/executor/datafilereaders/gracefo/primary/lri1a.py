@@ -33,7 +33,7 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
 
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='piston_phase', np_type=np.double, unit='counts'),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='piston_phase', np_type=np.double, unit='counts', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='phase0_int', np_type=pd.UInt64Dtype, unit='counts'),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='phase0_frac', np_type=pd.UInt64Dtype, unit='counts'),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='phase1_int', np_type=pd.UInt64Dtype, unit='counts'),

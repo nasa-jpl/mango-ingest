@@ -31,14 +31,14 @@ class GraceFOAct1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=4, name='lin_accl_z', np_type=np.double, unit='m/s2',
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=5, name='ang_accl_x', np_type=np.double, unit='rad/s2',
-                                      const_value=0),
+                                      const_value=0, aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=6, name='ang_accl_y', np_type=np.double, unit='rad/s2',
-                                      const_value=0),
+                                      const_value=0, aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='ang_accl_z', np_type=np.double, unit='rad/s2',
-                                      const_value=0),
-            AsciiDataFileReaderColumn(index=8, name='acl_x_res', np_type=np.double, unit='m/s2'),
-            AsciiDataFileReaderColumn(index=9, name='acl_y_res', np_type=np.double, unit='m/s2'),
-            AsciiDataFileReaderColumn(index=10, name='acl_z_res', np_type=np.double, unit='m/s2'),
+                                      const_value=0, aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=8, name='acl_x_res', np_type=np.double, unit='m/s2', aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=9, name='acl_y_res', np_type=np.double, unit='m/s2', aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=10, name='acl_z_res', np_type=np.double, unit='m/s2', aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=11, name='qualflg', np_type='U8', unit=None)
         ]
 

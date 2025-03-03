@@ -25,9 +25,9 @@ class GraceFOPci1ADataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='ant_centr_corr', np_type=np.double, unit='m'),
-            AsciiDataFileReaderColumn(index=3, name='ant_centr_rate', np_type=np.double, unit='m/s'),
-            AsciiDataFileReaderColumn(index=4, name='ant_centr_accl', np_type=np.double, unit='m/s2'),
+            AsciiDataFileReaderColumn(index=2, name='ant_centr_corr', np_type=np.double, unit='m', aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=3, name='ant_centr_rate', np_type=np.double, unit='m/s', aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=4, name='ant_centr_accl', np_type=np.double, unit='m/s2', aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit=None)
         ]
 
