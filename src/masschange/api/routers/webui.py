@@ -1,4 +1,5 @@
 import json
+import logging
 
 import psycopg2
 from fastapi import APIRouter, HTTPException
@@ -41,8 +42,12 @@ def fetch_data(key: str):
         try:
             cur.execute("SELECT content FROM _jsonstore WHERE id = %s", (key,))
             row = cur.fetchone()
-            if row is None:
-                raise HTTPException(status_code=404, detail="Key not found")
-            return {"data": row['content']}
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            logging.error(str(e))
+            raise HTTPException(status_code=500,
+                                detail=f"Error encountered while attempting to access json store value with id '{key}'")
+
+        if row is None:
+            raise HTTPException(status_code=404, detail="Key not found")
+
+        return {"data": row['content']}
