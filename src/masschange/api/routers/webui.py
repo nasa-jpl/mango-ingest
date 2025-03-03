@@ -11,12 +11,12 @@ router = APIRouter()
 
 
 # Pydantic model for request body
-class DataModel(BaseModel):
+class JsonStoreModel(BaseModel):
     data: dict
 
 
 @router.post("/store/{key}", tags=['json-store'])
-def store_data(key: str, data_model: DataModel):
+def store_data(key: str, data_model: JsonStoreModel):
     """Stores a JSON blob with a unique key in the database."""
     with get_db_cursor(autocommit=True) as cur:
         try:
@@ -34,7 +34,7 @@ def store_data(key: str, data_model: DataModel):
             raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fetch/{key}", tags=['json-store'], responses={404: {'detail': 'Key not found'}})
+@router.get("/fetch/{key}", tags=['json-store'], responses={404: {'description': 'Key not found'}})
 def fetch_data(key: str):
     """Fetches a JSON blob from the database by its unique key."""
     with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
