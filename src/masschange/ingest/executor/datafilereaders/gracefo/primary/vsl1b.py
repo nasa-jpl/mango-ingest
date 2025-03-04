@@ -25,10 +25,14 @@ class GraceFOVsl1BDataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='mag', np_type=np.double, unit=None, aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=3, name='cosx', np_type=np.double, unit=None, aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=4, name='cosy', np_type=np.double, unit=None, aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=5, name='cosz', np_type=np.double, unit=None, aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=2, name='mag', np_type=np.double, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=3, name='cosx', np_type=np.double, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=4, name='cosy', np_type=np.double, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=5, name='cosz', np_type=np.double, unit=None,
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit=None)
         ]
 

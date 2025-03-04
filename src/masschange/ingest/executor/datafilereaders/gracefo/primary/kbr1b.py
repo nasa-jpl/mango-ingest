@@ -31,7 +31,7 @@ class GraceFOKbr1BDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='iono_corr', np_type=np.double, unit=None,
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=5, name='lighttime_corr', np_type=np.double, unit = 'm',
+            AsciiDataFileReaderColumn(index=5, name='lighttime_corr', np_type=np.double, unit='m',
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=6, name='lighttime_rate', np_type=np.double, unit='m/s',
                                       aggregations=['min', 'max']),

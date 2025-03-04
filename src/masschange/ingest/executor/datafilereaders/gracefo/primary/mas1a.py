@@ -47,7 +47,7 @@ class GraceFOMas1ADataFileReader(DataFileWithProdFlagReader):
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='gas_mass_tnk1', np_type=np.double,
                                                     unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='gas_mass_tnk2', np_type=np.double,
-                                                    unit='kg')
+                                                    unit='kg', aggregations=['min', 'max'])
         ]
 
     @classmethod

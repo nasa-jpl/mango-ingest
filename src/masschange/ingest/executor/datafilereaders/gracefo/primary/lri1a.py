@@ -33,18 +33,30 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
 
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='piston_phase', np_type=np.double, unit='counts', aggregations=['min', 'max']),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='phase0_int', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='phase0_frac', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='phase1_int', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='phase1_frac', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='phase2_int', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='phase2_frac', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='phase3_int', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=8, name='phase3_frac', np_type=pd.UInt64Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name=' tSnr', np_type=pd.UInt32Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=10, name='noise8_9', np_type=pd.UInt32Dtype, unit='counts'),
-            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='noise11_12', np_type=pd.UInt32Dtype, unit='counts')
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='piston_phase', np_type=np.double,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='phase0_int', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='phase0_frac', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='phase1_int', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='phase1_frac', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='phase2_int', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='phase2_frac', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='phase3_int', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=8, name='phase3_frac', np_type=pd.UInt64Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=9, name=' tSnr', np_type=pd.UInt32Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=10, name='noise8_9', np_type=pd.UInt32Dtype,
+                                                    unit='counts', aggregations=['min', 'max']),
+            VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='noise11_12', np_type=pd.UInt32Dtype,
+                                                    unit='counts', aggregations=['min', 'max'])
             # prod_flag_bit_index 12-15 are undefined
         ]
 

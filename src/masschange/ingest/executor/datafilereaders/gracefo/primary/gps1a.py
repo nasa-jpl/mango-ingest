@@ -65,7 +65,7 @@ class GraceFOGps1ADataFileReader(DataFileWithProdFlagReader):
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=14, name='K_SNR', np_type=np.double,
                                                     unit='V/V', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=15, name='Ka_SNR', np_type=np.double,
-                                                    unit='V/V')
+                                                    unit='V/V', aggregations=['min', 'max'])
         ]
 
     @classmethod
