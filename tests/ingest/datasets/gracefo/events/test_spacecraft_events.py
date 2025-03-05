@@ -16,7 +16,7 @@ class GraceFOSpacecraftEventsDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [3]
     expected_table_first_rows = [
         ('IPUR','2020-12-22 10:57:05 GPS', 'Mon Dec 21 14:14:36 2021','operator',
-        'GRACEC','3  1 1292583425.0 1', datetime(2020, 12, 22, 10, 57, 5, tzinfo=timezone.utc))
+        'C','3  1 1292583425.0 1', datetime(2020, 12, 22, 10, 57, 5, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()
