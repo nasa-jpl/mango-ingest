@@ -14,7 +14,7 @@ class GraceFOSpacecraftEventsDataFileReader(EventsFileReader):
     # TODO: re-do when the file naming convention for events file is defined
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^events_(?P<instrument_id>[Y])_(?P<dataset_version>\d{2})\.yaml'
+        return '^events_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.yaml'
 
 
     @classmethod

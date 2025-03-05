@@ -13,7 +13,7 @@ class GraceFOSpacecraftEventsDataProduct(DataProduct):
 
     mission = GraceFO
     id_suffix = 'SPACECRAFT_EVNT'
-    instrument_ids = {'Y'}
+    instrument_ids = {'C', 'D'}
     processing_level = None  # Events does not have a processing level.
 
     @classmethod
