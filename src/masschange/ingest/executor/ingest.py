@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     database_name = os.environ['TSDB_DATABASE']
     ensure_database_exists(database_name)
-    ensure_metadata_tables_exist(database_name)
+    ensure_metadata_tables_exist()
 
     start = datetime.now()
     log.info(f'starting ingest of {args.dataset.get_full_id()} from {args.src} begin')
