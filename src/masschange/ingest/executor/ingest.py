@@ -141,6 +141,7 @@ def ingest_file_to_db(product: DataProduct, src_filepath: str):
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
+    channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
 
     ensure_dataset_table_exists(dataset)
     ensure_dataset_caggs_exist(dataset)
@@ -149,7 +150,7 @@ def ingest_file_to_db(product: DataProduct, src_filepath: str):
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
     refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
-    update_metadata(dataset, data_temporal_span)
+    update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
