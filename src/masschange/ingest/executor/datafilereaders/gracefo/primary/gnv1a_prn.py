@@ -27,8 +27,10 @@ class GraceFOGnv1APrnDataFileReader(VariableDataClustersPerRowReader):
             AsciiDataFileReaderColumn(index=1, name='n_prns', np_type=np.uint, unit=None),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
             DerivedAsciiDataFileReaderColumn(name='prn_id', np_type=np.uint, unit=None, is_channel_id_column=True),
-            DerivedAsciiDataFileReaderColumn(name='el_prn', np_type=np.double, unit='degrees_N'),
-            DerivedAsciiDataFileReaderColumn(name='az_prn', np_type=np.double, unit='degrees_E')
+            DerivedAsciiDataFileReaderColumn(name='el_prn', np_type=np.double, unit='degrees_N',
+                                             aggregations=['min', 'max']),
+            DerivedAsciiDataFileReaderColumn(name='az_prn', np_type=np.double, unit='degrees_E',
+                                             aggregations=['min', 'max'])
         ]
 
     @classmethod
