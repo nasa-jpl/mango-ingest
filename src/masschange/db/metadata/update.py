@@ -1,19 +1,21 @@
+from collections.abc import Set, Mapping
 from datetime import datetime
 from typing import Union
 
+from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.dataset import Dataset
 from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
 
-def update_metadata(dataset: Dataset,
-                    data_span: Union[TimeSpan, None] = None,
-                    populate_versions=False,
-                    accumulate_data_span: bool = True):
+def update_metadata(dataset: Dataset, data_span: Union[TimeSpan, None] = None,
+                    channel_ids: Mapping[DataProductField, Set[str]]=None,
+                    populate_versions=False, accumulate_data_span: bool = True):
     """
 
     :param dataset: the dataset for which to update metadata
     :param data_span: the data span, if any, to update the data with
+    :param channel_ids: the unique values for each channel id field
     :param populate_versions: not yet implemented - currently unclear what this was intended to accomplish
     :param accumulate_data_span: If True, update the metadata with the union of the provided data_span and the span
            already present in the db.  If False, overwrite the span with the provided data_span.
@@ -93,6 +95,16 @@ def update_metadata(dataset: Dataset,
         cur.execute(sql,
                     {'dataproduct_version': dataproducts_versions_id, 'instrument': instrument_db_id})
 
+
+    # Retrieve dataset row id
+    with get_db_cursor() as cur:
+        sql = """
+            SELECT id
+            FROM _meta_dataproducts_versions_instruments
+            WHERE _meta_dataproducts_versions_id= %(dataproduct_version)s AND _meta_instruments_id = %(instrument)s;
+        """
+        cur.execute(sql, {'dataproduct_version': dataproducts_versions_id, 'instrument': instrument_db_id})
+        dataset_id = cur.fetchone()[0]
     # Set dataset metadata according to arguments
     if data_span is not None:
         begin_comparison_identifier = 'data_begin' if accumulate_data_span else 'null'
@@ -102,9 +114,25 @@ def update_metadata(dataset: Dataset,
                         SET data_begin = LEAST({begin_comparison_identifier}, CAST(%(data_begin)s AS TIMESTAMP)), 
                             data_end = GREATEST({end_comparison_identifier}, CAST(%(data_end)s AS TIMESTAMP)), 
                             last_updated = %(last_updated)s
-                        WHERE _meta_dataproducts_versions_id = %(dataproduct_version)s AND _meta_instruments_id = %(instrument)s;
+                        WHERE id = %(dataset_id)s;
                     """
 
         with get_db_cursor() as cur:
 
-            cur.execute(sql, {'dataproduct_version': dataproducts_versions_id, 'instrument': instrument_db_id, 'data_begin': data_span.begin, 'data_end': data_span.end, 'last_updated': datetime.now()})
+            cur.execute(sql, {'dataset_id': dataset_id, 'data_begin': data_span.begin, 'data_end': data_span.end, 'last_updated': datetime.now()})
+
+    if channel_ids is not None:
+        for field, values in channel_ids.items():
+            # check field validity
+            if not field.is_channel_id_column:
+                raise ValueError(f'Field {field.name} is not channel id field for product {dataset.product.get_full_id()}')
+
+            for value in values:
+                sql = f"""
+                                INSERT INTO _meta_datasets_channelidvalues
+                                VALUES (DEFAULT, %(dataset_id)s, %(field_name)s, %(value)s)
+                                ON CONFLICT (dataset_id, field_name, value) DO NOTHING
+                            """
+
+                with get_db_cursor() as cur:
+                    cur.execute(sql, {'dataset_id': dataset_id, 'field_name': field.name, 'value': value})

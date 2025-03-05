@@ -5,7 +5,7 @@ import psycopg2
 
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.datasetfactory import DatasetFactory
-from masschange.dataproducts.utils import get_dataproduct_classes
+from masschange.dataproducts.utils import get_dataproducts
 from masschange.db.conn import get_db_connection, get_db_cursor
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
@@ -44,12 +44,9 @@ def initialize_dataset(dataset: Dataset, populate_dataproducts_versions):
         ensure_dataset_caggs_exist(dataset)
     log.info(f'Updating metadata for {dataset.get_table_name()}')
     data_span = dataset.get_data_span()
-    update_metadata(
-        dataset,
-        data_span=data_span,
-        populate_versions=populate_dataproducts_versions,
-        accumulate_data_span=False
-    )
+    channel_ids = dataset._enumerate_channel_id_values()
+    update_metadata(dataset, data_span=data_span, channel_ids=channel_ids, populate_versions=populate_dataproducts_versions,
+                    accumulate_data_span=False)
 
 
 def ensure_prototype_json_store():
@@ -81,10 +78,9 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False
     ensure_ingest_manager_tables_exist()
 
     if not is_database_init:
-        for product_cls in get_dataproduct_classes():
-            product = product_cls()
-            for version in product_cls.get_available_versions():
-                for instrument_id in product_cls.instrument_ids:
+        for product in get_dataproducts():
+            for version in product.get_available_versions():
+                for instrument_id in product.instrument_ids:
                     dataset = DatasetFactory.create(product, version, instrument_id)
                     initialize_dataset(dataset, populate_dataproducts_versions)
 
