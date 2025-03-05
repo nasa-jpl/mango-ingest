@@ -33,21 +33,21 @@ class GraceFOMas1BDataFileReader(DataFileWithProdFlagReader):
 
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='mass_thr', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='mass_thr_err', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='mass_tnk', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='mass_tnk_err', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='gas_mass_thr1', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='gas_mass_thr2', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='gas_mass_tnk1', np_type=np.double,
-                                                    unit='kg'),
+                                                    unit='kg', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='gas_mass_tnk2', np_type=np.double,
-                                                    unit='kg')
+                                                    unit='kg', aggregations=['min', 'max'])
         ]
 
     @classmethod

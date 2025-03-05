@@ -6,7 +6,7 @@ import psycopg2
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import get_dataproduct_classes
-from masschange.db.conn import get_db_connection
+from masschange.db.conn import get_db_connection, get_db_cursor
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
@@ -52,7 +52,21 @@ def initialize_dataset(dataset: Dataset, populate_dataproducts_versions):
     )
 
 
-def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False, is_database_init: bool = False):
+def ensure_prototype_json_store():
+    with get_db_cursor() as cur:
+        sql = '''
+        create table if not exists public._jsonstore (
+          id varchar(64) primary key not null,
+          content jsonb
+        );
+        comment on table public._jsonstore is 'storage for arbitrary non-sensitive JSON objects by the frontend';
+        '''
+
+        cur.execute(sql)
+        log.info(f'Ensured presence of prototype jsonstore table')
+
+
+def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False, is_database_init: bool = False):
     """
     Ensure that database is consistent and up-to-date (within limits)
     :param database_name:
@@ -61,7 +75,8 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     :return:
     """
     ensure_database_exists(database_name)
-    ensure_metadata_tables_exist(database_name)
+    ensure_metadata_tables_exist()
+    ensure_prototype_json_store()
 
     ensure_ingest_manager_tables_exist()
 
