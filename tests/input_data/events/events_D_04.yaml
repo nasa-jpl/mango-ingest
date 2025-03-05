@@ -15,7 +15,7 @@
     # that for an SOE type event I wouldn't just put a "meta" tag,
     # but a dictionary with meaningful names to describe the information
     # on the event
-    spacecraft: C
+    spacecraft: D
     meta: 3  1 1292583425.0 1
 
 - operator: comment
@@ -71,5 +71,5 @@
   created: Sat Dec 26 21:20:53 2020
   createdby: cmccullo
   data:
-    spacecraft: D
+    spacecraft: C
     meta: 1  -10935419
