@@ -37,12 +37,22 @@ def ensure_metadata_tables_exist():
 
             CREATE TABLE IF NOT EXISTS _meta_dataproducts_versions_instruments
             (
+            id SERIAL PRIMARY KEY,
             _meta_dataproducts_versions_id INT REFERENCES _meta_dataproducts_versions (id) ON DELETE CASCADE,
             _meta_instruments_id INT REFERENCES _meta_instruments (id) ON DELETE CASCADE,
             data_begin TIMESTAMPTZ,
             data_end TIMESTAMPTZ,
             last_updated TIMESTAMPTZ,
-            PRIMARY KEY (_meta_dataproducts_versions_id, _meta_instruments_id)
+            UNIQUE (_meta_dataproducts_versions_id, _meta_instruments_id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS _meta_datasets_channelidvalues
+            (
+            id SERIAL PRIMARY KEY,
+            dataset_id INT REFERENCES _meta_dataproducts_versions_instruments (id) ON DELETE CASCADE,
+            field_name VARCHAR NOT NULL,
+            value VARCHAR NOT NULL,
+            UNIQUE (dataset_id, field_name, value)
             );
         """
         cur.execute(sql)
