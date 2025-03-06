@@ -1,75 +1,2226 @@
 - spacecraftevent: IPU
-  time: 2020-12-21 10:57:05 GPS
-  created: Mon Dec 21 14:14:36 2020
+  time: 2018-07-20 08:05:34 GPS
+  created: Fri Jul 20 11:28:21
   createdby: operator
   data:
     spacecraft: C
-    meta: 3  1 1292583425.0 1
-
-- spacecraftevent: IPUR
-  time: 2020-12-22 10:57:05 GPS
-  created: Mon Dec 21 14:14:36 2021
+    meta: 3 1 1216109134.0 1
+- spacecraftevent: IPU
+  time: 2018-07-26 00:18:33 GPS
+  created: Thu Jul 26 03:02:19
   createdby: operator
   data:
-    # With yaml, we can add comments. For example here I'm commenting
-    # that for an SOE type event I wouldn't just put a "meta" tag,
-    # but a dictionary with meaningful names to describe the information
-    # on the event
     spacecraft: C
-    meta: 3  1 1292583425.0 1
-
-- operator: comment
-  time: 2024-12-22
-  eventBegin: 2024-12-21 11:21:00 GPS
-  eventEnd: 2024-12-23 13:11:00 GPS
-  createdby: ellmer
-  text: |
-    this is a freeform indented verbatim text where I can write
-    whatever I want and newlines, indentation, and formatting is
-    preserved
-     * at least as far as I understand it?
-     * you can do what you want here
-     * the formatting of a file like this is a bit more verbose
-       than the current operator files, but by defining a grammar
-       of the types of events we allow and automatically validating
-       that shouldn't be too too bad.
-    Thinking about it more, maybe instead of having one file with all
-    info, have two:
-      * One auto-generated, SOE type entries from automated processes
-      * One with manual edits and comments by operators
-    Then, these two would be automatically interleaved and published
-    to mango or elsewhere on commit.
-- operator: maneuver
-  time: 2024-07-13
-  createdby: cmccullo
-  spacecraft: GF1 # This is the kind of inconsistency we can much more easily eradicate by having defined (but easily extensible) event types and allowed values
-  summary: An in-plane maneuver to minimize the risk of collision with another satellite was performed on GF1. Science operations were interrupted from 2024-07-13 01:30 to 02:44
-  eventBegin: 2024.07.13 (DoY 195) 01:20:17
-  eventEnd: 2024.07.13 (DoY 195) 02:43:43
-  description: |
-    Execute an in-plane orbit maneuver (+0 deg yaw / flight direction)
-    Maneuver input from FDS:
-        -- DeltaV = 3.0 cm/s,
-        -- COB = 2024-07-13 02:07:00 UTC (1720836420 unixTimeInSeconds)
-        -- 206 sec on-time BOTH OCT starting at t0
-        -- t0 = 2024-07-13 02:05:17 UTC
-        -- m0 = 595.223 kg (taken from latest PVT analysis 2024/DOY192.5)
-    The complete SSF is based on the Ground Operations Procedure GOP_NFOS_1300 - Create a maneuver sequence, Step 4.2 (Leader, Backward Flying, 180deg yaw bias, inflight direction maneuver):
-        01:20:17 - GF1_NAOC_7120 - Thruster and NOM Ctrl parameters [LEOP default] to DPG
-        01:30:17 - GF1_NAOC_4150 - Rotate S/C of 180 deg (yaw) - ASP60650 = 0.0
-        02:01:17 - GF1_NPUS_7100 - Set rate of SPID 21112 (SID 36) to 1 Hz
-        02:02:47 - GF1_NAOC_2200 - Transition NOM to OCM
-        02:05:17 - GF1_NAOC_4050 - - Initiate the burn with OCT11 and OCT22 thruster
-        # Thruster burn between 02:05:17 and 02:08:43 #
-        02:08:43 - GF1_NAOC_4060 - Disable OCT driver and perform OCT mech check
-        02:09:23 - GF1_NAOC_2300 - Transition from OCM to NOM
-        02:11:53 - GF1_NPUS_7100 - Set rate of SPID 21112 (SID 36) to the default rate of 1/6 Hz
-        02:12:13 - GF1_NAOC_4150 - Rotate S/C of 180 deg (yaw) - ASP60650 = 3.14159
-        02:43:43 - GF1_NAOC_7111 - Thruster and NOM Ctrl parameters [set-4] to DPG
+    meta: 3 1 1216599513.0 1
+- spacecraftevent: IPU
+  time: 2018-07-26 12:11:33 GPS
+  created: Thu Jul 26 15:36:36
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1216642293.0 1
+- spacecraftevent: IPU
+  time: 2018-09-03 23:10:49 GPS
+  created: Tue Sep 04 01:23:30
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1220051449.0 1
+- spacecraftevent: IPU
+  time: 2018-09-04 07:23:33 GPS
+  created: Tue Sep 04 10:44:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1220081013.0 1
+- spacecraftevent: IPU
+  time: 2018-09-24 10:30:45 GPS
+  created: Mon Sep 24 12:57:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1221820245.0 1
+- spacecraftevent: IPU
+  time: 2018-09-26 07:59:55 GPS
+  created: Wed Sep 26 14:19:53
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1221983995.0 1
+- spacecraftevent: IPU
+  time: 2018-09-26 15:07:26 GPS
+  created: Wed Sep 26 15:27:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1222009646.0 1
+- spacecraftevent: IPU
+  time: 2018-10-22 08:01:25 GPS
+  created: Mon Oct 22 09:26:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1224230485.0 1
+- spacecraftevent: IPU
+  time: 2018-11-09 09:00:25 GPS
+  created: Fri Nov 09 12:19:38
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1225789225.0 1
+- spacecraftevent: IPU
+  time: 2018-12-07 16:13:25 GPS
+  created: Fri Dec 07 18:10:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1228234405.0 1
+- spacecraftevent: IPU
+  time: 2018-12-11 17:54:25 GPS
+  created: Tue Dec 11 19:56:02
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1228586065.0 1
+- spacecraftevent: IPU
+  time: 2018-12-14 18:21:26 GPS
+  created: Fri Dec 14 20:28:16
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1228846886.0 1
+- spacecraftevent: IPU
+  time: 2018-12-28 07:28:26 GPS
+  created: Fri Dec 28 08:59:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1230017306.0 1
+- spacecraftevent: IPU
+  time: 2019-02-01 12:12:44 GPS
+  created: Fri Feb 01 13:54:26
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1233058364.0 1
+- spacecraftevent: IPU
+  time: 2019-02-07 14:44:05 GPS
+  created: Thu Feb 07 18:01:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1233585845.0 1
+- spacecraftevent: IPU
+  time: 2019-02-21 13:05:26 GPS
+  created: Thu Feb 21 16:08:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1234789526.0 1
+- spacecraftevent: IPU
+  time: 2019-03-04 18:48:15 GPS
+  created: Mon Mar 04 20:06:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1235760495.0 1
+- spacecraftevent: IPU
+  time: 2019-03-06 13:25:26 GPS
+  created: Wed Mar 06 16:15:17
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1235913926.0 1
+- spacecraftevent: IPU
+  time: 2019-03-22 17:11:26 GPS
+  created: Fri Mar 22 19:51:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1237309886.0 1
+- spacecraftevent: IPU
+  time: 2019-04-25 09:55:26 GPS
+  created: Thu Apr 25 11:09:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1240221326.0 1
+- spacecraftevent: IPU
+  time: 2019-05-10 14:36:31 GPS
+  created: Fri May 10 16:29:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1241534191.0 1
+- spacecraftevent: IPU
+  time: 2019-05-12 20:18:38 GPS
+  created: Sun May 12 22:08:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1241727518.0 1
+- spacecraftevent: IPU
+  time: 2019-05-15 02:39:05 GPS
+  created: Wed May 15 03:46:44
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1241923145.0 1
+- spacecraftevent: IPU
+  time: 2019-05-28 20:00:26 GPS
+  created: Tue May 28 22:44:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1243108826.0 1
+- spacecraftevent: IPU
+  time: 2019-06-01 09:23:01 GPS
+  created: Sat Jun 01 11:47:24
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1243416181.0 1
+- spacecraftevent: IPU
+  time: 2019-06-27 09:34:59 GPS
+  created: Thu Jun 27 11:58:01
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1245663299.0 1
+- spacecraftevent: IPU
+  time: 2019-07-08 15:33:56 GPS
+  created: Mon Jul 08 19:00:18
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1246635236.0 1
+- spacecraftevent: IPU
+  time: 2019-07-11 16:06:26 GPS
+  created: Thu Jul 11 19:24:28
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1246896386.0 1
+- spacecraftevent: IPU
+  time: 2019-07-18 04:11:26 GPS
+  created: Thu Jul 18 06:00:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1247458286.0 1
+- spacecraftevent: IPU
+  time: 2019-07-20 03:00:26 GPS
+  created: Sat Jul 20 05:18:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1247626826.0 1
+- spacecraftevent: IPU
+  time: 2019-07-26 04:11:26 GPS
+  created: Fri Jul 26 07:12:38
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1248149486.0 1
+- spacecraftevent: IPU
+  time: 2019-07-30 04:40:26 GPS
+  created: Tue Jul 30 07:54:07
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1248496826.0 1
+- spacecraftevent: IPU
+  time: 2019-08-03 03:16:56 GPS
+  created: Sat Aug 03 06:33:52
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1248837416.0 1
+- spacecraftevent: IPU
+  time: 2019-08-09 02:44:26 GPS
+  created: Fri Aug 09 05:47:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1249353866.0 1
+- spacecraftevent: IPU
+  time: 2019-08-30 03:06:46 GPS
+  created: Fri Aug 30 04:39:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1251169606.0 1
+- spacecraftevent: IPU
+  time: 2019-09-17 23:42:36 GPS
+  created: Wed Sep 18 02:33:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1252798956.0 1
+- spacecraftevent: IPU
+  time: 2019-10-03 07:07:27 GPS
+  created: Thu Oct 03 08:21:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1254121647.0 1
+- spacecraftevent: IPU
+  time: 2019-10-17 09:11:26 GPS
+  created: Thu Oct 17 12:29:23
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1255338686.0 1
+- spacecraftevent: IPU
+  time: 2019-11-06 20:07:26 GPS
+  created: Wed Nov 06 21:09:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1257106046.0 1
+- spacecraftevent: IPU
+  time: 2019-11-20 18:07:26 GPS
+  created: Wed Nov 20 19:15:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1258308446.0 1
+- spacecraftevent: IPU
+  time: 2019-11-21 21:45:26 GPS
+  created: Thu Nov 21 23:35:03
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1258407926.0 1
+- spacecraftevent: IPU
+  time: 2019-11-29 18:47:26 GPS
+  created: Fri Nov 29 20:46:34
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1259088446.0 1
+- spacecraftevent: IPU
+  time: 2019-12-20 04:52:26 GPS
+  created: Fri Dec 20 19:40:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1260852746.0 1
+- spacecraftevent: IPU
+  time: 2019-12-22 00:48:50 GPS
+  created: Sun Dec 22 01:27:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1261010930.0 1
+- spacecraftevent: IPU
+  time: 2020-01-04 20:58:41 GPS
+  created: Sat Jan 04 23:28:00
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1262206721.0 1
+- spacecraftevent: IPU
+  time: 2020-01-08 19:30:45 GPS
+  created: Wed Jan 08 21:59:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1262547045.0 1
+- spacecraftevent: IPU
+  time: 2020-01-08 21:45:55 GPS
+  created: Thu Jan 09 01:10:52
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1262555155.0 1
+- spacecraftevent: IPU
+  time: 2020-01-10 09:49:26 GPS
+  created: Fri Jan 10 11:48:23
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1262684966.0 1
+- spacecraftevent: IPU
+  time: 2020-01-17 08:49:26 GPS
+  created: Fri Jan 17 10:57:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1263286166.0 1
+- spacecraftevent: IPU
+  time: 2020-01-18 17:30:26 GPS
+  created: Wed Jan 22 18:17:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1263403826.0 1
+- spacecraftevent: IPU
+  time: 2020-01-18 17:42:20 GPS
+  created: Wed Jan 22 18:17:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1263404540.0 1
+- spacecraftevent: IPU
+  time: 2020-01-19 03:45:26 GPS
+  created: Thu Jan 23 22:58:25
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1263440726.0 1
+- spacecraftevent: IPU
+  time: 2020-01-24 10:00:26 GPS
+  created: Sat Jan 25 19:31:52
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1263895226.0 1
+- spacecraftevent: IPU
+  time: 2020-02-11 12:38:55 GPS
+  created: Tue Feb 11 16:01:02
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1265459935.0 1
+- spacecraftevent: IPU
+  time: 2020-02-12 12:26:41 GPS
+  created: Wed Feb 12 14:14:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1265545601.0 1
+- spacecraftevent: IPU
+  time: 2020-02-13 11:30:26 GPS
+  created: Thu Feb 13 12:27:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1265628626.0 1
+- spacecraftevent: IPU
+  time: 2020-02-14 09:00:26 GPS
+  created: Fri Feb 14 10:28:36
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1265706026.0 1
+- spacecraftevent: IPU
+  time: 2020-02-17 07:32:37 GPS
+  created: Mon Feb 17 10:45:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1265959957.0 1
+- spacecraftevent: IPU
+  time: 2020-02-21 07:44:26 GPS
+  created: Fri Feb 21 09:19:53
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1266306266.0 1
+- spacecraftevent: IPU
+  time: 2020-02-28 16:56:37 GPS
+  created: Fri Feb 28 17:49:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1266944197.0 1
+- spacecraftevent: IPU
+  time: 2020-03-02 11:36:22 GPS
+  created: Mon Mar 02 12:22:25
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 1267184182.0 1
+- spacecraftevent: IPU
+  time: 2020-03-04 10:15:20 GPS
+  created: Mon Mar 23 21:26:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 636588920.0 1
+- spacecraftevent: IPU
+  time: 2020-03-04 13:22:52 GPS
+  created: Mon Mar 23 21:26:02
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 636600172.0 1
+- spacecraftevent: IPU
+  time: 2020-03-10 10:05:22 GPS
+  created: Mon Mar 23 21:11:25
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 637106722.0 1
+- spacecraftevent: IPU
+  time: 2020-03-18 00:04:10 GPS
+  created: Mon Mar 23 21:37:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 637761850.0 1
+- spacecraftevent: IPU
+  time: 2020-03-26 01:01:07 GPS
+  created: Thu Mar 26 17:33:31
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 638456467.0 1
+- spacecraftevent: IPU
+  time: 2020-04-15 07:10:30 GPS
+  created: Wed Apr 15 08:52:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 640206630.0 1
+- spacecraftevent: IPU
+  time: 2020-04-25 15:00:53 GPS
+  created: Sat Apr 25 17:42:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 641098853.0 1
+- spacecraftevent: IPU
+  time: 2020-05-16 12:58:00 GPS
+  created: Sat May 16 14:44:07
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 642905880.0 1
+- spacecraftevent: IPU
+  time: 2020-05-27 04:02:22 GPS
+  created: Wed May 27 06:13:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 643824142.0 1
+- spacecraftevent: IPU
+  time: 2020-06-02 16:34:22 GPS
+  created: Tue Jun 02 19:39:27
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 644387662.0 1
+- spacecraftevent: IPU
+  time: 2020-06-03 00:31:30 GPS
+  created: Wed Jun 03 01:59:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 644416290.0 1
+- spacecraftevent: IPU
+  time: 2020-06-03 00:42:42 GPS
+  created: Wed Jun 03 01:59:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 644416962.0 1
 - spacecraftevent: LRIDATATION
-  time: 2020-12-25 09:45:20 GPS
-  created: Sat Dec 26 21:20:53 2020
-  createdby: cmccullo
+  time: 2020-06-03 12:34:09 GPS
+  created: Jun 3 12:32:00 2020
+  createdby: LRI
   data:
     spacecraft: C
-    meta: 1  -10935419
+    meta: 1 -7807288
+- spacecraftevent: IPU
+  time: 2020-06-04 00:12:20 GPS
+  created: Thu Jun 04 03:18:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 644501540.0 1
+- spacecraftevent: IPU
+  time: 2020-06-09 23:27:02 GPS
+  created: Wed Jun 10 01:08:03
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 645017222.0 1
+- spacecraftevent: IPU
+  time: 2020-06-19 03:30:22 GPS
+  created: Fri Jun 19 05:39:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 645809422.0 1
+- spacecraftevent: IPU
+  time: 2020-06-26 17:25:20 GPS
+  created: Fri Jun 26 20:27:09
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 646464320.0 1
+- spacecraftevent: IPU
+  time: 2020-07-09 22:42:22 GPS
+  created: Thu Jul 09 23:39:42
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 647606542.0 1
+- spacecraftevent: IPU
+  time: 2020-07-14 23:51:22 GPS
+  created: Wed Jul 15 02:38:20
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 648042682.0 1
+- spacecraftevent: IPU
+  time: 2020-07-16 13:41:43 GPS
+  created: Thu Jul 16 16:23:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 648178903.0 1
+- spacecraftevent: IPU
+  time: 2020-07-24 21:36:10 GPS
+  created: Fri Jul 24 23:00:02
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 648898570.0 1
+- spacecraftevent: IPU
+  time: 2020-08-05 17:19:50 GPS
+  created: Wed Aug 05 18:36:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 649919990.0 1
+- spacecraftevent: IPU
+  time: 2020-08-06 22:50:28 GPS
+  created: Fri Aug 07 02:09:21
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 650026228.0 1
+- spacecraftevent: IPU
+  time: 2020-08-07 09:30:22 GPS
+  created: Fri Aug 07 11:35:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 650064622.0 1
+- spacecraftevent: IPU
+  time: 2020-08-07 18:03:00 GPS
+  created: Fri Aug 07 21:07:14
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 650095380.0 1
+- spacecraftevent: IPU
+  time: 2020-08-09 20:31:50 GPS
+  created: Sun Aug 09 23:33:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 650277110.0 1
+- spacecraftevent: IPU
+  time: 2020-08-11 16:36:40 GPS
+  created: Tue Aug 11 19:36:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 650435800.0 1
+- spacecraftevent: IPU
+  time: 2020-08-21 21:35:20 GPS
+  created: Fri Aug 21 22:21:47
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 651317720.0 1
+- spacecraftevent: IPU
+  time: 2020-08-22 03:56:10 GPS
+  created: Sat Aug 22 07:43:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 651340570.0 1
+- spacecraftevent: IPU
+  time: 2020-08-28 19:54:40 GPS
+  created: Fri Aug 28 21:22:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 651916480.0 1
+- spacecraftevent: IPU
+  time: 2020-09-10 12:46:54 GPS
+  created: Thu Sep 10 15:45:13
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 653014014.0 1
+- spacecraftevent: IPU
+  time: 2020-09-18 00:27:50 GPS
+  created: Fri Sep 18 02:42:57
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 653660870.0 1
+- spacecraftevent: IPU
+  time: 2020-09-23 09:40:22 GPS
+  created: Wed Sep 23 11:58:19
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 654126022.0 1
+- spacecraftevent: IPU
+  time: 2020-10-02 04:54:40 GPS
+  created: Mon Oct 12 05:19:42
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 654886480.0 1
+- spacecraftevent: IPU
+  time: 2020-10-03 19:02:22 GPS
+  created: Sun Oct 04 14:09:53
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 655023742.0 1
+- spacecraftevent: IPU
+  time: 2020-10-08 21:00:22 GPS
+  created: Thu Oct 08 23:47:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 655462822.0 1
+- spacecraftevent: IPU
+  time: 2020-10-12 17:45:00 GPS
+  created: Mon Oct 12 19:13:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 655796700.0 1
+- spacecraftevent: IPU
+  time: 2020-10-13 17:25:10 GPS
+  created: Tue Oct 13 20:43:42
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 655881910.0 1
+- spacecraftevent: IPU
+  time: 2020-10-16 23:32:22 GPS
+  created: Sat Oct 17 03:07:53
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 656163142.0 1
+- spacecraftevent: IPU
+  time: 2020-10-20 23:28:40 GPS
+  created: Wed Oct 21 01:42:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 656508520.0 1
+- spacecraftevent: IPU
+  time: 2020-10-21 00:05:22 GPS
+  created: Wed Oct 21 01:42:38
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 656510722.0 1
+- spacecraftevent: IPU
+  time: 2020-10-22 23:01:23 GPS
+  created: Fri Oct 23 01:00:08
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 656679683.0 1
+- spacecraftevent: IPU
+  time: 2020-10-27 02:32:22 GPS
+  created: Tue Oct 27 05:49:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657037942.0 1
+- spacecraftevent: IPU
+  time: 2020-10-27 02:46:40 GPS
+  created: Tue Oct 27 05:49:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657038800.0 1
+- spacecraftevent: IPU
+  time: 2020-10-27 13:44:40 GPS
+  created: Tue Oct 27 15:23:13
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657078280.0 1
+- spacecraftevent: IPU
+  time: 2020-10-29 00:02:22 GPS
+  created: Thu Oct 29 01:54:46
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657201742.0 1
+- spacecraftevent: IPU
+  time: 2020-10-29 23:26:10 GPS
+  created: Fri Oct 30 03:10:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657285970.0 1
+- spacecraftevent: IPU
+  time: 2020-10-30 10:30:22 GPS
+  created: Fri Oct 30 13:23:00
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657325822.0 1
+- spacecraftevent: IPU
+  time: 2020-10-31 20:30:40 GPS
+  created: Sat Oct 31 23:20:16
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657448240.0 1
+- spacecraftevent: IPU
+  time: 2020-11-03 00:02:22 GPS
+  created: Tue Nov 03 01:47:28
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657633742.0 1
+- spacecraftevent: IPU
+  time: 2020-11-04 21:16:10 GPS
+  created: Thu Nov 05 00:58:23
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657796570.0 1
+- spacecraftevent: IPU
+  time: 2020-11-05 00:45:22 GPS
+  created: Thu Nov 05 03:53:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657809122.0 1
+- spacecraftevent: IPU
+  time: 2020-11-05 22:24:50 GPS
+  created: Fri Nov 06 02:14:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 657887090.0 1
+- spacecraftevent: IPU
+  time: 2020-11-08 15:48:00 GPS
+  created: Mon Nov 09 17:44:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658122480.0 1
+- spacecraftevent: IPU
+  time: 2020-11-10 03:50:22 GPS
+  created: Wed Nov 11 16:16:00
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658252222.0 1
+- spacecraftevent: IPU
+  time: 2020-11-11 03:05:22 GPS
+  created: Wed Nov 11 16:47:01
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658335922.0 1
+- spacecraftevent: IPU
+  time: 2020-11-13 12:20:22 GPS
+  created: Fri Nov 13 13:58:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658542022.0 1
+- spacecraftevent: IPU
+  time: 2020-11-17 07:35:22 GPS
+  created: Tue Nov 17 09:25:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658870522.0 1
+- spacecraftevent: IPU
+  time: 2020-11-17 08:35:10 GPS
+  created: Tue Nov 17 09:25:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658874110.0 1
+- spacecraftevent: IPU
+  time: 2020-11-18 18:50:22 GPS
+  created: Wed Nov 18 19:57:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 658997422.0 1
+- spacecraftevent: IPU
+  time: 2020-11-20 21:48:40 GPS
+  created: Sun Nov 22 01:23:36
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659180920.0 1
+- spacecraftevent: IPU
+  time: 2020-11-21 03:10:22 GPS
+  created: Sun Nov 22 01:24:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659200222.0 1
+- spacecraftevent: IPU
+  time: 2020-11-21 21:21:10 GPS
+  created: Sun Nov 22 01:24:07
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659265670.0 1
+- spacecraftevent: IPU
+  time: 2020-11-24 06:10:22 GPS
+  created: Tue Nov 24 08:16:35
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659470222.0 1
+- spacecraftevent: IPU
+  time: 2020-11-24 13:14:30 GPS
+  created: Tue Nov 24 14:42:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659495670.0 1
+- spacecraftevent: IPU
+  time: 2020-11-24 14:41:48 GPS
+  created: Tue Nov 24 17:43:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659500908.0 1
+- spacecraftevent: IPU
+  time: 2020-11-24 22:01:54 GPS
+  created: Wed Nov 25 00:04:09
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659527314.0 1
+- spacecraftevent: IPU
+  time: 2020-11-28 20:26:10 GPS
+  created: Sat Nov 28 22:35:56
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659867170.0 1
+- spacecraftevent: IPU
+  time: 2020-11-29 14:27:30 GPS
+  created: Sun Nov 29 17:33:27
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 659932050.0 1
+- spacecraftevent: IPU
+  time: 2020-11-30 14:08:50 GPS
+  created: Mon Nov 30 16:15:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 660017330.0 1
+- spacecraftevent: IPU
+  time: 2020-12-02 14:45:18 GPS
+  created: Wed Dec 02 18:01:20
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 660192318.0 1
+- spacecraftevent: IPU
+  time: 2020-12-02 20:30:20 GPS
+  created: Wed Dec 02 21:07:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 660213020.0 1
+- spacecraftevent: IPU
+  time: 2020-12-15 08:25:32 GPS
+  created: Tue Dec 15 11:44:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 661292732.0 1
+- spacecraftevent: IPU
+  time: 2020-12-19 08:49:10 GPS
+  created: Sat Dec 19 10:38:24
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 661639750.0 1
+- spacecraftevent: IPU
+  time: 2020-12-23 04:51:50 GPS
+  created: Wed Dec 23 05:38:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 661971110.0 1
+- spacecraftevent: IPU
+  time: 2020-12-24 10:05:50 GPS
+  created: Thu Dec 24 13:09:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 662076350.0 1
+- spacecraftevent: IPU
+  time: 2020-12-25 09:37:00 GPS
+  created: Fri Dec 25 11:43:31
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 662161020.0 1
+- spacecraftevent: IPU
+  time: 2020-12-26 06:09:10 GPS
+  created: Sat Dec 26 09:15:16
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 662234950.0 1
+- spacecraftevent: IPU
+  time: 2020-12-26 09:16:00 GPS
+  created: Sat Dec 26 12:27:31
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 662246160.0 1
+- spacecraftevent: IPU
+  time: 2020-12-28 15:14:32 GPS
+  created: Mon Dec 28 17:58:14
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 662440472.0 1
+- spacecraftevent: IPU
+  time: 2021-01-22 03:45:22 GPS
+  created: Fri Jan 22 04:08:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 664559122.0 1
+- spacecraftevent: IPU
+  time: 2021-01-23 03:58:10 GPS
+  created: Sat Jan 23 05:32:44
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 664646290.0 1
+- spacecraftevent: IPU
+  time: 2021-01-31 04:22:30 GPS
+  created: Sun Jan 31 05:40:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 665338950.0 1
+- spacecraftevent: IPU
+  time: 2021-02-05 07:35:20 GPS
+  created: Fri Feb 05 08:38:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 665782520.0 1
+- spacecraftevent: IPU
+  time: 2021-02-14 13:22:15 GPS
+  created: Sun Feb 14 16:15:30
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 666580935.0 1
+- spacecraftevent: IPU
+  time: 2021-02-19 09:10:22 GPS
+  created: Fri Feb 19 09:44:47
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 666997822.0 1
+- spacecraftevent: IPU
+  time: 2021-02-19 23:49:10 GPS
+  created: Sat Feb 20 01:28:42
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 667050550.0 1
+- spacecraftevent: IPU
+  time: 2021-02-23 15:34:40 GPS
+  created: Tue Feb 23 17:41:07
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 667366480.0 1
+- spacecraftevent: IPU
+  time: 2021-02-26 03:05:22 GPS
+  created: Fri Feb 26 05:43:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 667580722.0 1
+- spacecraftevent: IPU
+  time: 2021-02-27 04:05:22 GPS
+  created: Sat Feb 27 06:50:55
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 667670722.0 1
+- spacecraftevent: IPU
+  time: 2021-03-03 03:05:22 GPS
+  created: Wed Mar 03 05:27:44
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 668012722.0 1
+- spacecraftevent: IPU
+  time: 2021-03-03 14:10:22 GPS
+  created: Wed Mar 03 14:45:46
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 668052622.0 1
+- spacecraftevent: IPU
+  time: 2021-03-12 16:20:22 GPS
+  created: Fri Mar 12 19:26:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 668838022.0 1
+- spacecraftevent: IPU
+  time: 2021-03-19 06:20:22 GPS
+  created: Fri Mar 19 09:15:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 669406822.0 1
+- spacecraftevent: IPU
+  time: 2021-03-24 12:23:26 GPS
+  created: Wed Mar 24 14:59:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 669860606.0 1
+- spacecraftevent: IPU
+  time: 2021-04-02 03:05:22 GPS
+  created: Fri Apr 02 03:54:34
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 670604722.0 1
+- spacecraftevent: IPU
+  time: 2021-04-09 04:50:22 GPS
+  created: Fri Apr 09 06:08:28
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 671215822.0 1
+- spacecraftevent: IPU
+  time: 2021-04-23 03:05:22 GPS
+  created: Fri Apr 23 04:13:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 672419122.0 1
+- spacecraftevent: IPU
+  time: 2021-04-26 15:50:22 GPS
+  created: Mon Apr 26 17:05:53
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 672724222.0 1
+- spacecraftevent: IPU
+  time: 2021-05-06 14:45:22 GPS
+  created: Thu May 06 16:39:44
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 673584322.0 1
+- spacecraftevent: IPU
+  time: 2021-05-26 21:00:22 GPS
+  created: Wed May 26 22:03:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 675334822.0 1
+- spacecraftevent: IPU
+  time: 2021-05-28 17:30:22 GPS
+  created: Fri May 28 18:01:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 675495022.0 1
+- spacecraftevent: IPU
+  time: 2021-06-11 07:50:22 GPS
+  created: Fri Jun 11 11:37:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 676669822.0 1
+- spacecraftevent: IPU
+  time: 2021-07-09 17:50:22 GPS
+  created: Fri Jul 09 18:24:06
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 679125022.0 1
+- spacecraftevent: IPU
+  time: 2021-07-16 03:20:22 GPS
+  created: Fri Jul 16 04:48:56
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 679677622.0 1
+- spacecraftevent: IPU
+  time: 2021-07-23 04:35:22 GPS
+  created: Fri Jul 23 06:59:24
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 680286922.0 1
+- spacecraftevent: IPU
+  time: 2021-07-30 18:20:22 GPS
+  created: Fri Jul 30 18:44:30
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 680941222.0 1
+- spacecraftevent: IPU
+  time: 2021-08-06 13:55:22 GPS
+  created: Fri Aug 06 14:37:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 681530122.0 1
+- spacecraftevent: IPU
+  time: 2021-09-24 15:17:22 GPS
+  created: Fri Sep 24 17:05:30
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 685768642.0 1
+- spacecraftevent: IPU
+  time: 2021-10-20 14:24:00 GPS
+  created: Wed Oct 20 16:59:46
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 688011840.0 1
+- spacecraftevent: LRIDATATION
+  time: 2021-11-02 00:00:21 GPS
+  created: Wed Nov 3 16:32:46_UTC
+  createdby: mpaik
+  data:
+    spacecraft: C
+    meta: 3 1 2782573 1
+- spacecraftevent: IPU
+  time: 2021-11-03 02:53:22 GPS
+  created: Wed Nov 03 05:28:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 689180002.0 1
+- spacecraftevent: IPU
+  time: 2021-11-03 17:35:22 GPS
+  created: Wed Nov 03 18:08:22
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 689232922.0 1
+- spacecraftevent: IPU
+  time: 2021-11-09 12:37:42 GPS
+  created: Tue Nov 09 15:55:25
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 689733462.0 1
+- spacecraftevent: IPU
+  time: 2021-11-16 08:20:22 GPS
+  created: Tue Nov 16 11:56:28
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 690322822.0 1
+- spacecraftevent: IPU
+  time: 2021-11-23 22:15:00 GPS
+  created: Tue Nov 23 23:06:09
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 690977700.0 1
+- spacecraftevent: IPU
+  time: 2021-12-03 15:05:22 GPS
+  created: Fri Dec 03 16:37:54
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 691815922.0 1
+- spacecraftevent: IPU
+  time: 2021-12-10 03:05:22 GPS
+  created: Fri Dec 10 06:07:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 692377522.0 1
+- spacecraftevent: IPU
+  time: 2021-12-29 19:05:22 GPS
+  created: Wed Dec 29 19:37:57
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 694076722.0 1
+- spacecraftevent: IPU
+  time: 2021-12-30 01:10:46 GPS
+  created: Thu Dec 30 02:03:06
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 694098646.0 1
+- spacecraftevent: IPU
+  time: 2022-01-04 20:06:59 GPS
+  created: Tue Jan 04 20:21:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 694598819.0 1
+- spacecraftevent: IPU
+  time: 2022-01-18 18:07:48 GPS
+  created: Tue Jan 18 18:23:34
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 695801268.0 1
+- spacecraftevent: IPU
+  time: 2022-01-25 20:18:47 GPS
+  created: Tue Jan 25 20:40:35
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 696413927.0 1
+- spacecraftevent: IPU
+  time: 2022-01-27 12:30:52 GPS
+  created: Thu Jan 27 13:40:39
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 696558652.0 1
+- spacecraftevent: IPU
+  time: 2022-02-09 00:54:20 GPS
+  created: Wed Feb 09 04:15:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 697640060.0 1
+- spacecraftevent: IPU
+  time: 2022-02-14 20:17:10 GPS
+  created: Mon Feb 14 22:45:14
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 698141830.0 1
+- spacecraftevent: IPU
+  time: 2022-02-16 18:30:00 GPS
+  created: Wed Feb 16 18:55:11
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 698308200.0 1
+- spacecraftevent: IPU
+  time: 2022-02-24 21:40:22 GPS
+  created: Thu Feb 24 22:22:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 699010822.0 1
+- spacecraftevent: IPU
+  time: 2022-02-24 21:56:20 GPS
+  created: Thu Feb 24 22:22:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 699011780.0 1
+- spacecraftevent: IPU
+  time: 2022-03-11 11:50:22 GPS
+  created: Mon Mar 14 02:10:21
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 700271422.0 1
+- spacecraftevent: IPU
+  time: 2022-03-18 03:01:22 GPS
+  created: Fri Mar 18 04:48:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 700844482.0 1
+- spacecraftevent: IPU
+  time: 2022-03-25 03:32:22 GPS
+  created: Fri Mar 25 06:49:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 701451142.0 1
+- spacecraftevent: IPU
+  time: 2022-03-28 05:57:56 GPS
+  created: Mon Mar 28 07:19:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 701719076.0 1
+- spacecraftevent: IPU
+  time: 2022-04-08 15:18:22 GPS
+  created: Fri Apr 08 17:19:06
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 702703102.0 1
+- spacecraftevent: IPU
+  time: 2022-04-22 03:32:22 GPS
+  created: Fri Apr 22 05:50:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 703870342.0 1
+- spacecraftevent: IPU
+  time: 2022-05-05 17:30:34 GPS
+  created: Thu May 05 18:26:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 705043834.0 1
+- spacecraftevent: IPU
+  time: 2022-05-20 08:20:22 GPS
+  created: Fri May 20 11:14:25
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 706306822.0 1
+- spacecraftevent: IPU
+  time: 2022-05-27 05:17:22 GPS
+  created: Fri May 27 06:57:36
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 706900642.0 1
+- spacecraftevent: IPU
+  time: 2022-06-08 03:05:22 GPS
+  created: Wed Jun 08 05:36:35
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 707929522.0 1
+- spacecraftevent: IPU
+  time: 2022-06-22 02:25:22 GPS
+  created: Wed Jun 22 03:30:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 709136722.0 1
+- spacecraftevent: IPU
+  time: 2022-06-22 15:15:22 GPS
+  created: Wed Jun 22 16:07:57
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 709182922.0 1
+- spacecraftevent: IPU
+  time: 2022-06-24 19:50:22 GPS
+  created: Fri Jun 24 21:40:04
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 709372222.0 1
+- spacecraftevent: IPU
+  time: 2022-06-30 19:50:22 GPS
+  created: Thu Jun 30 22:36:10
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 709890622.0 1
+- spacecraftevent: IPU
+  time: 2022-07-15 14:30:22 GPS
+  created: Fri Jul 15 15:27:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 711167422.0 1
+- spacecraftevent: IPU
+  time: 2022-07-29 14:02:22 GPS
+  created: Fri Jul 29 16:33:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 712375342.0 1
+- spacecraftevent: IPU
+  time: 2022-07-29 14:18:20 GPS
+  created: Fri Jul 29 16:33:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 712376300.0 1
+- spacecraftevent: IPU
+  time: 2022-08-03 01:50:22 GPS
+  created: Wed Aug 03 03:29:13
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 712763422.0 1
+- spacecraftevent: IPU
+  time: 2022-08-03 22:05:22 GPS
+  created: Thu Aug 04 01:29:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 712836322.0 1
+- spacecraftevent: IPU
+  time: 2022-08-12 10:40:22 GPS
+  created: Fri Aug 12 11:10:23
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 713572822.0 1
+- spacecraftevent: IPU
+  time: 2022-09-09 03:30:22 GPS
+  created: Fri Sep 09 03:57:18
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 715966222.0 1
+- spacecraftevent: IPU
+  time: 2022-09-16 03:05:22 GPS
+  created: Fri Sep 16 06:04:40
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 716569522.0 1
+- spacecraftevent: IPU
+  time: 2022-09-17 13:29:28 GPS
+  created: Sat Sep 17 16:45:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 716693368.0 1
+- spacecraftevent: IPU
+  time: 2022-09-23 03:01:22 GPS
+  created: Fri Sep 23 05:02:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 717174082.0 1
+- spacecraftevent: IPU
+  time: 2022-09-30 10:42:22 GPS
+  created: Fri Sep 30 13:34:56
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 717806542.0 1
+- spacecraftevent: IPU
+  time: 2022-10-07 03:01:22 GPS
+  created: Fri Oct 07 06:15:09
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 718383682.0 1
+- spacecraftevent: IPU
+  time: 2022-10-14 20:35:22 GPS
+  created: Fri Oct 14 23:54:58
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 719051722.0 1
+- spacecraftevent: IPU
+  time: 2022-10-19 03:01:22 GPS
+  created: Wed Oct 19 04:44:16
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 719420482.0 1
+- spacecraftevent: IPU
+  time: 2022-10-20 03:02:22 GPS
+  created: Thu Oct 20 05:59:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 719506942.0 1
+- spacecraftevent: IPU
+  time: 2022-10-21 04:02:22 GPS
+  created: Fri Oct 21 07:14:39
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 719596942.0 1
+- spacecraftevent: IPU
+  time: 2022-10-22 03:05:22 GPS
+  created: Sat Oct 22 05:22:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 719679922.0 1
+- spacecraftevent: IPU
+  time: 2022-10-26 00:30:22 GPS
+  created: Wed Oct 26 03:42:02
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 720016222.0 1
+- spacecraftevent: IPU
+  time: 2022-10-26 16:15:22 GPS
+  created: Wed Oct 26 19:22:11
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 720072922.0 1
+- spacecraftevent: IPU
+  time: 2022-11-03 17:57:22 GPS
+  created: Thu Nov 03 19:34:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 720770242.0 1
+- spacecraftevent: IPU
+  time: 2022-11-04 20:47:22 GPS
+  created: Sat Nov 16 19:28:10
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 720866842.0 1
+- spacecraftevent: IPU
+  time: 2022-11-08 03:05:22 GPS
+  created: Tue Nov 08 03:36:01
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 721148722.0 1
+- spacecraftevent: IPU
+  time: 2022-11-11 03:30:22 GPS
+  created: Fri Nov 11 04:02:35
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 721409422.0 1
+- spacecraftevent: IPU
+  time: 2022-11-15 16:17:22 GPS
+  created: Tue Nov 15 18:16:33
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 721801042.0 1
+- spacecraftevent: IPU
+  time: 2022-11-17 03:05:22 GPS
+  created: Thu Nov 17 05:02:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 721926322.0 1
+- spacecraftevent: IPU
+  time: 2022-11-22 04:00:22 GPS
+  created: Tue Nov 22 04:41:29
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 722361622.0 1
+- spacecraftevent: IPU
+  time: 2022-11-22 21:30:22 GPS
+  created: Tue Nov 22 23:30:13
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 722424622.0 1
+- spacecraftevent: IPU
+  time: 2022-12-07 10:02:22 GPS
+  created: Wed Dec 07 13:20:12
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 723679342.0 1
+- spacecraftevent: IPU
+  time: 2022-12-09 13:02:22 GPS
+  created: Fri Dec 09 15:38:31
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 723862942.0 1
+- spacecraftevent: IPU
+  time: 2022-12-14 11:10:22 GPS
+  created: Wed Dec 14 12:19:18
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 724288222.0 1
+- spacecraftevent: IPU
+  time: 2022-12-16 15:05:22 GPS
+  created: Fri Dec 16 17:46:52
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 724475122.0 1
+- spacecraftevent: IPU
+  time: 2022-12-21 04:50:20 GPS
+  created: Wed Dec 28 18:43:32
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 724870220.0 1
+- spacecraftevent: IPU
+  time: 2023-01-11 15:25:22 GPS
+  created: Wed Jan 11 17:33:51
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 726722722.0 1
+- spacecraftevent: IPU
+  time: 2023-01-27 03:32:22 GPS
+  created: Fri Jan 27 05:21:26
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 728062342.0 1
+- spacecraftevent: IPU
+  time: 2023-01-27 14:16:23 GPS
+  created: Fri Jan 27 14:27:08
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 728100983.0 1
+- spacecraftevent: IPU
+  time: 2023-02-03 16:31:22 GPS
+  created: Fri Feb 03 19:55:27
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 728713882.0 1
+- spacecraftevent: IPU
+  time: 2023-02-17 09:32:22 GPS
+  created: Fri Feb 17 11:34:59
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 729898342.0 1
+- spacecraftevent: IPU
+  time: 2023-03-01 03:00:22 GPS
+  created: Wed Mar 01 03:49:50
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 730911622.0 1
+- spacecraftevent: IPU
+  time: 2023-03-10 09:47:22 GPS
+  created: Fri Mar 10 11:10:27
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 731713642.0 1
+- spacecraftevent: IPU
+  time: 2023-04-07 10:32:22 GPS
+  created: Fri Apr 07 13:08:49
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 734135542.0 1
+- spacecraftevent: IPU
+  time: 2023-04-14 07:17:22 GPS
+  created: Fri Apr 14 08:48:43
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 734728642.0 1
+- spacecraftevent: IPU
+  time: 2023-04-28 19:35:22 GPS
+  created: Fri Apr 28 22:22:16
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 735982522.0 1
+- spacecraftevent: IPU
+  time: 2023-05-19 10:32:22 GPS
+  created: Fri May 19 12:37:10
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 737764342.0 1
+- spacecraftevent: IPU
+  time: 2023-06-03 03:05:22 GPS
+  created: Sat Jun 03 05:01:37
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 739033522.0 1
+- spacecraftevent: IPU
+  time: 2023-06-09 19:17:22 GPS
+  created: Sat Jun 10 04:55:45
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 739610242.0 1
+- spacecraftevent: IPU
+  time: 2023-06-30 17:17:22 GPS
+  created: Fri Jun 30 18:02:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 741417442.0 1
+- spacecraftevent: IPU
+  time: 2023-07-07 09:17:22 GPS
+  created: Fri Jul 07 10:33:15
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 741993442.0 1
+- spacecraftevent: IPU
+  time: 2023-07-14 13:47:22 GPS
+  created: Fri Jul 14 15:44:08
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 742614442.0 1
+- spacecraftevent: IPU
+  time: 2023-07-15 03:51:22 GPS
+  created: Sat Jul 15 08:21:00
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 742665082.0 1
+- spacecraftevent: IPU
+  time: 2023-07-17 01:05:53 GPS
+  created: Tue Jul 18 06:48:36
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 742827953.0 1
+- spacecraftevent: IPU
+  time: 2023-08-22 04:16:22 GPS
+  created: Tue Aug 22 04:42:26
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 745949782.0 1
+- spacecraftevent: IPU
+  time: 2023-08-25 06:05:22 GPS
+  created: Fri Aug 25 15:06:59
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 746215522.0 1
+- spacecraftevent: IPU
+  time: 2023-08-27 14:43:50 GPS
+  created: Sun Aug 27 23:04:39
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 746419430.0 1
+- spacecraftevent: IPU
+  time: 2023-08-28 09:45:10 GPS
+  created: Mon Aug 28 15:07:05
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 746487910.0 1
+- spacecraftevent: IPU
+  time: 2023-09-01 13:45:22 GPS
+  created: Mon Sep 18 15:09:38
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 746847922.0 1
+- spacecraftevent: IPU
+  time: 2023-09-08 07:50:22 GPS
+  created: Fri Sep 08 08:54:07
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 747431422.0 1
+- spacecraftevent: IPU
+  time: 2023-09-15 11:47:22 GPS
+  created: Fri Sep 15 13:59:33
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 748050442.0 1
+- spacecraftevent: IPU
+  time: 2023-10-06 16:02:22 GPS
+  created: Fri Oct 06 16:21:49
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 749880142.0 1
+- spacecraftevent: IPU
+  time: 2023-10-13 18:17:22 GPS
+  created: Fri Oct 13 21:18:51
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 750493042.0 1
+- spacecraftevent: IPU
+  time: 2023-10-20 03:47:22 GPS
+  created: Fri Oct 20 04:27:34
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 751045642.0 1
+- spacecraftevent: IPU
+  time: 2023-11-03 09:02:22 GPS
+  created: Fri Nov 03 11:14:26
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 752274142.0 1
+- spacecraftevent: IPU
+  time: 2023-11-29 10:32:22 GPS
+  created: Wed Nov 29 16:56:26
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 754525942.0 1
+- spacecraftevent: IPU
+  time: 2023-12-01 03:15:22 GPS
+  created: Fri Dec 01 06:01:18
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 754672522.0 1
+- spacecraftevent: IPU
+  time: 2023-12-08 07:35:22 GPS
+  created: Fri Dec 08 10:55:33
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 755292922.0 1
+- spacecraftevent: IPU
+  time: 2023-12-15 05:20:22 GPS
+  created: Fri Dec 15 06:23:45
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 755889622.0 1
+- spacecraftevent: IPU
+  time: 2023-12-22 03:05:20 GPS
+  created: Fri Dec 22 05:12:30
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 756486320.0 1
+- spacecraftevent: IPU
+  time: 2024-01-05 19:47:22 GPS
+  created: Fri Jan 05 21:17:26
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 757756042.0 1
+- spacecraftevent: IPU
+  time: 2024-01-12 03:01:22 GPS
+  created: Fri Jan 12 04:11:45
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 758300482.0 1
+- spacecraftevent: IPU
+  time: 2024-01-24 14:27:52 GPS
+  created: Wed Jan 24 17:53:47
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 759378472.0 1
+- spacecraftevent: IPU
+  time: 2024-01-26 14:02:22 GPS
+  created: Fri Jan 26 17:07:01
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 759549742.0 1
+- spacecraftevent: IPU
+  time: 2024-02-10 03:18:20 GPS
+  created: Sat Feb 10 06:04:45
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 760807100.0 1
+- spacecraftevent: IPU
+  time: 2024-02-19 10:49:20 GPS
+  created: Mon Feb 19 13:08:25
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 761611760.0 1
+- spacecraftevent: IPU
+  time: 2024-02-19 16:05:22 GPS
+  created: Mon Feb 19 19:29:55
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 761630722.0 1
+- spacecraftevent: IPU
+  time: 2024-03-02 20:34:22 GPS
+  created: Sat Mar 02 23:49:12
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 762683662.0 1
+- spacecraftevent: IPU
+  time: 2024-03-08 20:03:22 GPS
+  created: Fri Mar 08 21:13:03
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 763200202.0 1
+- spacecraftevent: IPU
+  time: 2024-03-21 03:04:22 GPS
+  created: Thu Mar 21 04:32:06
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 764262262.0 1
+- spacecraftevent: IPU
+  time: 2024-04-13 15:05:22 GPS
+  created: Sat Apr 13 18:26:57
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 766292722.0 1
+- spacecraftevent: IPU
+  time: 2024-04-20 23:02:10 GPS
+  created: Sun Apr 21 02:09:38
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 766926130.0 1
+- spacecraftevent: IPU
+  time: 2024-05-18 03:01:22 GPS
+  created: Sat May 18 04:28:57
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 769273282.0 1
+- spacecraftevent: IPU
+  time: 2024-05-22 20:50:22 GPS
+  created: Thu May 23 00:45:22
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 769683022.0 1
+- spacecraftevent: IPU
+  time: 2024-05-31 18:05:22 GPS
+  created: Fri May 31 19:29:32
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 770450722.0 1
+- spacecraftevent: IPU
+  time: 2024-06-06 18:38:22 GPS
+  created: Thu Jun 06 22:50:41
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 770971102.0 1
+- spacecraftevent: IPU
+  time: 2024-06-14 03:01:22 GPS
+  created: Fri Jun 14 03:48:48
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 771606082.0 1
+- spacecraftevent: IPU
+  time: 2024-06-19 03:01:22 GPS
+  created: Wed Jun 19 06:07:51
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 772038082.0 1
+- spacecraftevent: IPU
+  time: 2024-06-28 06:10:22 GPS
+  created: Fri Jun 28 06:46:42
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 772827022.0 1
+- spacecraftevent: IPU
+  time: 2024-07-30 09:26:19 GPS
+  created: Wed Jul 31 08:04:25
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 775603579.0 1
+- spacecraftevent: IPU
+  time: 2024-08-09 03:01:22 GPS
+  created: Fri Aug 09 03:45:36
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 776444482.0 1
+- spacecraftevent: IPU
+  time: 2024-08-16 08:35:22 GPS
+  created: Fri Aug 16 11:28:26
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 777069322.0 1
+- spacecraftevent: IPU
+  time: 2024-08-24 23:10:23 GPS
+  created: Sun Aug 25 02:27:49
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 777813023.0 1
+- spacecraftevent: IPU
+  time: 2024-09-06 18:14:22 GPS
+  created: Fri Sep 06 19:05:18
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 778918462.0 1
+- spacecraftevent: IPU
+  time: 2024-09-08 20:31:00 GPS
+  created: Sun Sep 08 21:04:08
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 779099460.0 1
+- spacecraftevent: IPU
+  time: 2024-09-09 12:11:20 GPS
+  created: Mon Sep 09 16:08:56
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 779155880.0 1
+- spacecraftevent: IPU
+  time: 2024-09-10 11:52:00 GPS
+  created: Tue Sep 10 14:03:51
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 779241120.0 1
+- spacecraftevent: IPU
+  time: 2024-09-13 15:05:22 GPS
+  created: Fri Sep 13 17:29:22
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 779511922.0 1
+- spacecraftevent: IPU
+  time: 2024-09-19 08:50:22 GPS
+  created: Thu Sep 19 11:26:52
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 780007822.0 1
+- spacecraftevent: IPU
+  time: 2024-09-27 16:25:22 GPS
+  created: Fri Sep 27 17:06:10
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 780726322.0 1
+- spacecraftevent: IPU
+  time: 2024-10-04 11:05:22 GPS
+  created: Fri Oct 04 14:13:50
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 781311922.0 1
+- spacecraftevent: IPU
+  time: 2024-10-16 11:05:22 GPS
+  created: Wed Oct 16 12:44:35
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 782348722.0 1
+- spacecraftevent: IPU
+  time: 2024-11-12 01:38:04 GPS
+  created: Tue Nov 12 04:47:46
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 784647484.0 1
+- spacecraftevent: IPU
+  time: 2024-11-15 14:32:22 GPS
+  created: Sat Nov 16 19:24:10
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 784953142.0 1
+- spacecraftevent: IPU
+  time: 2024-11-21 09:47:22 GPS
+  created: Thu Nov 21 11:29:55
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 785454442.0 1
+- spacecraftevent: IPU
+  time: 2024-11-29 08:16:22 GPS
+  created: Fri Nov 29 10:46:36
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 786140182.0 1
+- spacecraftevent: IPU
+  time: 2024-12-06 14:03:25 GPS
+  created: Fri Dec 06 15:09:21
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 786765805.0 1
+- spacecraftevent: IPU
+  time: 2024-12-06 16:35:22 GPS
+  created: Fri Dec 06 18:24:25
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 786774922.0 1
+- spacecraftevent: IPU
+  time: 2024-12-17 05:31:22 GPS
+  created: Tue Dec 17 08:08:42
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 787685482.0 1
+- spacecraftevent: IPU
+  time: 2024-12-19 03:20:22 GPS
+  created: Thu Dec 19 04:06:45
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 787850422.0 1
+- spacecraftevent: IPU
+  time: 2024-12-24 03:30:22 GPS
+  created: Tue Dec 24 06:27:52
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 788283022.0 1
+- spacecraftevent: IPU
+  time: 2025-01-10 03:05:22 GPS
+  created: Sat Jan 11 20:29:05
+  createdby: operator
+  data:
+    spacecraft: C
+    meta: 3 1 789750322.0 1
+- spacecraftevent: IPU
+  time: 2025-01-24 08:05:22 GPS
+  created: Fri Jan 24 11:25:10
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 790977922.0 1
+- spacecraftevent: IPU
+  time: 2025-01-31 12:50:22 GPS
+  created: Fri Jan 31 15:48:51
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 791599822.0 1
+- spacecraftevent: IPU
+  time: 2025-02-05 12:35:22 GPS
+  created: Wed Feb 05 14:48:01
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 792030922.0 1
+- spacecraftevent: IPU
+  time: 2025-02-08 03:01:22 GPS
+  created: Sat Feb 08 05:26:16
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 792255682.0 1
+- spacecraftevent: IPU
+  time: 2025-02-13 03:01:22 GPS
+  created: Thu Feb 13 04:25:41
+  createdby: cjf_operator
+  data:
+    spacecraft: C
+    meta: 3 1 792687682.0 1

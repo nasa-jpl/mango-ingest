@@ -27,7 +27,7 @@ class EventsFileReader(AsciiDataFileReader):
         for i, event in enumerate(filtered_content):
             data = np.array(cls._get_values_by_keys(flatten_nested_dict(event), [col.name for col in column_defs]))
             data_row = np.core.records.fromarrays(data, dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
-            data_rec[i-1] = data_row
+            data_rec[i] = data_row
         return data_rec
 
     @classmethod
