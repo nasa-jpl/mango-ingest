@@ -362,7 +362,7 @@ class Dataset:
             for row in cur.fetchall():
                 for field in channel_id_fields:
                     column = field.name
-                    metadata[column].add(row[column])
+                    metadata[field].add(row[column])
 
         return {field: sorted(values) for field, values in metadata.items()}
 
