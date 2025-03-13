@@ -348,7 +348,7 @@ class Dataset:
         # is safe to assume all possible values have been written to that materialized view. 5 is a good starting point.
         view_depth = min(([0, *self.product.get_available_aggregation_levels()])[-1], 5)
 
-        with get_db_cursor() as cur:
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             sql = f"""
                 SELECT DISTINCT {','.join(sorted(channel_id_column_names))}
                 FROM {self.get_table_or_view_name(view_depth)};
