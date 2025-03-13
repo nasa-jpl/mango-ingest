@@ -249,3 +249,14 @@ class DataProduct(ABC):
     @classmethod
     def has_channel_id_fields(cls) -> bool:
         return len([f.name for f in cls.get_available_fields() if f.is_channel_id_column]) > 0
+
+    @classmethod
+    def ensure(cls):
+        # Ensure product exists in db
+        with get_db_cursor() as cur:
+            sql = """
+                INSERT INTO _meta_dataproducts
+                VALUES (DEFAULT, %(name)s, %(label)s)
+                ON CONFLICT DO NOTHING;
+                """
+            cur.execute(sql, {'name': cls.get_full_id(), 'label': cls.get_full_id()})

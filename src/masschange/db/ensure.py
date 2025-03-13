@@ -79,6 +79,7 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False
 
     if not is_database_init:
         for product in get_dataproducts():
+            product.ensure()
             for version in product.get_available_versions():
                 for instrument_id in product.instrument_ids:
                     dataset = DatasetFactory.create(product, version, instrument_id)

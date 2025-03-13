@@ -27,14 +27,7 @@ def update_metadata(dataset: Dataset, data_span: Union[TimeSpan, None] = None,
     # TODO: Consider cleaning up these calls - they're more readable, but the "retrieve" calls could be avoided by
     #  putting the conditions into the dataset UPDATE query. Negligible performance impact, so tabled for now.
 
-    # Ensure product exists in db
-    with get_db_cursor() as cur:
-        sql = """
-            INSERT INTO _meta_dataproducts
-            VALUES (DEFAULT, %(name)s, %(label)s)
-            ON CONFLICT DO NOTHING;
-            """
-        cur.execute(sql, {'name': dataset.product.get_full_id(), 'label': dataset.product.get_full_id()})
+    dataset.product.ensure()
 
     # Ensure instrument exists in db
     with get_db_cursor() as cur:
