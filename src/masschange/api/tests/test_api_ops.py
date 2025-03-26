@@ -248,6 +248,8 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
 
         # TODO: enum_values will need to be removed or the reference updated when that is refactored to be a product property rather than a dataset property
         if field['is_channel_id'] is True:
+            if 'enum_values' not in field:
+                logging.error(f'"enum_values" not in field {json.dumps(field)} from path {path}')
             assert 'enum_values' in field
 
 
