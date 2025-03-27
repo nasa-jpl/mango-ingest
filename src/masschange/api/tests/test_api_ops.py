@@ -22,23 +22,28 @@ def test_root():
     assert response.status_code == 200
 
 
-timechannel_id_additional_parameters = {
+channel_id_additional_parameters = {
     'TNK1A': '&filter=tank_id=1',
     'TNK1B': '&filter=tank_id=1',
+    'TIM1A': '&filter=ts_suppid=3',
     'SCA1A': '&filter=sca_id=1',
     'SCA1B': '&filter=sca_id=1',
     'IMU1A': '&filter=gyro_id=1',
     'IMU1B': '&filter=gyro_id=1',
     'IHK1A': '&filter=sensorname=39',
     'IHK1B': '&filter=sensorname=39',
+    'CLK1A': '&filter=clock_id=-1',
     'CLK1B': '&filter=clock_id=-1',
     'GNV1A_PRN': '&filter=prn_id=3',
     'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
     'TIM1B': '&filter=ts_suppid=0',
+    'LHK1A': '&filter=sensorname=TMA_PMH_CURRENT',
     'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT',
+    'LLK1B': '&filter=clock_id=-1',
     'LLT1A': '&filter=rcv_id=C&filter=trx_id=D',
     'PLT1A': '&filter=rcv_id=C&filter=trx_id=D',
-    'QSA1B': '&filter=sca_id=1'
+    'QSA1B': '&filter=sca_id=1',
+    'USO1B': '&filter=uso_id=-1'
 }
 
 
@@ -53,8 +58,8 @@ def test_gracefo_data_select(ds: Dataset):
            f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
     # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-    if ds.product.id_suffix in timechannel_id_additional_parameters:
-        path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
+    if ds.product.id_suffix in channel_id_additional_parameters:
+        path += f'{channel_id_additional_parameters[ds.product.id_suffix]}'
 
     response = client.get(path)
     content = response.json()
@@ -115,8 +120,8 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
                f'{test_span_begin.isoformat()[:19]}&to_isotimestamp={test_span_end.isoformat()[:19]}'
         # datasets containing multiple distinct time-series require additional parameters to identify a single time-series
 
-        if ds.product.id_suffix in timechannel_id_additional_parameters:
-            path += f'{timechannel_id_additional_parameters[ds.product.id_suffix]}'
+        if ds.product.id_suffix in channel_id_additional_parameters:
+            path += f'{channel_id_additional_parameters[ds.product.id_suffix]}'
 
         response = client.get(path)
         content = response.json()
