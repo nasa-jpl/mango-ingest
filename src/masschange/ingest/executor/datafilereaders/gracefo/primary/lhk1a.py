@@ -24,7 +24,7 @@ class GraceFOLhk1ADataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='ns'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='S'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
             AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None),

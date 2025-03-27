@@ -25,6 +25,7 @@ class GraceFOLhk1ADataProduct(TimeSeriesDataProduct):
         return f"""
             time_intg bigint not null,
             time_frac int not null,
+            time_ref CHAR not null,
             GRACEFO_id CHAR not null,
             qualflg VARCHAR(8) not null,
             
