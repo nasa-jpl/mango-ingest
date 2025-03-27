@@ -4,6 +4,7 @@ from typing import Dict, Set
 
 import psycopg2
 
+from masschange.api.tests.utils import permute_all_datasets
 from masschange.db.conn import get_db_cursor
 
 
@@ -62,18 +63,21 @@ def fetch_bulk_channel_id_enums() -> Dict[str, Dict[str, Collection[str]]]:
             return None
 
     results = {}
+    # Initialise the results structure - this is necessary to ensure null-sets are created for datasets with no ingested
+    # data (and thus, no enum value rows in the metadata table)
+    for dataset in permute_all_datasets():
+        dataset_id = f'{dataset.product.get_full_id()}_{dataset.version}_{dataset.instrument_id}'
+        channel_id_fields = [f for f in dataset.product.get_available_fields() if f.is_channel_id_column]
+        results[dataset_id] = {}
+        for field in channel_id_fields:
+            results[dataset_id][field.name] = set()
+
     for row in result_rows:
         dataset_id = f'{row["product_id"]}_{row["version_id"]}_{row["instrument_id"]}'
         field_name = row['field_name']
         value = row['value']
 
-        if dataset_id not in results:
-            results[dataset_id] = {}
-
         channel_id_enums: Dict[str, Set[str]] = results[dataset_id]
-        if field_name not in channel_id_enums:
-            channel_id_enums[field_name] = set()
-
         field_enum_values: Set[str] = channel_id_enums[field_name]
         field_enum_values.add(value)
 

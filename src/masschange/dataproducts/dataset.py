@@ -393,10 +393,11 @@ class Dataset:
                 raise err.__class__(f'query failed with {err}: {sql}')
 
             metadata = {}
+            for field in channel_id_fields:
+                metadata[field] = set()
+
             for row in cur.fetchall():
                 field = next(f for f in channel_id_fields if f.name == row['field_name'])
-                if field not in metadata:
-                    metadata[field] = set()
                 metadata[field].add(row['value'])
 
             return {f: sorted(values) for f, values in metadata.items()}

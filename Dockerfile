@@ -75,7 +75,7 @@ USER root
 RUN ["/home/root/miniconda/condabin/conda", "run", "-n", "masschange", "/bin/bash", "--login", "-c", "pip3 install -e /app/masschange"]
 
 # Overridable as runtime env-var, used for reverse-proxying
-ENV API_ROOT_PATH /
+ENV API_ROOT_PATH ""
 
 # Entrypoint
 #USER root
