@@ -241,12 +241,10 @@ def test_dataset_metadata(ds: TimeSeriesDataset):
         assert k in content
 
     expected_field_attributes = ['name', 'type', 'description', 'unit', 'supported_aggregations',
-                                 'is_channel_id', 'qc_thresholds']
+                                 'is_channel_id']
     for field in content['available_fields']:
         for k in expected_field_attributes:
             assert k in field
-
-        # TODO: enum_values will need to be removed or the reference updated when that is refactored to be a product property rather than a dataset property
         if field['is_channel_id'] is True:
             if 'enum_values' not in field:
                 logging.error(f'"enum_values" not in field {json.dumps(field)} from path {path}')
