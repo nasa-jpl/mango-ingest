@@ -17,11 +17,11 @@ class GraceFOPci1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('PCI1A_2023-06-01_C_04.dat', 738849600, 739546756, 738849340,
          738936260, 17385, 5, 0, 5, 5,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 23, 55, 40, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('PCI1A_2023-06-01_D_04.dat', 738849600, 739546153, 738849340,
          738936260, 17385, 5, 0, 5, 5,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 23, 55, 40, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

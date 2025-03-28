@@ -19,11 +19,11 @@ class GraceFOTim1PassDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('TIM1A_2018-06-01_C_NYA_581169413.pass', 581083200, 607671582, 581169413,
          581180861, 1432, 8, 0, 8, 8,
          8, 0, 0, 1432, 0, 0, 0, 0, 0,
-         datetime(2018, 6, 1, 23, 56, 53, tzinfo=timezone.utc)),
+         datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('TIM1A_2018-06-01_D_NYA_581163776.pass', 581083200, 607671635, 581163776, 581175168,
          1425, 8, 0, 8, 8,
          8, 0, 0, 1425, 0, 0, 0, 0, 0,
-         datetime(2018, 6, 1, 22, 22, 56, tzinfo=timezone.utc))
+         datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

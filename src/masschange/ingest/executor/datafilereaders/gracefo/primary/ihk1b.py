@@ -37,4 +37,4 @@ class GraceFOIhk1BDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+        return cls.get_reference_epoch() + timedelta(seconds=row.time_intg, microseconds=row.time_frac)
