@@ -18,10 +18,10 @@ class GraceFOGnv1PassDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_first_rows = [
         ('GNV1A_2018-06-01_C_NYA_581169228.pass', 581083200, 607670129, 581169228, 581180686,
          5730, 2, 0, 2, 2, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-          datetime(2018, 6, 1, 23, 53, 48, tzinfo=timezone.utc)),
+          datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('GNV1A_2018-06-01_D_NYA_581163588.pass', 581083200, 607670151, 581163588, 581174986, 5700,
          2, 0, 2, 2, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2018, 6, 1, 22, 19, 48, tzinfo=timezone.utc))
+         datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

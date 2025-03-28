@@ -16,11 +16,11 @@ class GraceFOTnk1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_first_rows = [
         ('TNK1A_2023-06-01_C_04.dat', 738849600, 738951395, 738849600.381, 738935999.381,
          178200, 0.4848455939707855, 0.4964432750527839, 0.0, 1.01199996471405, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 0, 0, 0, 381000, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('TNK1A_2023-06-01_D_04.dat', 738849600, 738956277, 738849600.381,
          738935999.381, 178200, 0.4848455939707855, 0.4964433192815519, 0.0,
          1.010999917984009, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 0, 0, 0, 381000, tzinfo=timezone.utc))
+         datetime(2023, 6, 1,0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

@@ -27,7 +27,11 @@ class IngestChannelIdMetadataUpdateTestCase(IngestTestCaseBase):
         # Currently does not test that metadata is appended rather than replaced, but this can be reasonably inferred
         # from the fact that rows are never deleted from SQL until such a test is implemented
 
-        self.assertDictEqual({}, self.dataset.fetch_channel_id_values(),
+        expected_empty_metadata = {'ant_id': [], 'prn_id': []}
+        actual_empty_metadata = {field.name: [str(v) for v in values] for field, values in
+                           self.dataset.fetch_channel_id_values().items()}
+
+        self.assertDictEqual(expected_empty_metadata, actual_empty_metadata,
                              'Channel-id metadata should be empty prior to ingestion')
 
         for fp in self.input_filepaths:

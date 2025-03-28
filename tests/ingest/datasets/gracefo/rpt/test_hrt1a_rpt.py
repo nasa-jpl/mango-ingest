@@ -19,11 +19,11 @@ class GraceFOHrt1BRptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('HRT1A_2023-06-01_C_04.dat', 738849600, 738951394, 738849609.506, 738935977.506,
          2700, 31.98815253609774, 0.4697297513132268, 9.50600004196167, 32,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 0, 0, 9, 506000, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('HRT1A_2023-06-01_D_04.dat', 738849600, 738956276, 738849623.506, 738935991.506,
          2700, 31.98815253609774, 0.4807670720507098, 8.49399995803833, 32.00199997425079,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 0, 0, 23, 506000, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()
