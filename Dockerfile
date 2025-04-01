@@ -1,5 +1,5 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.1
-MAINTAINER ***REMOVED*** "***REMOVED***"
+MAINTAINER alexdunnjpl "Alexander Dunn, Jet Propulsion Laboratory"
 LABEL description="Gravity Missions Analysis Tool Backend Systems"
 
 ENV TSDB_HOST='localhost'

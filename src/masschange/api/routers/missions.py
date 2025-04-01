@@ -23,7 +23,7 @@ def get_available_data_products_for_mission(mission_id: str):
         raise HTTPException(status_code=400,
                             detail=f'No mission found with id {mission_id} in extant missions ({sorted(mission.id for mission in available_missions)})')
     # use metadata cache to enable population of datasets with full metadata
-    # TODO: Clean up the keying system here to use TimeSeriesDataSets rather than id-keyed or keyless list elements - ***REMOVED*** 20250320
+    # TODO: Clean up the keying system here to use TimeSeriesDataSets rather than id-keyed or keyless list elements - alexdunnjpl 20250320
     metadata_cache = fetch_bulk_metadata()
     for dataset_id, channel_id_enums in fetch_bulk_channel_id_enums().items():
         try:
