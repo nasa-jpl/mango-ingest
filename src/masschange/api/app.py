@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "***REMOVED***",
+    os.environ["API_PROXY_HOST"],
     "http://localhost:5173",
 ]
 

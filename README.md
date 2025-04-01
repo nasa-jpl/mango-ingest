@@ -14,7 +14,7 @@ Gravity Missions Analysis Tool data ingestion and API
   
   # optionally, for prod deployment behind a proxy server
   export API_ROOT_PATH='/mango/api/'
-  export API_PROXY_HOST='***REMOVED***'
+  export API_PROXY_HOST= # populate with production API host
   ```
   
 ## Staging Deployment (quick note)
