@@ -14,7 +14,7 @@ class GraceFOUso1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'USO1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(days=1)  # TODO: Uso is not a time-series dataset. It has a reference info that gets reported ones a day. Once non-timeseries dataset classes are implemented, this should be switched to the appropriate base class
+    time_series_interval = timedelta(days=1)
     processing_level = '1B'
 
     @classmethod

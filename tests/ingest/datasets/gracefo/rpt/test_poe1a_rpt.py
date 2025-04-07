@@ -21,11 +21,11 @@ class GraceFOPoe1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('POE1A_2023-06-01_C_04.rpt', 738849600.0, 739457044.571405, 738838800.0, 738946800.0,
          95788, 1, 0, 1, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0,
          4.920343, 91649, 4139, 4.3, 55.09514, 91408, 4380, 4.6,
-         datetime(2023, 5, 31, 21, 0, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('POE1A_2023-06-01_D_04.rpt', 738849600.0, 739457055.737881, 738838800.0, 738946800.0,
          96473, 1, 0, 1, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0,
          5.005834, 92199, 4274, 4.4, 54.98781, 92427, 4046, 4.2,
-         datetime(2023, 5, 31, 21, 0, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

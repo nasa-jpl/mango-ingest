@@ -18,10 +18,10 @@ class GraceFOTim1BRptDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_first_rows = [
         ('TIM1A_2010-12-23_C_02.dat', 346334400, 356564726, 346333800, 346421399,
          87600, 1, 0, 1, 1, 8, 0, 297, 0, 87600, 0, 0, 0, 0,
-         datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc)),
+         datetime(2010, 12, 23, 0, 0, tzinfo=timezone.utc)),
         ('TIM1A_2010-12-23_D_02.dat', 346334400, 356564772, 346333800,
          346421399, 87600, 1, 0, 1, 1, 8, 0, 300, 0, 87600, 0, 0, 0, 0,
-         datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc))
+         datetime(2010, 12, 23, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

@@ -3,10 +3,13 @@ from datetime import timedelta
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.thr1b import GraceFOThr1BDataFileReader
 from masschange.missions import GraceFO
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.timeseriesdataproduct import DataProduct
 
 
-class GraceFOThr1BDataProduct(TimeSeriesDataProduct):
+class GraceFOThr1BDataProduct(DataProduct):
+    """
+    This  is not a time-series dataproduct; measurement intervals are irregular
+    """
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOThr1BDataFileReader()
@@ -14,7 +17,6 @@ class GraceFOThr1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'THR1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(seconds=120)  # TODO: THR1B is not a time-series dataset, and measurement intervals are irregular.  Once non-timeseries dataset classes are implemented, this should be switched to the appropriate base class
     processing_level = '1B'
 
     @classmethod

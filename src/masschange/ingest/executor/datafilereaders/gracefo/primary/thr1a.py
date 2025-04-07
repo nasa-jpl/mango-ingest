@@ -23,8 +23,7 @@ class GraceFOThr1ADataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond',
-                                      aggregations=['avg']),
+            AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             # thust_count_* increases with time, resets after 4294967295

@@ -17,11 +17,11 @@ class GraceFOGps1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('GPS1A_2023-06-01_C_04.dat', 738849600, 738950162, 738838700,
          738946900, 1055570, 0.1025039575811719, 0.3033099013572903,
          0, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 20, 58, 20, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('GPS1A_2023-06-01_D_04.dat', 738849600, 738955943, 738838700,
          738946900, 1081525, 0.1000440119682966, 0.3000586736583096,
          0, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 20, 58, 20, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

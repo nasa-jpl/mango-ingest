@@ -1,7 +1,7 @@
 from typing import Union
 
 
-class TimeSeriesDatasetVersion:
+class DatasetVersion:
     _value: str
 
     def __init__(self, value: Union[int, str, None]):
@@ -23,4 +23,4 @@ class TimeSeriesDatasetVersion:
         return str(self._value)
 
     def __repr__(self):
-        return f'TimeSeriesDatasetVersion("{self.value}")'
+        return f'DatasetVersion("{self.value}")'

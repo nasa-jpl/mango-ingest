@@ -1,5 +1,5 @@
 FROM registry.access.redhat.com/ubi8/ubi:8.1
-MAINTAINER ***REMOVED*** "***REMOVED***"
+MAINTAINER alexdunnjpl "Alexander Dunn, Jet Propulsion Laboratory"
 LABEL description="Gravity Missions Analysis Tool Backend Systems"
 
 ENV TSDB_HOST='localhost'
@@ -75,7 +75,7 @@ USER root
 RUN ["/home/root/miniconda/condabin/conda", "run", "-n", "masschange", "/bin/bash", "--login", "-c", "pip3 install -e /app/masschange"]
 
 # Overridable as runtime env-var, used for reverse-proxying
-ENV API_ROOT_PATH /
+ENV API_ROOT_PATH ""
 
 # Entrypoint
 #USER root

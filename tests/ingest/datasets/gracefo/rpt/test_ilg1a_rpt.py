@@ -17,11 +17,11 @@ class GraceFOIlg1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('ILG1A_2023-06-01_C_04.dat', 738849600, 738950167, 738849504,
          738936100, 46411, 1.86593695460128, 3.07184117765118, 0, 13,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023,  5, 31, 23, 58, 24, tzinfo=timezone.utc)),
+         datetime(2023,  6, 1, 0, 0, tzinfo=timezone.utc)),
         ('ILG1A_2023-06-01_D_04.dat', 738849600, 738955948, 738849501, 738936094,
          45429, 1.906249312113408, 3.086582562884725, 0, 13,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 23, 58, 21, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

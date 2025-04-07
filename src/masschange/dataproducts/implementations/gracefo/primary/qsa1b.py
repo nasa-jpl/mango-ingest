@@ -3,10 +3,11 @@ from datetime import timedelta
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.qsa1b import GraceFOQsa1BDataFileReader
 from masschange.missions import GraceFO
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.dataproduct import DataProduct
 
 
-class GraceFOQsa1BDataProduct(TimeSeriesDataProduct):
+class GraceFOQsa1BDataProduct(DataProduct):
+    # TODO: Only one sample file is available, and this file has only one row. The time_series_interval is unknown.
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOQsa1BDataFileReader()
@@ -14,7 +15,6 @@ class GraceFOQsa1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'QSA1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(days=365) # TODO: Only one sample file is available, and this file has only one row. The time_series_interval is unknown.
     processing_level = '1B'
 
     @classmethod

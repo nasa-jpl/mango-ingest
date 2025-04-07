@@ -17,11 +17,11 @@ class GraceFOMag1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('MAG1A_2023-06-01_C_04.dat', 738849600, 738951393, 738838700.1,
          738946899.6, 216400, 0.5, 0, 0.5, 0.5,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 20, 58,  20, 100000, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('MAG1A_2023-06-01_D_04.dat', 738849600, 738956886, 738838700.1,
          738946899.6, 216400, 0.5, 0, 0.5, 0.5,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 20, 58, 20, 100000, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Union, Iterable
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.utils import get_time_series_dataproducts
+from masschange.dataproducts.utils import get_dataproducts
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 
 log = logging.getLogger()
@@ -22,7 +22,7 @@ class DataProductFileCrawler:
 
     def run(self):
         log.info(f'File-system crawl started for root path {self.src_root_path}')
-        for product in get_time_series_dataproducts():
+        for product in get_dataproducts():
             log.debug(f'Crawling for files matching {product.get_full_id()} inputs')
             self.crawl_filepaths_for_product(product)
 

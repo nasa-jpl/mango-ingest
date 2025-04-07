@@ -37,20 +37,10 @@ class GraceFOLri1BDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='lighttime_accl', np_type=np.double, unit='m/s2',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=8, name='ant_centr_corr', np_type=np.double, unit='m',
-                                      const_value=0.0),
-            AsciiDataFileReaderColumn(index=9, name='ant_centr_rate', np_type=np.double, unit='m/s',
-                                      const_value=0.0),
-            AsciiDataFileReaderColumn(index=10, name='ant_centr_accl', np_type=np.double, unit='m/s2',
-                                      const_value=0.0),
             AsciiDataFileReaderColumn(index=11, name='K_A_SNR', np_type=np.double, unit='db-Hz',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=12, name='Ka_A_SNR', np_type=np.double, unit='db-Hz',
-                                      const_value=0.0),
             AsciiDataFileReaderColumn(index=13, name='K_B_SNR', np_type=np.double, unit='db-Hz',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=14, name='Ka_B_SNR', np_type=np.double, unit='db-Hz',
-                                      const_value=0.0),
             AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None)
         ]
 
