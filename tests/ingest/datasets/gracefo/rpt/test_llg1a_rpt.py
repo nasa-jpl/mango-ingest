@@ -17,11 +17,11 @@ class GraceFOLlg1ARptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('LLG1A_2023-06-01_C_04.dat', 738849600, 739854703, 738851656, 738919247,
          26, 3207.407407407407, 6690.043809075733, 0, 30675,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 0, 34, 16, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('LLG1A_2023-06-01_D_04.dat', 738849600, 739854704, 738878604, 738909810,
          8, 9622.222222222223, 13657.2101330134, 0, 31205,
          8, 0, 0, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 6, 1, 8, 3, 24, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

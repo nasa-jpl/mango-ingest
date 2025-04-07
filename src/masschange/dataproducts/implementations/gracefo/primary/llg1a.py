@@ -3,10 +3,13 @@ from datetime import timedelta
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.llg1a import GraceFOLlg1ADataFileReader
 from masschange.missions import GraceFO
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.dataproduct import DataProduct
 
 
-class GraceFOLlg1ADataProduct(TimeSeriesDataProduct):
+class GraceFOLlg1ADataProduct(DataProduct):
+    """
+    This is not a time-series dataproduct; measurement intervals are irregular
+    """
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOLlg1ADataFileReader()
@@ -14,7 +17,6 @@ class GraceFOLlg1ADataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'LLG1A'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(hours=1)  # TODO: This is not a time-series dataset.
     processing_level = '1A'
 
     @classmethod

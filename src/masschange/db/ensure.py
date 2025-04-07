@@ -3,9 +3,10 @@ import os
 
 import psycopg2
 
-from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.utils import get_time_series_dataproduct_classes
-from masschange.db.conn import get_db_connection
+from masschange.dataproducts.dataset import Dataset
+from masschange.dataproducts.datasetfactory import DatasetFactory
+from masschange.dataproducts.utils import get_dataproducts
+from masschange.db.conn import get_db_connection, get_db_cursor
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
@@ -30,27 +31,39 @@ def ensure_database_exists(db_name: str) -> None:
     conn.close()
 
 
-def ensure_dataset(dataset: TimeSeriesDataset) -> None:
+def ensure_dataset(dataset: Dataset) -> None:
     ensure_dataset_table_exists(dataset)
     ensure_dataset_caggs_exist(dataset)
 
 
-def initialize_dataset(dataset, populate_dataproducts_versions):
+def initialize_dataset(dataset: Dataset, populate_dataproducts_versions):
     log.info(f'Ensuring table for {dataset.get_table_name()}')
     ensure_dataset_table_exists(dataset)
-    log.info(f'Ensuring caggs for {dataset.get_table_name()}')
-    ensure_dataset_caggs_exist(dataset)
+    if dataset.is_time_series_dataset():
+        log.info(f'Ensuring caggs for {dataset.get_table_name()}')
+        ensure_dataset_caggs_exist(dataset)
     log.info(f'Updating metadata for {dataset.get_table_name()}')
     data_span = dataset.get_data_span()
-    update_metadata(
-        dataset,
-        data_span=data_span,
-        populate_versions=populate_dataproducts_versions,
-        accumulate_data_span=False
-    )
+    channel_ids = dataset._enumerate_channel_id_values()
+    update_metadata(dataset, data_span=data_span, channel_ids=channel_ids, populate_versions=populate_dataproducts_versions,
+                    accumulate_data_span=False)
 
 
-def ensure_all_db_state(database_name: str, populate_dataproducts_versions = False, is_database_init: bool = False):
+def ensure_prototype_json_store():
+    with get_db_cursor() as cur:
+        sql = '''
+        create table if not exists public._jsonstore (
+          id varchar(64) primary key not null,
+          content jsonb
+        );
+        comment on table public._jsonstore is 'storage for arbitrary non-sensitive JSON objects by the frontend';
+        '''
+
+        cur.execute(sql)
+        log.info(f'Ensured presence of prototype jsonstore table')
+
+
+def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False, is_database_init: bool = False):
     """
     Ensure that database is consistent and up-to-date (within limits)
     :param database_name:
@@ -59,16 +72,17 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions = Fal
     :return:
     """
     ensure_database_exists(database_name)
-    ensure_metadata_tables_exist(database_name)
+    ensure_metadata_tables_exist()
+    ensure_prototype_json_store()
 
     ensure_ingest_manager_tables_exist()
 
     if not is_database_init:
-        for product_cls in get_time_series_dataproduct_classes():
-            product = product_cls()
-            for version in product_cls.get_available_versions():
-                for instrument_id in product_cls.instrument_ids:
-                    dataset = TimeSeriesDataset(product, version, instrument_id)
+        for product in get_dataproducts():
+            product.ensure()
+            for version in product.get_available_versions():
+                for instrument_id in product.instrument_ids:
+                    dataset = DatasetFactory.create(product, version, instrument_id)
                     initialize_dataset(dataset, populate_dataproducts_versions)
 
 

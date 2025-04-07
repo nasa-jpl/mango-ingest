@@ -8,7 +8,7 @@ from importlib import resources
 from typing import Union, Any, List
 
 
-class TimeSeriesDataProductFieldConfiguration:
+class ProductFieldConfiguration:
     """
     Contains configurable (i.e. stateful, stored in db) metadata relating to a TimeSeriesDataProductField.
     The only currently-known example of this is an optional min and max value for validity-checking
@@ -17,18 +17,23 @@ class TimeSeriesDataProductFieldConfiguration:
     effective_until: Union[datetime, None]
     min_valid_value: Union[Any, None]
     max_valid_value: Union[Any, None]
+    low_warning_value: Union[Any, None]
+    high_warning_value: Union[Any, None]
 
     def __init__(self,
                  min_valid_value, max_valid_value,
+                 low_warning_value, high_warning_value,
                  effective_since: Union[datetime, None] = None, effective_until: Union[datetime, None] = None
                  ):
         self.min_valid_value = min_valid_value
         self.max_valid_value = max_valid_value
+        self.low_warning_value = low_warning_value
+        self.high_warning_value = high_warning_value
         self.effective_since = effective_since
         self.effective_until = effective_until
 
     @staticmethod
-    def construct_list(product, field) -> List[TimeSeriesDataProductFieldConfiguration]:
+    def construct_list(product, field) -> List[ProductFieldConfiguration]:
         """
         This is a stub to instantiate plausible min/max values for those types which are intended to be supported.
         TODO: In the future, this will fetch the values, if present, from the database.  It will be necessary to create
@@ -65,8 +70,6 @@ class TimeSeriesDataProductFieldConfiguration:
             effective_since = threshold_set.get('effective_since')
             effective_until = threshold_set.get('effective_until')
 
-
-
             try:
                 limit_upper = threshold_set['limits']['upper']
             except KeyError:
@@ -77,7 +80,6 @@ class TimeSeriesDataProductFieldConfiguration:
             except KeyError:
                 limit_lower = None
 
-            # Not currently used - yet to implement warnings
             try:
                 warning_upper = threshold_set['warnings']['upper']
             except KeyError:
@@ -87,17 +89,20 @@ class TimeSeriesDataProductFieldConfiguration:
                 warning_lower = threshold_set['warnings']['lower']
             except KeyError:
                 warning_lower = None
-            # end Not currently used
 
             if field.python_type is int:
-                result.append(TimeSeriesDataProductFieldConfiguration(
+                result.append(ProductFieldConfiguration(
                     int(limit_lower) if limit_lower is not None else None,
                     int(limit_upper) if limit_upper is not None else None,
+                    int(warning_lower) if warning_lower is not None else None,
+                    int(warning_upper) if warning_upper is not None else None,
                     effective_since, effective_until))
             elif field.python_type is float:
-                result.append(TimeSeriesDataProductFieldConfiguration(
+                result.append(ProductFieldConfiguration(
                     float(limit_lower) if limit_lower is not None else None,
                     float(limit_upper) if limit_upper is not None else None,
+                    float(warning_lower) if warning_lower is not None else None,
+                    float(warning_upper) if warning_upper is not None else None,
                     effective_since, effective_until))
             elif field.python_type is datetime.datetime:
                 logging.warning(
@@ -111,18 +116,19 @@ class TimeSeriesDataProductFieldConfiguration:
 
         return result
 
-
     def describe(self):
         description = {
             'effective_since': self.effective_since,
-            'effective_until': self.effective_until
-        }
-
-        description.update({
+            'effective_until': self.effective_until,
+            'warnings': {
+                'lower': self.low_warning_value,
+                'upper': self.high_warning_value
+            },
             'limits': {
                 'lower': self.min_valid_value,
                 'upper': self.max_valid_value
             }
-        })
+
+        }
 
         return description

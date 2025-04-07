@@ -10,6 +10,7 @@ from starlette.responses import HTMLResponse
 from masschange.api.routers.missions import router as missions_router
 from masschange.api.routers.dataproducts import router as dataproducts_router
 from masschange.api.routers.datasets import router as datasets_router
+from masschange.api.routers.webui import router as webui_router
 from masschange.api.utils.memleak import run_memleak_cleanup_thread
 
 # Set log level to INFO by default - this may need to be refined later
@@ -31,7 +32,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "***REMOVED***",
+    os.environ["API_PROXY_HOST"],
     "http://localhost:5173",
 ]
 
@@ -60,6 +61,7 @@ def view_documentation_message(request: Request):
 dataproducts_router.include_router(datasets_router, prefix='/{product_id_suffix}')
 missions_router.include_router(dataproducts_router, prefix='/{mission_id}/products')
 app.include_router(missions_router, prefix='/missions')
+app.include_router(webui_router, prefix='/ui')
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)

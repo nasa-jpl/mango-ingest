@@ -27,7 +27,7 @@ class GraceFOQsa1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
 
             AsciiDataFileReaderColumn(index=2, name='sca_id', np_type=int, unit=None,
-                                      is_time_series_id_column=True),
+                                      is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='quatangle', np_type=np.double, unit=None,
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='quaticoeff', np_type=np.double, unit=None,

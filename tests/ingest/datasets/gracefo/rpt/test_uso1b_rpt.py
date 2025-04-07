@@ -17,11 +17,11 @@ class GraceFOUso1BRptDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('USO1B_2023-06-01_C_04.dat', 738849600, 739543742, 738849300, 738936300,
          2, 87000, 0, 87000, 87000,
          8, 1, 1, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 23, 55, tzinfo=timezone.utc)),
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc)),
         ('USO1B_2023-06-01_D_04.dat', 738849600, 739543742, 738849300, 738936300,
          2, 87000, 0, 87000, 87000,
          8, 1, 1, 0, 0, 0, 0, 0, 0,
-         datetime(2023, 5, 31, 23, 55, tzinfo=timezone.utc))
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

@@ -35,17 +35,17 @@ class GraceFOGps1BDataFileReader(DataFileWithProdFlagReader):
 
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='CA_range', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=1, name='L1_range', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=2, name='L2_range', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=3, name='CA_phase', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=4, name='L1_phase', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=5, name='L2_phase', np_type=np.double,
-                                                    unit='V/V'),
+                                                    unit='V/V', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=6, name='CA_SNR', np_type=pd.Int64Dtype,
                                                     unit='V/V'),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=7, name='L1_SNR', np_type=pd.Int64Dtype,
@@ -59,13 +59,13 @@ class GraceFOGps1BDataFileReader(DataFileWithProdFlagReader):
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=11, name='L2_chan', np_type=pd.Int64Dtype,
                                                     unit=None),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=12, name='L2_raw', np_type=np.double,
-                                                    unit='m'),
+                                                    unit='m', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=13, name='Ka_phase', np_type=np.double,
-                                                    unit='cycles'),
+                                                    unit='cycles', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=14, name='K_SNR', np_type=np.double,
-                                                    unit='V/V'),
+                                                    unit='V/V', aggregations=['min', 'max']),
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=15, name='Ka_SNR', np_type=np.double,
-                                                    unit='V/V')
+                                                    unit='V/V', aggregations=['min', 'max'])
         ]
 
     @classmethod

@@ -2,15 +2,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Depends
 
+from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
-from masschange.dataproducts.utils import get_time_series_dataproducts
+from masschange.dataproducts.utils import get_dataproducts
 
 router = APIRouter()
 
 
-def map_product(mission_id: str, product_id_suffix: str) -> TimeSeriesDataProduct:
+def map_product(mission_id: str, product_id_suffix: str) -> DataProduct:
     try:
-        product = next(p for p in get_time_series_dataproducts() if
+        product = next(p for p in get_dataproducts() if
                        p.mission.id == mission_id and p.id_suffix == product_id_suffix)
     except StopIteration:
         raise HTTPException(status_code=404,
