@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.db.data.flagfield import FlagField
 
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
@@ -49,3 +50,8 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
+
+    @classmethod
+    def append_derived_fields(cls, df):
+        FlagField.append_flag_fields(df, 'qualflg')
+
