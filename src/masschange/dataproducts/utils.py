@@ -1,8 +1,6 @@
 import logging
 from collections.abc import Collection
 from typing import Type
-
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.utils.packaging import import_submodules
 from masschange.dataproducts import implementations as datasetimplementations
@@ -54,3 +52,21 @@ def resolve_dataset(dataset_id: str) -> DataProduct:
         err_msg = f"Failed to resolve provided dataset_id (got '{dataset_id}', expected one of {sorted(datasets_by_name.keys())})"
         log.error(err_msg)
         raise ValueError(err_msg)
+
+
+def get_schema_updates_for_flag_fields(prefix: str, num_of_fields) -> str:
+    """
+    Convenience method that returns a string that could be inserted to DataProduct's
+    table schema to add fields for boolean quality flags.
+    Quality flag filed name format is <prefix>_<n>
+
+    Parameters
+    ----------
+    prefix: str prefix for the name of the field
+    num_of_fields
+
+    Returns
+    -------
+
+    """
+    return "".join( [f'{prefix}_{str(i)} boolean not null, \n' for i in range(num_of_fields)])
