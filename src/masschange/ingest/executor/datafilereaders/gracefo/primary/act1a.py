@@ -42,7 +42,8 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=11, name='ang_accl_z', np_type=np.double, unit='rad/s2',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=12, name='icu_blk_nr', np_type=int, unit=None)
+            AsciiDataFileReaderColumn(index=12, name='icu_blk_nr', np_type=int, unit=None,
+                                      aggregations=['avg'])
         ]
 
     @classmethod
