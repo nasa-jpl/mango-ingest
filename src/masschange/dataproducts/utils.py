@@ -54,7 +54,7 @@ def resolve_dataset(dataset_id: str) -> DataProduct:
         raise ValueError(err_msg)
 
 
-def get_schema_updates_for_flag_fields(prefix: str, num_of_fields) -> str:
+def get_schema_updates_for_flag_fields(prefix: str, num_of_fields: int) -> str:
     """
     Convenience method that returns a string that could be inserted to DataProduct's
     table schema to add fields for boolean quality flags.
@@ -63,7 +63,7 @@ def get_schema_updates_for_flag_fields(prefix: str, num_of_fields) -> str:
     Parameters
     ----------
     prefix: str prefix for the name of the field
-    num_of_fields
+    num_of_fields: int number of columns
 
     Returns
     -------
