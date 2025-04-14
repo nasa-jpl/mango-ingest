@@ -27,8 +27,10 @@ class GraceFOTim1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=2, name='TS_suppid', np_type=int, unit=None, is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=3, name='rcvtime_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=4, name='rcvtime_frac', np_type=np.uint, unit='nanoseconds'),
-            AsciiDataFileReaderColumn(index=5, name='first_icu_blknr', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=6, name='final_icu_blknr', np_type=int, unit=None),
+            AsciiDataFileReaderColumn(index=5, name='first_icu_blknr', np_type=int, unit=None,
+                                      aggregations=['avg']),
+            AsciiDataFileReaderColumn(index=6, name='final_icu_blknr', np_type=int, unit=None,
+                                      aggregations=['avg']),
             AsciiDataFileReaderColumn(index=7, name='qualflg', np_type='U8', unit=None)
         ]
 
