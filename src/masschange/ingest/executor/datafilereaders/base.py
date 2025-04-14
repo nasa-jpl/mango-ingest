@@ -645,4 +645,16 @@ class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
                          const_value=None, is_channel_id_column=is_channel_id_column)
 
 
+class ArrayLikeAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
+    """
+    Defines a column created by reader that holds array-like data (for example, quality flags).
+    During the ingestion, we want to parse such data and append each flag to the database table
+    as a separate boolean column
+    """
+    array_size: int  # Number of flags that array-lake data column holds
 
+    def __init__(self, index: int, name: str, np_type: Union[Type, str], array_size: int, description: str = ""):
+        super().__init__(index, name, np_type, unit=None, description=description,
+                         aggregations=None, transform=None, const_value=None, is_channel_id_column=False)
+
+        self.array_size = array_size
