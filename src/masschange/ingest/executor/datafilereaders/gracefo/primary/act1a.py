@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
-from masschange.db.data.flagfield import FlagField
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
+from masschange.ingest.utils.flagfield import append_flag_fields
 
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
@@ -27,7 +28,7 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='rcvtime_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='R'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', array_size=8),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U32', unit=None,
                                       const_value='00000100000000000000000000111111'),
             # TODO: prod_flag should be a bit array - need to work out how to convert on load
@@ -53,5 +54,5 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
 
     @classmethod
     def append_derived_fields(cls, df):
-        FlagField.append_flag_fields(df, 'qualflg')
+        append_flag_fields(df, 'qualflg')
 
