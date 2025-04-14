@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Collection
 from typing import Type
+
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.utils.packaging import import_submodules
 from masschange.dataproducts import implementations as datasetimplementations
