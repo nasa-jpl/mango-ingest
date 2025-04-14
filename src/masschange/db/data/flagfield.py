@@ -2,9 +2,7 @@ import numpy as np
 
 class FlagField:
     """
-    This class provides methods for adding flag field to a dataframe.
-    The data frame must have columns xpos, ypos and zpos,
-    that hold coordinates in Earth-fixed coordinate system
+    This class provides methods for appending flag columns to a dataframe
     """
 
     @classmethod
