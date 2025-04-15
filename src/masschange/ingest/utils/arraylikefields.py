@@ -3,10 +3,11 @@ from collections.abc import Sequence
 from masschange.ingest.executor.datafilereaders.base import DerivedAsciiDataFileReaderColumn
 from masschange.dataproducts.dataproductfield import DataProductField
 
+
 def append_flag_fields(df, source_col_name):
     """
     Parse array-like fields into boolean elements and add columns to the dataframe.
-    The name of the columns is <source_col_name>_<index>
+    The name of the columns are <source_col_name>_<index>
 
     Parameters
     ----------
@@ -20,11 +21,11 @@ def append_flag_fields(df, source_col_name):
     num_elements = len(df[source_col_name][0])
     for i in range(num_elements):
         col_name = f'{source_col_name}_{str(i)}'
-        df[col_name] = df.apply(populate_flag, idx=i, axis=1, result_type='expand')
+        df[col_name] = df.apply(populate_flag, idx=i, source_col_name=source_col_name, axis=1, result_type='expand')
 
 
-def populate_flag(row, idx) -> str:
-    return row.qualflg[idx]
+def populate_flag(row, idx, source_col_name) -> str:
+    return row[source_col_name][idx]
 
 
 def generate_array_of_fields(base_field_name: str, array_size: int) -> Sequence[DerivedAsciiDataFileReaderColumn]:

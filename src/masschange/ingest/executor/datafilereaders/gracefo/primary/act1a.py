@@ -5,7 +5,7 @@ import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, \
     ArrayLikeAsciiDataFileReaderColumn
-from masschange.ingest.utils.flagfield import append_flag_fields
+from masschange.ingest.utils.arraylikefields import append_flag_fields
 
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
