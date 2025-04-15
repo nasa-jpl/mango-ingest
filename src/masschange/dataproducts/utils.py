@@ -70,4 +70,4 @@ def get_schema_updates_for_flag_fields(prefix: str, num_of_fields: int) -> str:
     -------
 
     """
-    return "".join( [f'{prefix}_{str(i)} boolean not null, \n' for i in range(num_of_fields)])
+    return "".join([f'{prefix}_{str(i)} boolean not null, \n' for i in range(num_of_fields)])

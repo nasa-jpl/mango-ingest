@@ -10,7 +10,7 @@ from masschange.dataproducts.dataproductfield import DataProductField, \
 from masschange.ingest.executor.datafilereaders.base import DataFileReader, ArrayLikeAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.db.conn import get_db_cursor
-from masschange.ingest.utils.flagfield import generate_array_of_fields
+from masschange.ingest.utils.arraylikefields import generate_array_of_fields
 
 log = logging.getLogger()
 
