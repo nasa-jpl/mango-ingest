@@ -3,8 +3,10 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import LogFileReader, AsciiDataFileReaderColumn, \
+from masschange.ingest.executor.datafilereaders.base import LogFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
     DerivedAsciiDataFileReaderColumn
+
 
 class GraceFOIlg1ADataFileReader(LogFileReader):
     @classmethod

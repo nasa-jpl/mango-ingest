@@ -7,7 +7,8 @@ from typing import Set, Type, List, Dict, Collection, Union
 from masschange.missions import Mission
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
-from masschange.ingest.executor.datafilereaders.base import DataFileReader, ArrayLikeAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import DataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import ArrayLikeAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.db.conn import get_db_cursor
 from masschange.ingest.utils.arraylikefields import generate_array_of_fields

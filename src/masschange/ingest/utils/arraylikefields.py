@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pandas import DataFrame as pdDataFrame, Series as pdSeries
 
-from masschange.ingest.executor.datafilereaders.base import DerivedAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import DerivedAsciiDataFileReaderColumn
 
 
 def append_flag_fields(df: pdDataFrame, source_col_name: str) -> None:

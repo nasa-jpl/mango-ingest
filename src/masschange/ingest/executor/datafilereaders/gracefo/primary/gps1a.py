@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader, \
-    AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    VariableSchemaAsciiDataFileReaderColumn
 
 
 class GraceFOGps1ADataFileReader(DataFileWithProdFlagReader):
