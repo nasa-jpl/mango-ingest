@@ -29,7 +29,7 @@ class IngestChannelIdMetadataUpdateTestCase(IngestTestCaseBase):
 
         expected_empty_metadata = {'ant_id': [], 'prn_id': []}
         actual_empty_metadata = {field.name: [str(v) for v in values] for field, values in
-                           self.dataset.fetch_channel_id_values().items()}
+                           self.dataset.product.fetch_channel_id_values().items()}
 
         self.assertDictEqual(expected_empty_metadata, actual_empty_metadata,
                              'Channel-id metadata should be empty prior to ingestion')
@@ -39,7 +39,7 @@ class IngestChannelIdMetadataUpdateTestCase(IngestTestCaseBase):
 
         expected_metadata = {'ant_id': ['0'], 'prn_id': ['11', '12', '19', '25', '28', '29', '31', '32', '6']}
         actual_metadata = {field.name: [str(v) for v in values] for field, values in
-                           self.dataset.fetch_channel_id_values().items()}
+                           self.dataset.product.fetch_channel_id_values().items()}
         self.assertDictEqual(expected_metadata, actual_metadata)
 
 

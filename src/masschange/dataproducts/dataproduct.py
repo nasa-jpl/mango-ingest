@@ -3,7 +3,10 @@ import logging
 from collections.abc import Sequence
 from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
-from typing import Set, Type, List, Dict, Collection, Union
+from typing import Set, Type, List, Dict, Collection, Union, Mapping
+
+import psycopg2
+
 from masschange.missions import Mission
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
@@ -249,6 +252,38 @@ class DataProduct(ABC):
     @classmethod
     def has_channel_id_fields(cls) -> bool:
         return len([f.name for f in cls.get_available_fields() if f.is_channel_id_column]) > 0
+
+    def fetch_channel_id_values(self) -> Mapping[DataProductField, Set[str]]:
+        """
+        Pull channel id values from the stateful metadata cache
+        """
+        channel_id_fields = [f for f in self.get_available_fields() if f.is_channel_id_column]
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            sql = """
+                SELECT *
+                FROM _meta_dataproduct_channelidvalues as civ
+                WHERE civ.dataset_id in (
+                    SELECT mdp.id
+                        FROM _meta_dataproducts as mdp 
+                        JOIN _meta_dataproducts_channelidvalues civ on mdp.id = civ.dataproducts_id
+                        WHERE mdp.name = %(product_id_str)s 
+                )
+                """
+            try:
+                cur.execute(sql, {'product_id_str': self.get_full_id()})
+            except Exception as err:
+                raise err.__class__(f'query failed with {err}: {sql}')
+
+            metadata = {}
+            for field in channel_id_fields:
+                metadata[field] = set()
+
+            for row in cur.fetchall():
+                field = next(f for f in channel_id_fields if f.name == row['field_name'])
+                metadata[field].add(row['value'])
+
+            return {f: sorted(values) for f, values in metadata.items()}
 
     @classmethod
     def ensure(cls):
