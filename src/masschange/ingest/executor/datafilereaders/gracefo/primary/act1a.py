@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 import numpy as np
 from pandas import DataFrame
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, \
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
     ArrayLikeAsciiDataFileReaderColumn
-from masschange.ingest.utils.arraylikefields import append_flag_fields
 
 
 class GraceFOAct1ADataFileReader(AsciiDataFileReader):
@@ -52,7 +52,4 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
     def populate_timestamp(cls, row) -> datetime:
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
-    @classmethod
-    def append_derived_fields(cls, df: DataFrame) -> None:
-        append_flag_fields(df, 'qualflg')
 

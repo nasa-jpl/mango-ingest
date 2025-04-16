@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader, \
-    AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    VariableSchemaAsciiDataFileReaderColumn
 
 
 class GraceFOMas1BDataFileReader(DataFileWithProdFlagReader):
