@@ -108,7 +108,7 @@ class Dataset:
 
     def get_metadata_properties(self) -> Union[Dict, None]:
         """
-        Get available values from tables _meta_dataproducts_versions_instruments and _meta_datasets_channelidvalues for
+        Get available values from tables _meta_dataproducts_versions_instruments and _meta_dataproducts_channelidvalues for
         the corresponding row
         """
         supported_properties = {'data_begin', 'data_end', 'last_updated'}
@@ -375,20 +375,16 @@ class Dataset:
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             sql = """
                 SELECT *
-                FROM _meta_datasets_channelidvalues as civ
+                FROM _meta_dataproduct_channelidvalues as civ
                 WHERE civ.dataset_id in (
-                    SELECT datasets.id
-                        FROM _meta_dataproducts_versions_instruments as datasets
-                        JOIN _meta_dataproducts_versions mdv on mdv.id = datasets._meta_dataproducts_versions_id
-                        JOIN _meta_dataproducts mdp on mdp.id = mdv._meta_dataproducts_id
-                        JOIN _meta_instruments mi on datasets._meta_instruments_id = mi.id
+                    SELECT mdp.id
+                        FROM _meta_dataproducts as mdp 
+                        JOIN _meta_dataproducts_channelidvalues civ on mdp.id = civ.dataproducts_id
                         WHERE mdp.name = %(product_id_str)s 
-                            AND mdv.name = %(version)s 
-                            AND mi.name = %(instrument)s
                 )
                 """
             try:
-                cur.execute(sql, {'product_id_str': self.product.get_full_id(), 'version': str(self.version), 'instrument': self.instrument_id})
+                cur.execute(sql, {'product_id_str': self.product.get_full_id()})
             except Exception as err:
                 raise err.__class__(f'query failed with {err}: {sql}')
 

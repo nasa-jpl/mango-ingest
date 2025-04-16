@@ -49,12 +49,9 @@ def fetch_bulk_channel_id_enums() -> Dict[str, Dict[str, Collection[str]]]:
     with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         try:
             sql = f"""
-    SELECT mdp.name as product_id, mdv.name as version_id, mi.name as instrument_id, field_name, value
-    FROM _meta_datasets_channelidvalues as civ
-        JOIN _meta_dataproducts_versions_instruments datasets on datasets.id = civ.dataset_id
-        JOIN _meta_dataproducts_versions mdv on mdv.id = datasets._meta_dataproducts_versions_id
-        JOIN _meta_dataproducts mdp on mdp.id = mdv._meta_dataproducts_id
-        JOIN _meta_instruments mi on datasets._meta_instruments_id = mi.id;
+    SELECT mdp.name as product_id, field_name, value
+    FROM _meta_dataproducts_channelidvalues as civ
+        JOIN _meta_dataproducts mdp on mdp.id = civ.dataproducts_id
                             """
             cur.execute(sql)
             result_rows = cur.fetchall()
