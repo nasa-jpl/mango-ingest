@@ -1,7 +1,7 @@
 from collections.abc import Collection
 from datetime import datetime, timedelta
-
 import numpy as np
+from pandas import DataFrame
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn, \
     ArrayLikeAsciiDataFileReaderColumn
@@ -53,6 +53,6 @@ class GraceFOAct1ADataFileReader(AsciiDataFileReader):
         return cls.get_reference_epoch() + timedelta(seconds=row.rcvtime_intg, microseconds=row.rcvtime_frac)
 
     @classmethod
-    def append_derived_fields(cls, df):
+    def append_derived_fields(cls, df: DataFrame) -> None:
         append_flag_fields(df, 'qualflg')
 
