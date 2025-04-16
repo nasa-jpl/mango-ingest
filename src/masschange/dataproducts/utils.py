@@ -66,7 +66,7 @@ def get_schema_updates_for_flag_fields(prefix: str, num_of_fields: int) -> str:
     prefix: str prefix for the name of the field
     num_of_fields: int number of columns
 
-    Returns
+    Returns a string to be inserted to a SQL create table statement to add derived columns
     -------
 
     """

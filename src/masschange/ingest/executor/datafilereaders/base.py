@@ -140,7 +140,7 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    def append_derived_fields(cls, df):
+    def append_derived_fields(cls, df: pd.DataFrame) -> None:
         """
         Use this method to append fields that are not read directly from the product file,
         for example, geolocation field
