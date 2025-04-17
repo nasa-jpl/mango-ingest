@@ -87,13 +87,18 @@ class DataProduct(ABC):
                 datasets = [ds for ds in metadata_cache.datasets if ds.product_id == cls.get_full_id()]
                 description['datasets'] = datasets
                 description['available_versions'] = sorted({ds.version_id for ds in datasets})
-                description['enum_values'] = next(p.channel_enum_values for p in metadata_cache.dataproducts if p.product is cls)
+
+                cached_product = next(p for p in metadata_cache.dataproducts if p.product.__class__ is cls)
+                channel_enum_values_by_field = cached_product.channel_enum_values
 
             else:
-                description['enum_values'] = cls.fetch_channel_id_values()
-
                 if not exclude_available_versions:
                     description['available_versions'] = sorted(str(version) for version in cls.get_available_versions())
+                channel_enum_values_by_field = cls.fetch_channel_id_values()
+
+            for field, enum_values in channel_enum_values_by_field.items():
+                field_description = next(d for d in description['available_fields'] if d['name'] == field.name)
+                field_description.update({'enum_values': sorted(enum_values)})
 
         except KeyError as err:
             logging.error(f'Failed to retrieve expected metadata for product {cls.get_full_id()}: {err}')
