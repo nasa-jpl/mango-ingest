@@ -5,7 +5,9 @@ from typing import Dict, Set
 import psycopg2
 
 from masschange.dataproducts.dataproduct import DataProduct
-from masschange.dataproducts.utils import get_dataproducts
+from masschange.dataproducts.dataproductfield import DataProductField
+from masschange.dataproducts.utils import\
+    get_dataproducts
 from masschange.db.conn import get_db_cursor
 
 
@@ -37,7 +39,7 @@ JOIN _meta_instruments mi on mi.id = mdpvi._meta_instruments_id
     return {f"{row['product']}_{row['version']}_{row['instrument']}": row for row in results}
 
 
-def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[str, Collection[str]]]:
+def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[DataProductField, Collection[str]]]:
     # TODO: incorporate CachedDatasetMetadata objects in output rather than using dicts, and rename method to represent all product-level metadata
 
     """
@@ -67,21 +69,22 @@ def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[str, Collection[str]
         channel_id_fields = [f for f in product.get_available_fields() if f.is_channel_id_column]
         results[product] = {}
         for field in channel_id_fields:
-            results[product][field.name] = set()
+            results[product][field] = set()
 
     for row in result_rows:
         product_id = row['product_id']
         product = next(product for product in get_dataproducts() if product.get_full_id() == product_id)
         field_name = row['field_name']
+        field = next(f for f in product.get_available_fields() if f.name == field_name)
         value = row['value']
 
-        channel_id_enums: Dict[str, Set[str]] = results[product]
-        field_enum_values: Set[str] = channel_id_enums[field_name]
+        channel_id_enums: Dict[DataProductField, Set[str]] = results[product]
+        field_enum_values: Set[str] = channel_id_enums[field]
         field_enum_values.add(value)
 
     # Sort the enums for clean presentation in API response
 
     for product in results.keys():
-        for field_name in results[product].keys():
-            results[product][field_name] = sorted(results[product][field_name])
+        for field in results[product].keys():
+            results[product][field] = sorted(results[product][field])
     return results
