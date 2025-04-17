@@ -35,6 +35,15 @@ class DataProduct(ABC):
     def get_full_id(cls) -> str:
         return f'{cls.mission.id}_{cls.id_suffix}'
 
+
+    def __hash__(self):
+        # Defined to allow keying dicts by DataProduct
+        return self.get_full_id().__hash__()
+
+    def __eq__(self, other):
+        # Defined to allow keying dicts by DataProduct
+        return self.get_full_id() == other.get_full_id()
+
     @classmethod
     def get_table_name_prefix(cls) -> str:
         return cls.get_full_id().lower()
