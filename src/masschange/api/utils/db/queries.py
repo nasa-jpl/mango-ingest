@@ -25,7 +25,7 @@ def fetch_dataset_bulk_metadata() -> Dict[str, Dict]:
     with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         try:
             sql = f"""
-SELECT mdp.name as product, mdv.name as version, mi.name as instrument, {','.join(sorted(supported_properties))}
+SELECT mdp.name as product_id, mdv.name as version_id, mi.name as instrument_id, {','.join(sorted(supported_properties))}
 FROM _meta_dataproducts_versions_instruments as mdpvi
 JOIN _meta_dataproducts_versions mdv on mdv.id = mdpvi._meta_dataproducts_versions_id
 JOIN _meta_dataproducts mdp on mdp.id = mdv._meta_dataproducts_id
@@ -36,7 +36,7 @@ JOIN _meta_instruments mi on mi.id = mdpvi._meta_instruments_id
         except Exception as err:
             logging.warning(f'query failed with {err}: {sql}')
             return {}
-    return {f"{row['product']}_{row['version']}_{row['instrument']}": row for row in results}
+    return {f"{row['product_id']}_{row['version_id']}_{row['instrument_id']}": row for row in results}
 
 
 def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[DataProductField, Collection[str]]]:
