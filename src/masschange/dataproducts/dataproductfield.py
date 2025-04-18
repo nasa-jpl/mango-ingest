@@ -90,6 +90,8 @@ class DataProductField(ABC):
     # TODO: see if it's possible to resolve the circular dependency issue requiring injection of the product here
     #  ideally TimeSeriesDataProductFields could be assigned their relevant product at construction-time, but because
     #  DataFileReaders have no concept of belonging to any particular product, this is currently impossible
+
+    # TODO: add channel-id enum values if appropriate
     def describe(self, parent_product = None) -> Dict:
         description = {
             'name': self.name,
