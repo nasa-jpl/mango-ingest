@@ -46,13 +46,13 @@ def ensure_metadata_tables_exist():
             UNIQUE (_meta_dataproducts_versions_id, _meta_instruments_id)
             );
             
-            CREATE TABLE IF NOT EXISTS _meta_dataproducts_channelidvalues
+            CREATE TABLE IF NOT EXISTS _meta_datasets_channelidvalues
             (
             id SERIAL PRIMARY KEY,
-            dataproduct_id INT REFERENCES _meta_dataproducts (id) ON DELETE CASCADE,
+            dataset_id INT REFERENCES _meta_dataproducts_versions_instruments (id) ON DELETE CASCADE,
             field_name VARCHAR NOT NULL,
             value VARCHAR NOT NULL,
-            UNIQUE (dataproduct_id, field_name, value)
+            UNIQUE (dataset_id, field_name, value)
             );
         """
         cur.execute(sql)
