@@ -70,4 +70,9 @@ class GraceFOGnv1BDataFileReader(AsciiDataFileReader):
     @classmethod
     def append_derived_fields(cls, df):
         Geolocation.append_location_fields(df)
+        super().append_derived_fields(df)
+
+
+
+
 
