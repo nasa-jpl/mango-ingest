@@ -31,7 +31,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# TODO: Resolve case where this is not set - should it throw a descriptive error or continue gracefully?
 origins = [
     os.environ["API_PROXY_HOST"],
     "http://localhost:5173",

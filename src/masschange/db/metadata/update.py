@@ -122,10 +122,10 @@ def update_metadata(dataset: Dataset, data_span: Union[TimeSpan, None] = None,
 
             for value in values:
                 sql = f"""
-                                INSERT INTO _meta_dataproducts_channelidvalues
-                                VALUES (DEFAULT, %(dataproduct_id)s, %(field_name)s, %(value)s)
-                                ON CONFLICT (dataproduct_id, field_name, value) DO NOTHING
+                                INSERT INTO _meta_datasets_channelidvalues
+                                VALUES (DEFAULT, %(dataset_id)s, %(field_name)s, %(value)s)
+                                ON CONFLICT (dataset_id, field_name, value) DO NOTHING
                             """
 
                 with get_db_cursor() as cur:
-                    cur.execute(sql, {'dataproduct_id': data_product_db_id, 'field_name': field.name, 'value': value})
+                    cur.execute(sql, {'dataset_id': dataset_id, 'field_name': field.name, 'value': value})
