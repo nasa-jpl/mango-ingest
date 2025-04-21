@@ -15,9 +15,11 @@ class GraceFOTim1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
          (346333800, 'C', 3, 0, 0, 19639, 19639, '00001000',
-         datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc)),
+          False, False, False, False, True, False, False, False,
+          datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc)),
          (346333800, 'D', 3, 0, 0, 6260, 6260, '00001000',
-         datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc))
+          False, False, False, False, True, False, False, False,
+          datetime(2010, 12, 22, 23, 50, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

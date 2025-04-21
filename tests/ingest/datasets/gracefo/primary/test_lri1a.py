@@ -19,11 +19,13 @@ class GraceFOLri1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849600, 61552670, 'C',
-         '0000111111111111', '00000000',  datetime(2023, 6, 1, 0, 0, 0, 61553, tzinfo=timezone.utc),
+         '0000111111111111', '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 6, 1, 0, 0, 0, 61553, tzinfo=timezone.utc),
          47343173822.39327,  1849342727,  1877675238,  1849342727,
          1878163788,  1849342727,  1878163683,  1849342727,
          1877675390,  4782,  17,  14),
-        (738849600, 531136, 'D',  '0000111111111111',  '00000000', datetime(2023, 6, 1, 0, 0, 0, 531, tzinfo=timezone.utc),
+        (738849600, 531136, 'D',  '0000111111111111',  '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 6, 1, 0, 0, 0, 531, tzinfo=timezone.utc),
          49611169906.41313,  1937936324,  2015789850,  1937936324,
          2015146275,  1937936324 , 2015146317,  1937936324,
          2015789818,  4612,  20,  19)

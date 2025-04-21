@@ -19,7 +19,8 @@ class GraceFOLlt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
         (738847800, 'C', 'D',
          -0.0005742609320594731, -4987098.972337563, 868444.8157530363,
          4619817.44117552, -5111.944931020933, 700.7618615131532,
-         -5623.492077053641,  '00000000', datetime(2023, 5, 31, 23, 30, tzinfo=timezone.utc))
+         -5623.492077053641,  '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 5, 31, 23, 30, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

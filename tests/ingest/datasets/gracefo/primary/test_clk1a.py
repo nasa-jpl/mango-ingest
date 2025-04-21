@@ -15,9 +15,11 @@ class GraceFOClk1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_first_rows = [
         (738838700, 'C', -1, -0.01650371603572079, 4.584127827359897e-07,
          -1.536416656448646e-08, 7.451463477188681e-12,  '00000010',
+         False, False, False, False, False, False, True, False,
          datetime(2023, 5, 31, 20, 58, 20, tzinfo=timezone.utc)),
         (738838700, 'D', -1, -0.01708221843967185, 4.584555612790305e-07,
          -1.592279949205651e-08, 7.275799953943833e-12,  '00000010',
+         False, False, False, False, False, False, True, False,
          datetime(2023, 5, 31, 20, 58, 20, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':

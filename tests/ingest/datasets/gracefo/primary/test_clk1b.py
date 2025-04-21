@@ -8,14 +8,16 @@ class GraceFOClk1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOClk1BDataProduct
     expected_table_names = ['gracefo_clk1b_04_c', 'gracefo_clk1b_04_d']
     expected_field_types = [int, str, int, float, float, float, float,
-                            str,bool, bool, bool, bool, bool, bool, bool, bool, datetime]
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849300, 'C', -1, -0.01666656140839928, 1.599266764767988e-11,
          -1.536399985660976e-08, 1.653384827629116e-12,  '00000010',
+         False, False, False, False, False, False, True, False,
          datetime(2023, 5, 31, 23, 55, tzinfo=timezone.utc)),
         (738849300, 'D', -1, -0.01725100262549603, 1.560976798810238e-11,
          -1.592273245780939e-08, 1.640211121486265e-12,  '00000010',
+         False, False, False, False, False, False, True, False,
          datetime(2023, 5, 31, 23, 55, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
