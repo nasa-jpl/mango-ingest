@@ -20,13 +20,15 @@ class GraceFOGni1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          -2130715.55343238, 215306.9570484998, -6542029.542409312,
          1e+33, 1e+33, 1e+33,
          7121.748887787898, -1163.082953597745, -2364.357584500985,
-         1e+33, 1e+33, 1e+33,  '10000000'
-         , datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
+         1e+33, 1e+33, 1e+33,  '10000000',
+         True, False, False, False, False, False, False, False,
+         datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
          (738849600, 'D', 'I',
           -2290675.693168949, 241402.7182871537, -6486678.549440263,
           1e+33, 1e+33, 1e+33,
           7061.134387187208, -1156.629164904302, -2543.563504581773,
           1e+33, 1e+33, 1e+33,  '10000000',
+          True, False, False, False, False, False, False, False,
           datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
           )
     ]

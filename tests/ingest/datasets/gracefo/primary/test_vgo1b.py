@@ -16,9 +16,11 @@ class GraceFOVgo1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [2, 2]
     expected_table_first_rows = [
         (580219200, 'C', 1.572768756842531, -0.9926761281387254, 0, -0.120806062031294,
-         '00000001', datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc)),
+         '00000001', False, False, False, False, False, False, False, True,
+         datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc)),
         (580219200, 'D', 1.572768756842531, -0.9926761281387254, 0, -0.120806062031294,
-         '00000001', datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc))
+         '00000001', False, False, False, False, False, False, False, True,
+         datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

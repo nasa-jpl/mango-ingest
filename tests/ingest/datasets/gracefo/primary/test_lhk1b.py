@@ -12,8 +12,10 @@ class GraceFOLhk1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849600, 138320886, 'C', '00000000', '?', 1905, 'TMA_LASER_POWER',
+         False, False, False, False, False, False, False, False,
          datetime(2023, 6, 1, 0, 0, 0, 138321, tzinfo=timezone.utc)),
         (738849600, 946483437, 'D', '00000000', '?', 1904, 'TMA_LASER_POWER',
+         False, False, False, False, False, False, False, False,
          datetime(2023, 6, 1, 0, 0, 0, 946483, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':

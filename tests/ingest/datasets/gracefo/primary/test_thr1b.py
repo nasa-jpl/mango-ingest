@@ -19,12 +19,14 @@ class GraceFOThr1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          327957, 7814, 191158, 6440, 171084, 121286,
          50, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0,
          114098563, 29162000, '00001100',
+         False, False, False, False, True, True, False, False,
          datetime(2023, 6, 1, 0, 0, 20, 83329, tzinfo=timezone.utc)),
         (738849943, 582739, 'D',
          228691, 6246, 257729, 3828, 132419, 144198,
          228603, 5832, 257471, 3726, 132320, 143566,
          0, 0, 50, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0,
          106517163, 27414000, '00001100',
+         False, False, False, False, True, True, False, False,
          datetime(2023, 6, 1, 0, 5, 43, 582739, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':

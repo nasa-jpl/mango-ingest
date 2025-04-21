@@ -28,7 +28,8 @@ class GraceFOHrt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
          28.32966995239258, 32.18954849243164, 28.15028953552246,
          22.22113037109375, 25.90483093261719, 0, 13.4033203125,
          12.22789001464844, 13.65773010253906, 12.13127994537354,
-         '00000000', datetime(2023, 6, 1, 0, 0, 9, 506000, tzinfo=timezone.utc)),
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2023, 6, 1, 0, 0, 9, 506000, tzinfo=timezone.utc)),
         (738849623, 506000, 'D',
          1.367041945457458, 1.162861943244934, 10.80770969390869,
          5.909525871276855, 6.840211868286133, 0, 0, 0, 0, 0, 0,
@@ -37,7 +38,8 @@ class GraceFOHrt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
          26.45257949829102, 32.30487060546875, 26.18992042541504,
          26.06819915771484, 22.07698059082031, 0, 12.32127952575684,
          12.76247024536133, 12.03466987609863, 12.66586017608643,
-         '00000000', datetime(2023, 6, 1, 0, 0, 23, 506000, tzinfo=timezone.utc))
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2023, 6, 1, 0, 0, 23, 506000, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

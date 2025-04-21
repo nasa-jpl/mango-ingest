@@ -22,14 +22,16 @@ class GraceFOGnv1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          -1636.58495865621, 7025.557923232562, -2348.304620900529,
          1.355885561557259e-06, 1.963835415859967e-06, 2.021675127198291e-06,
          '00000000', '0101000020E61000005A172BB87EAA52C0602B996BD20652C0',
-         'A', datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
+         'A', False, False, False, False, False, False, False, False,
+         datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)),
          (738849600, 'D', 'E',
           595944.1677232814, -2209863.655682023, -6491827.337483045,
           0.0006038281162352046, 0.0007449456765001425, 0.001004714080891457,
           -1632.457007090984, 6964.636302676829, -2527.646764562352,
           1.334523249336289e-06, 1.998181731481052e-06, 2.083411888826681e-06,
           '00000000', '0101000020E610000031DEE96C19BA52C00CF49F942BAC51C0',
-          'A', datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
+          'A', False, False, False, False, False, False, False, False,
+          datetime(2023, 6, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
           )
     ]
 if __name__ == '__main__':
