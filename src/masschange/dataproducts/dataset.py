@@ -108,7 +108,7 @@ class Dataset:
 
     def get_metadata_properties(self) -> Union[Dict, None]:
         """
-        Get available values from tables _meta_dataproducts_versions_instruments and _meta_dataproducts_channelidvalues for
+        Get available values from tables _meta_dataproducts_versions_instruments and _meta_datasets_channelidvalues for
         the corresponding row
         """
         supported_properties = {'data_begin', 'data_end', 'last_updated'}
@@ -116,7 +116,7 @@ class Dataset:
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             try:
                 metadata = self._get_basic_metadata(cur, supported_properties)
-                metadata['channel_id_enums'] = {field.name: [str(v) for v in values] for field, values in self.product.fetch_channel_id_values().items()}
+                metadata['channel_id_enums'] = {field.name: [str(v) for v in values] for field, values in self.fetch_channel_id_values().items()}
             except Exception as err:
                 logging.warning(f'Failed to resolve metadata for dataset {self.get_table_name()}: {err}')
                 return None
@@ -337,7 +337,7 @@ class Dataset:
     def _enumerate_channel_id_values(self) -> Mapping[DataProductField, Set[str]]:
         """
         Derive channel id values from the raw data - this is expensive and should be avoided in favor of
-        DataProduct.fetch_channel_id_values(), which uses the stateful metadata cache
+        fetch_channel_id_values(), which uses the stateful metadata cache
         """
         if not self.product.has_channel_id_fields():
             return {}
@@ -365,3 +365,42 @@ class Dataset:
                     metadata[field].add(row[column])
 
         return {field: sorted(values) for field, values in metadata.items()}
+
+    def fetch_channel_id_values(self) -> Mapping[DataProductField, Set[str]]:
+        """
+        Pull channel id values from the stateful metadata cache
+        """
+        channel_id_fields = [f for f in self.product.get_available_fields() if f.is_channel_id_column]
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            sql = """
+                SELECT *
+                FROM _meta_datasets_channelidvalues as civ
+                WHERE civ.dataset_id in (
+                    SELECT datasets.id
+                        FROM _meta_dataproducts_versions_instruments as datasets
+                        JOIN _meta_dataproducts_versions mdv on mdv.id = datasets._meta_dataproducts_versions_id
+                        JOIN _meta_dataproducts mdp on mdp.id = mdv._meta_dataproducts_id
+                        JOIN _meta_instruments mi on datasets._meta_instruments_id = mi.id
+                        WHERE mdp.name = %(product_id_str)s 
+                            AND mdv.name = %(version)s 
+                            AND mi.name = %(instrument)s
+                )
+                """
+            try:
+                cur.execute(sql, {'product_id_str': self.product.get_full_id(), 'version': str(self.version), 'instrument': self.instrument_id})
+            except Exception as err:
+                raise err.__class__(f'query failed with {err}: {sql}')
+
+            metadata = {}
+            for field in channel_id_fields:
+                metadata[field] = set()
+
+            for row in cur.fetchall():
+                field = next(f for f in channel_id_fields if f.name == row['field_name'])
+                metadata[field].add(row['value'])
+
+            return {f: sorted(values) for f, values in metadata.items()}
+
+
+
