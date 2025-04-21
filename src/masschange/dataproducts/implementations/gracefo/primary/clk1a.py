@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.clk1a import GraceFOClk1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOClk1ADataProduct(TimeSeriesDataProduct):
@@ -32,5 +33,7 @@ class GraceFOClk1ADataProduct(TimeSeriesDataProduct):
            
             qualflg VARCHAR(8) not null, 
             
-            timestamp timestamptz not null
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null 
         """

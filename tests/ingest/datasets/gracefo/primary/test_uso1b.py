@@ -8,7 +8,8 @@ class GraceFOUso1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOUso1BDataProduct
     expected_table_names = ['gracefo_uso1b_04_c', 'gracefo_uso1b_04_d']
 
-    expected_field_types = [int, str, int, float,  float, float, str, datetime]
+    expected_field_types = [int, str, int, float,  float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
 
     expected_table_row_counts = [2, 2]
     expected_table_first_rows = [

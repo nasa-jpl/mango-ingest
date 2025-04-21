@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
-    DerivedAsciiDataFileReaderColumn
+    DerivedAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 from masschange.db.data.aggregations import NestedAggregation
 from masschange.db.data.geolocation import Geolocation
 
@@ -56,7 +56,7 @@ class GraceFOGnv1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=14, name='zvel_err', np_type=np.double, unit='m/s',
                                       aggregations=['min', 'max']),
 
-            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', array_size=8),
 
             DerivedAsciiDataFileReaderColumn(name='location', np_type='U64', unit=None, aggregations=[
                 NestedAggregation('centroid', ['st_collect', 'st_centroid'])]),

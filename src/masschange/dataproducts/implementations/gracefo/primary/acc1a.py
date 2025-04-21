@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1a import GraceFOAcc1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOAcc1ADataProduct(TimeSeriesDataProduct):
@@ -37,6 +38,8 @@ class GraceFOAcc1ADataProduct(TimeSeriesDataProduct):
             ang_accl_z double precision not null,
              
             icu_blk_nr int, 
-
-            timestamp timestamptz not null
+            
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null 
         """

@@ -7,7 +7,8 @@ from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 class GraceFOSca1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOSca1ADataProduct
     expected_table_names = ['gracefo_sca1a_04_c', 'gracefo_sca1a_04_d']
-    expected_field_types = [int, int, str, int, str, float, float, float, float, int, int, int, str, str, datetime]
+    expected_field_types = [int, int, str, int, str, float, float, float, float, int, int, int, str, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849600, 29992, 'C', 1, 'P', -0.2800946131535094, -0.5818990067536707, 0.6977387079265291, 0.3100020129489717, 0, 47, 1, '11000001', '11000000',

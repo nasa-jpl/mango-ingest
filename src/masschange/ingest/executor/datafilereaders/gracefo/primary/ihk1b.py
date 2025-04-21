@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOIhk1BDataFileReader(AsciiDataFileReader):
@@ -27,7 +28,7 @@ class GraceFOIhk1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', array_size=8),
             AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None),
 
             AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.double,

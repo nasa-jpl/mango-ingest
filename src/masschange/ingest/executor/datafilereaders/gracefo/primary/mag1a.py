@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 # GRACE-FO Level-1A Magnetometer and Torque Rod Data
@@ -66,7 +67,7 @@ class GraceFOMag1ADataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=16, name='torque_cal', np_type=np.double, unit=None,
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=17, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=17, name='qualflg', np_type='U8', array_size=8),
         ]
 
     @classmethod

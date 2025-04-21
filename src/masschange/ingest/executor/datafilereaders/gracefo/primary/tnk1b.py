@@ -5,7 +5,7 @@ import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
-    VariableSchemaAsciiDataFileReaderColumn
+    VariableSchemaAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOTnk1BDataFileReader(DataFileWithProdFlagReader):
@@ -30,7 +30,7 @@ class GraceFOTnk1BDataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit=None, is_channel_id_column=True),
-            AsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', array_size=8),
             AsciiDataFileReaderColumn(index=6, name='prod_flag', np_type='U8', unit=None),
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns

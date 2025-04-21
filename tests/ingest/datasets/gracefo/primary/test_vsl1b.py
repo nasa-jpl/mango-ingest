@@ -11,7 +11,8 @@ class GraceFOVsl1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     dataset_cls = GraceFOVsl1BDataProduct
     expected_table_names = ['gracefo_vsl1b_04_c', 'gracefo_vsl1b_04_d']
-    expected_field_types = [int, str, float, float, float, float, str, datetime]
+    expected_field_types = [int, str, float, float, float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [1, 1]
     expected_table_first_rows = [
         (580219200, 'C', 0.7183, -0.8353, -0.4559, 0.3074,

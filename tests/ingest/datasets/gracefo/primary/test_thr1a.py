@@ -11,7 +11,7 @@ class GraceFOThr1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
                             int, int, int, int, int, int,
                             int, int, int, int, int, int,
                             int, int, int, int, int, int, int, int, int, int, int, int, int, int,
-                            int, int, str, datetime]
+                            int, int, str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849620, 100000, 'C',

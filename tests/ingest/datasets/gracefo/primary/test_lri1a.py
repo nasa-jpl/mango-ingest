@@ -10,7 +10,7 @@ class GraceFOLri1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_names = ['gracefo_lri1a_04_c', 'gracefo_lri1a_04_d']
 
     expected_field_types = [int, int, str,
-        str, str, datetime,
+        str, str, bool, bool, bool, bool, bool, bool, bool, bool, datetime,
         Union[float, type(None)], Union[int, type(None)], Union[int, type(None)], Union[int, type(None)],
         Union[int, type(None)], Union[int, type(None)], Union[int, type(None)], Union[int, type(None)],
         Union[int, type(None)], Union[int, type(None)], Union[int, type(None)], Union[int, type(None)]

@@ -8,7 +8,8 @@ class GraceFOMag1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOMag1ADataProduct
     expected_table_names = ['gracefo_mag1a_04_c', 'gracefo_mag1a_04_d']
     expected_field_types = [int, int, str, float, float, float, float, float, float, float, float,
-                            float, float, float, float, float, str, datetime]
+                            float, float, float, float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849600, 100000, 'C', 12.32833957672119, 7.117527008056641, -31.84239959716797,

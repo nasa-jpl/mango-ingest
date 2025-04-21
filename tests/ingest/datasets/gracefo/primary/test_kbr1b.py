@@ -11,7 +11,8 @@ class GraceFOKbr1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     expected_field_types = [int, float, float, float, float, float,
                             float, float, float, float, float,
-                            float, float, float, float, str, datetime]
+                            float, float, float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
 
     expected_table_row_counts = [100]
     expected_table_first_rows = [
