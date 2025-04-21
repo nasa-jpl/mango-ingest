@@ -17,7 +17,7 @@ class GraceFOHrt1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
-                            str, datetime]
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (632318424, 501580, 'C',

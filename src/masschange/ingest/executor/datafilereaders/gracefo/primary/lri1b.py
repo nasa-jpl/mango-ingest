@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOLri1BDataFileReader(AsciiDataFileReader):
@@ -43,7 +44,7 @@ class GraceFOLri1BDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=13, name='K_B_SNR', np_type=np.double, unit='db-Hz',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None)
+            ArrayLikeAsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', array_size=8)
         ]
 
     @classmethod

@@ -9,7 +9,8 @@ class GraceFOAhk1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOAhk1ADataProduct
     expected_table_names = ['gracefo_ahk1a_04_c', 'gracefo_ahk1a_04_d']
 
-    expected_field_types = [int, int, str, str, str, datetime,
+    expected_field_types = [int, int, str, str, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime,
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],

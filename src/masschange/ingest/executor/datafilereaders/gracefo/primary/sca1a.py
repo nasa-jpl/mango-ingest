@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 # Star Camera Assembly data
@@ -59,7 +60,7 @@ class GraceFOSca1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=12, name='sca_null1', np_type=int, unit=None, const_value=0),
             AsciiDataFileReaderColumn(index=13, name='sca_null2', np_type=int, unit=None, const_value=0),
             AsciiDataFileReaderColumn(index=14, name='sca_mode', np_type='U8', unit=None),
-            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None)
+            ArrayLikeAsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', array_size=8)
         ]
 
     @classmethod

@@ -6,7 +6,7 @@ import pandas as pd
 
 from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
-    VariableSchemaAsciiDataFileReaderColumn
+    VariableSchemaAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOGps1ADataFileReader(DataFileWithProdFlagReader):
@@ -32,7 +32,7 @@ class GraceFOGps1ADataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=3, name='prn_id', np_type='int', unit=None, is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=4, name='ant_id', np_type='int', unit=None, is_channel_id_column=True),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U16', unit=None),
-            AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', array_size=8),
 
             # add definitions for VariableSchemaAsciiDataFileReaderColumns
             VariableSchemaAsciiDataFileReaderColumn(prod_flag_bit_index=0, name='CA_range', np_type=np.double,

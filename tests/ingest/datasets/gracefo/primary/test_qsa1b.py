@@ -12,7 +12,7 @@ class GraceFOQsa1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOQsa1BDataProduct
     expected_table_names = ['gracefo_qsa1b_04_c', 'gracefo_qsa1b_04_d']
     expected_field_types = [int, str,  int, float, float, float, float, float,
-                            str, datetime]
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [3, 3]
     expected_table_first_rows = [
         (580219200, 'C', 1, -0.1846523033914243, 0.687786333034212, 0.676514247097443, 0.18756854858364,

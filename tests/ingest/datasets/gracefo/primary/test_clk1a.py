@@ -10,7 +10,7 @@ class GraceFOClk1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOClk1ADataProduct
     expected_table_names = ['gracefo_clk1a_04_c', 'gracefo_clk1a_04_d']
     expected_field_types = [int, str, int, float, float, float, float,
-                            str, datetime]
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738838700, 'C', -1, -0.01650371603572079, 4.584127827359897e-07,

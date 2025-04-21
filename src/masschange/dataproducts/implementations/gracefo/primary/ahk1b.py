@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.ahk1b import GraceFOAhk1BDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOAhk1BDataProduct(TimeSeriesDataProduct):
@@ -27,7 +28,9 @@ class GraceFOAhk1BDataProduct(TimeSeriesDataProduct):
             qualflg VARCHAR(8) not null,
             prod_flag VARCHAR(32) not null,
 
-            timestamp timestamptz not null,
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null ,
 
             TFEEU_IF double precision,
             TFEEU_REF double precision,

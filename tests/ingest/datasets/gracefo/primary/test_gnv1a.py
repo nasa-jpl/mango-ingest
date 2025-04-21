@@ -15,7 +15,7 @@ class GraceFOGnv1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
                             float, float, float,
                             float, float, float,
                             float, str, str,
-                            str, datetime,
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime
                             ]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [

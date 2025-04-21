@@ -12,7 +12,7 @@ class GraceFOLlt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_field_types = [int, str, str,
                             float, float, float,
                             float, float, float,
-                            float, str, datetime,
+                            float, str, bool, bool, bool, bool, bool, bool, bool, bool, datetime,
                             ]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [

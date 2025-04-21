@@ -40,5 +40,5 @@ class GraceFOAct1ADataProduct(TimeSeriesDataProduct):
             icu_blk_nr int, 
             {get_schema_updates_for_flag_fields("qualflg", 8)}
             
-            timestamp timestamptz not null
+            timestamp timestamptz not null 
         """

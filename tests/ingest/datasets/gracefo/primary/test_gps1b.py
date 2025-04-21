@@ -9,7 +9,8 @@ class GraceFOGps1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOGps1BDataProduct
     expected_table_names = ['gracefo_gps1b_04_c', 'gracefo_gps1b_04_d']
 
-    expected_field_types = [int, int, str, int, int, str, str, datetime,
+    expected_field_types = [int, int, str, int, int, str, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime,
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[int, type(None)], Union[int, type(None)], Union[int, type(None)],

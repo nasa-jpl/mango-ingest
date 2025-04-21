@@ -19,7 +19,7 @@ from masschange.ingest.utils.arraylikefields import append_flag_fields
 
 
 class DataFileReader(ABC):
-:q
+
     @classmethod
     @abstractmethod
     def get_input_file_default_regex(cls) -> str:
@@ -223,6 +223,8 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
             else:
                 df[column.name] = values
         # add timestamp
+        # Append custom fields to the dataframe, if needed
+        cls.append_derived_fields(df)
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # append variable schema data at the end of the frame
