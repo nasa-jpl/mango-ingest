@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.ihk1a import GraceFOIhk1ADataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOIhk1ADataProduct(TimeSeriesDataProduct):
@@ -30,5 +31,7 @@ class GraceFOIhk1ADataProduct(TimeSeriesDataProduct):
             sensorvalue double precision not null,
             sensorname VARCHAR(2) not null,
 
-            timestamp timestamptz not null
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null 
         """

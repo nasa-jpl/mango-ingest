@@ -17,7 +17,7 @@ class GraceFOHrt1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
-                            str, datetime]
+                            str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (632318424, 501580, 'C',
@@ -28,7 +28,8 @@ class GraceFOHrt1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          29.25219917297363, 32.23759841918945, 29.11125946044922,
          22.21792030334473, 25.89521980285645, 0, 13.01688003540039,
          12.25364971160889, 13.27128982543945, 12.16026020050049,
-         '00000000', datetime(2020, 1, 15, 0, 0, 24, 501580, tzinfo=timezone.utc)),
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2020, 1, 15, 0, 0, 24, 501580, tzinfo=timezone.utc)),
         (632318416, 502161, 'D',
          1.469131946563721, 0.8933441042900085, 10.11532974243164,
          6.118850231170654, 6.20580005645752, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -37,7 +38,8 @@ class GraceFOHrt1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          26.62556076049805, 32.23440170288086, 26.38530921936035,
          25.8215503692627, 21.83674049377441, 0, 12.29551982879639,
          11.41958045959473, 12.01212024688721, 11.34228992462158,
-         '00000000', datetime(2020, 1, 15, 0, 0, 16, 502161, tzinfo=timezone.utc))
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2020, 1, 15, 0, 0, 16, 502161, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

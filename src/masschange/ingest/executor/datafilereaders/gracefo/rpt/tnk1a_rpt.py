@@ -1,5 +1,6 @@
 from datetime import datetime
-from masschange.ingest.executor.datafilereaders.base import ReportFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import ReportFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
 
 
 class GraceFOTnk1ARptDataFileReader(ReportFileReader):

@@ -2,8 +2,9 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 from masschange.ingest.executor.datafilereaders.baseevents import EventsFileReader
-from masschange.ingest.executor.datafilereaders.base import DerivedAsciiDataFileReaderColumn, \
-    AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    DerivedAsciiDataFileReaderColumn
+
 
 class GraceFOSpacecraftEventsDataFileReader(EventsFileReader):
 
