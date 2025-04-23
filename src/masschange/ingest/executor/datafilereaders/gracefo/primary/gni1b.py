@@ -2,7 +2,9 @@ from collections.abc import Collection
 from datetime import datetime, timedelta
 
 import numpy as np
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOGni1BDataFileReader(AsciiDataFileReader):
@@ -54,7 +56,7 @@ class GraceFOGni1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=14, name='zvel_err', np_type=np.double, unit='m/s',
                                       aggregations=['min', 'max']),
 
-            AsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', unit=None)
+            ArrayLikeAsciiDataFileReaderColumn(index=15, name='qualflg', np_type='U8', array_size=8)
         ]
 
     @classmethod

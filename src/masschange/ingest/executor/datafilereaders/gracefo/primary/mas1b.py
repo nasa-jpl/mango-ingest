@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader, \
-    AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    VariableSchemaAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOMas1BDataFileReader(DataFileWithProdFlagReader):
@@ -28,7 +29,7 @@ class GraceFOMas1BDataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', array_size=8),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U8', unit=None),
 
             # add definitions for VariableSchemaAsciiDataFileReaderColumns

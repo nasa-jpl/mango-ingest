@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import VariableDataClustersPerRowReader, AsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import VariableDataClustersPerRowReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    DerivedAsciiDataFileReaderColumn
 
 
 class GraceFOGnv1APrnDataFileReader(VariableDataClustersPerRowReader):

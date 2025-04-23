@@ -8,8 +8,10 @@ from masschange.missions import Mission
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import ArrayLikeAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.db.conn import get_db_cursor
+from masschange.ingest.utils.arraylikefields import generate_array_of_fields
 
 log = logging.getLogger()
 
@@ -25,7 +27,6 @@ class DataProduct(ABC):
     query_result_limit = 36000
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
-    # TODO: find a way to move it to the base class - non-timeseries datasets should support location as well
     LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
 
     @classmethod
@@ -159,6 +160,10 @@ class DataProduct(ABC):
                 cls.LOCATION_COLUMN_NAME,
                 'Latitude/Longitude (EPSG:4326)')
             special_fields.add(location_lookup_field)
+
+        for field in cls.get_reader().get_fields():
+            if isinstance(field, ArrayLikeAsciiDataFileReaderColumn):
+                special_fields.update(generate_array_of_fields(field.name, field.array_size))
 
         return special_fields.union(cls.get_reader().get_fields())
 

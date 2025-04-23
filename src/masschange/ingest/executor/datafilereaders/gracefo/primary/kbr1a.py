@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader, \
-    AsciiDataFileReaderColumn, VariableSchemaAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import  DataFileWithProdFlagReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    VariableSchemaAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
@@ -31,7 +32,7 @@ class GraceFOKbr1ADataFileReader(DataFileWithProdFlagReader):
             AsciiDataFileReaderColumn(index=3, name='prn_id', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=4, name='ant_id', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=5, name='prod_flag', np_type='U16', unit=None),
-            AsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=6, name='qualflg', np_type='U8', array_size=8),
 
             # skip definitions of columns defined by 'prod_flag'
             # add definitions for VariableSchemaAsciiDataFileReaderColumns

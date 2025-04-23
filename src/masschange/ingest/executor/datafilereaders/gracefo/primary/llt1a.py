@@ -3,7 +3,10 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
+
 
 class GraceFOLlt1ADataFileReader(AsciiDataFileReader):
     @classmethod
@@ -42,7 +45,7 @@ class GraceFOLlt1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=9, name='zvel', np_type=np.double, unit='m/s',
                                       aggregations=['min', 'max']),
 
-            AsciiDataFileReaderColumn(index=10, name='qualflg', np_type='U8', unit=None),
+            ArrayLikeAsciiDataFileReaderColumn(index=10, name='qualflg', np_type='U8', array_size=8),
         ]
 
     @classmethod

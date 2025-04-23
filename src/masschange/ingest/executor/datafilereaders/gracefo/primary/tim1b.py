@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 class GraceFOTim1BDataFileReader(AsciiDataFileReader):
@@ -31,7 +33,7 @@ class GraceFOTim1BDataFileReader(AsciiDataFileReader):
                                       aggregations=['avg']),
             AsciiDataFileReaderColumn(index=6, name='final_icu_blknr', np_type=int, unit=None,
                                       aggregations=['avg']),
-            AsciiDataFileReaderColumn(index=7, name='qualflg', np_type='U8', unit=None)
+            ArrayLikeAsciiDataFileReaderColumn(index=7, name='qualflg', np_type='U8', array_size=8)
         ]
 
     @classmethod

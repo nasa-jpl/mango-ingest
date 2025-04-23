@@ -11,7 +11,9 @@ class GraceFOKbr1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     expected_field_types = [int, float, float, float, float, float,
                             float, float, float, float, float,
-                            float, float, float, float, str, datetime]
+                            float, float, float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool,
+                            datetime]
 
     expected_table_row_counts = [100]
     expected_table_first_rows = [
@@ -19,7 +21,9 @@ class GraceFOKbr1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
          0.0008595036893381769, -421420.5905655002, -0.000466571397198351,
          2.468128200422098e-07, 1.026739546166365e-10, 2.88885545250511,
          -8.69236941066078e-11, -3.336934846142346e-11, 783,
-         769, 777, 762,  '00000000', datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
+         769, 777, 762,  '00000000',
+         False, False, False, False, False, False, False, False,
+         datetime(2023, 6, 1, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

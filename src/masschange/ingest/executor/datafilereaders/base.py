@@ -5,15 +5,17 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Any, Union, Type, Callable, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    VariableSchemaAsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
 from masschange.ingest.executor.errors import EmptyProductException
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
-from masschange.db.data.aggregations import Aggregation
+from masschange.ingest.utils.arraylikefields import append_flag_fields
 
 
 class DataFileReader(ABC):
@@ -140,7 +142,7 @@ class AsciiDataFileReader(DataFileReader):
         pass
 
     @classmethod
-    def append_derived_fields(cls, df):
+    def append_derived_fields(cls, df: pd.DataFrame) -> None:
         """
         Use this method to append fields that are not read directly from the product file,
         for example, geolocation field
@@ -150,7 +152,10 @@ class AsciiDataFileReader(DataFileReader):
         df -  pd.DataFrame
 
         """
-        pass
+        arraylike_fields = [f for f in cls.get_input_column_defs() if isinstance(f, ArrayLikeAsciiDataFileReaderColumn)]
+        for f in arraylike_fields:
+            append_flag_fields(df, f.name)
+
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
@@ -218,6 +223,8 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
             else:
                 df[column.name] = values
         # add timestamp
+        # Append custom fields to the dataframe, if needed
+        cls.append_derived_fields(df)
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # append variable schema data at the end of the frame
@@ -328,13 +335,13 @@ class ReportFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='file_tag', np_type=np.longlong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name='process_ttag', np_type=np.longlong, unit='s'),
             AsciiDataFileReaderColumn(index=3, name='first_data_point_t_tag', np_type=np.double, unit='s'),
-            AsciiDataFileReaderColumn(index=4, name='last_data_point_t_tag',  np_type=np.double, unit='s'),
+            AsciiDataFileReaderColumn(index=4, name='last_data_point_t_tag', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=5, name='n_recs', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=6, name='time_gap_avg', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=7, name='time_gap_var', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=8, name='time_gap_min', np_type=np.double, unit='s'),
             AsciiDataFileReaderColumn(index=9, name='time_gap_max', np_type=np.double, unit='s'),
-            AsciiDataFileReaderColumn(index=10, name='n_qual_bits', np_type=np.ubyte,  unit=None),
+            AsciiDataFileReaderColumn(index=10, name='n_qual_bits', np_type=np.ubyte, unit=None),
             AsciiDataFileReaderColumn(index=11, name='bit_count_0', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=12, name='bit_count_1', np_type=int, unit=None),
             AsciiDataFileReaderColumn(index=13, name='bit_count_2', np_type=int, unit=None),
@@ -428,7 +435,8 @@ class VariableDataClustersPerRowReader(AsciiDataFileReader):
 
         # iterate over each row in the raw data array and populate the reformatted array
         df = df.reset_index()  # make sure indexes pair with number of rows
-        num_prefix_col = len([col.index for col in column_defs if not isinstance(col, DerivedAsciiDataFileReaderColumn)])
+        num_prefix_col = len([col.index for col in column_defs if not isinstance(col,
+                                                                                 DerivedAsciiDataFileReaderColumn)])
         for index, row in df.iterrows():
             n_clusters_in_row = int(row[counter_idx])
             row = row[1:]
@@ -532,117 +540,3 @@ class LogFileReader(AsciiDataFileReader):
         -------
         """
         return 1000
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class AsciiDataFileReaderColumn(DataProductField):
-    """
-    Defines an individual column to extract from a tabular ASCII data file, including any transforms to be applied
-
-    Attributes
-        index (int): the tabular index of the field in the input file
-
-        name (str): the field name, (and the name to give the numpy column for the extracted data)
-
-        np_dtype (np.dtype): The numpy dtype to which extracted data will be cast.
-         Constructed from a Python type, numpy dtype, or numpy array-protocol type string.
-
-         See https://numpy.org/doc/stable/reference/arrays.dtypes.html ctrl+f "array-protocol type string" for further
-         details on the string aliases used by numpy.
-
-        description(str): a description which may be displayed in the presentation layer (API)
-
-        aggregations (StrEnum): a set of enumerated aggregations which are valid when data is downsampled
-
-        transform (Callable[[T], T]): a transform (or wrapper for series of transforms) to apply to the extracted values, if applicable
-
-        const_value(Any | None): an optional assumed_constant value for the column, which is validated during ingestion
-
-        is_channel_id_column (bool): True if this field contains an identifier which differentiates distinct
-
-    """
-
-    index: int
-    np_dtype: np.dtype
-    transform: Callable[[Any], Any]
-
-    def __init__(self, index: int, name: str, np_type: Union[Type, str], unit: Union[str, None], description: str = "",
-                 aggregations: Collection[Union[str, Aggregation]] = None, transform: Union[Callable[[Any], Any], None] = None,
-                 const_value: Optional[Any] = None, is_channel_id_column: bool = False):
-        super().__init__(name, unit, description=description, aggregations=aggregations, const_value=const_value,
-                         is_channel_id_column=is_channel_id_column)
-        self.index = index
-        self.np_dtype = np.dtype(np_type)
-        self.transform = transform or self._no_op
-
-    @property
-    def python_type(self):
-        try:
-            # default case, where self.np_dtype is a native numpy dtype
-            resolved_type = type(self.np_dtype.type(0).item())
-        except AttributeError:
-            # edge case, where self.np_dtype is a pandas type (like nullable integer type Int64Dtype)
-            resolved_type = type(self.np_dtype.type(0))
-
-        return resolved_type
-
-    @property
-    def has_transform(self):
-        """Return whether the column has a transform defined"""
-        return self.transform is not self._no_op
-
-    @staticmethod
-    def _no_op(x):
-        return x
-
-    @property
-    def is_constant(self):
-        return self.const_value is not None
-
-
-class VariableSchemaAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
-    """
-    Defines an individual column created by reader that holds data for an individual variable
-    defined in prod_flag. Some values in this column could be np.nan
-
-    Attributes
-        prod_flag_bit_index (int): the index of the bit for this variable in the prod_flag, right to left, 0-based
-    """
-    prod_flag_bit_index: int
-
-    def __init__(self, prod_flag_bit_index: int, name: str, np_type: Union[Type, str], unit: Union[str, None], description='',
-                 aggregations: Collection[str] = None, transform: Union[Callable[[Any], Any], None] = None,
-                 const_value: Optional[Any] = None, is_channel_id_column: bool = False):
-        super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
-                         const_value=const_value, is_channel_id_column=is_channel_id_column)
-        self.prod_flag_bit_index = prod_flag_bit_index
-
-
-class DerivedAsciiDataFileReaderColumn(AsciiDataFileReaderColumn):
-    """
-    Defines an individual column created by reader that holds data
-    that are not read directly from a particular column in the product file,
-    but derived from data in the product file, possibly from different columns.
-    """
-
-    def __init__(self, name: str, np_type: Union[Type, str], unit: Union[str, None], description='', aggregations: Collection[Union[str, Aggregation]] = None,
-                 transform: Union[Callable[[Any], Any], None] = None, const_value: Optional[Any] = None, is_channel_id_column: bool = False):
-        if const_value is not None:
-            raise ValueError(f'it is not valid to instantiate a DerivedAsciiDataFileReaderColumn with a const value')
-
-        super().__init__(None, name, np_type, unit, description=description, aggregations=aggregations, transform=transform,
-                         const_value=None, is_channel_id_column=is_channel_id_column)
-
-
-
