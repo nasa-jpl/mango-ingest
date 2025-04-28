@@ -72,4 +72,7 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
                 log.info(
                     f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", instruments "{dataset.instrument_id}"')
 
-            refresh_continuous_aggregates(dataset, enable_chunking=True)
+            try:
+                refresh_continuous_aggregates(dataset, enable_chunking=True)
+            except Exception as err:
+                log.error(f'Failed to refresh continuous aggregates for dataset {dataset.get_table_name()}: {err.__class__}: {err}')
