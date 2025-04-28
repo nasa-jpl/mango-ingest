@@ -24,7 +24,11 @@ def get_available_data_products_for_mission(mission_id: str):
                             detail=f'No mission found with id {mission_id} in extant missions ({sorted(mission.id for mission in available_missions)})')
 
     # use metadata cache to enable population of datasets with full metadata
-    bulk_metadata_cache = BulkMetadataCache()
+    try:
+        bulk_metadata_cache = BulkMetadataCache()
+    except Exception as err:
+        raise HTTPException(status_code=500, detail='API failed to resolve bulk metadata cache - please contact developer')
+
     mission_data_products = [p for p in get_dataproducts() if p.mission.id == mission_id]
     return {'data': [product.describe(metadata_cache=bulk_metadata_cache) for product in
                      sorted(mission_data_products, key=lambda product: product.id_suffix)]}
