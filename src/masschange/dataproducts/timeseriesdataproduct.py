@@ -25,7 +25,7 @@ class TimeSeriesDataProduct(DataProduct):
         """
         Returns
         -------
-        An object which describes this dataset's attributes/configuration to an end-user, providing details which are
+        An object which describes this data product's attributes/configuration to an end-user, providing details which are
         useful or necessary for querying it.
         """
 
