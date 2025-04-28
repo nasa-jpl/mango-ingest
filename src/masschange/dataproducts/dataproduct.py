@@ -3,7 +3,10 @@ import logging
 from collections.abc import Sequence
 from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
-from typing import Set, Type, List, Dict, Collection, Union
+from typing import Set, Type, Dict, Collection, Union, Mapping
+
+import psycopg2
+
 from masschange.missions import Mission
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
@@ -33,12 +36,23 @@ class DataProduct(ABC):
     def get_full_id(cls) -> str:
         return f'{cls.mission.id}_{cls.id_suffix}'
 
+
+    def __hash__(self):
+        # Defined to allow keying dicts by DataProduct
+        return self.get_full_id().__hash__()
+
+    def __eq__(self, other):
+        # Defined to allow keying dicts by DataProduct
+        return self.get_full_id() == other.get_full_id()
+
     @classmethod
     def get_table_name_prefix(cls) -> str:
         return cls.get_full_id().lower()
 
     @classmethod
-    def describe(cls, exclude_available_versions: bool = False, metadata_cache: List[Dict] = None) -> Dict:
+    def describe(cls, exclude_available_versions: bool = False, metadata_cache = None) -> Dict:
+        # TODO: break out description into formatter class(es) - type hinting is unavailable here because hinting
+        #  BulkMetadataCache causes a circular import between DataProduct and BulkMetadataCache - edunn 20250416
         """
         Returns
         -------
@@ -71,11 +85,21 @@ class DataProduct(ABC):
 
         try:
             if metadata_cache is not None:
-                datasets = [ds for ds in metadata_cache if ds['product'] == cls.get_full_id()]
+                datasets = [ds for ds in metadata_cache.datasets if ds.product_id == cls.get_full_id()]
                 description['datasets'] = datasets
-                description['available_versions'] = sorted({ds['version'] for ds in datasets})
-            elif not exclude_available_versions:
-                description['available_versions'] = sorted(str(version) for version in cls.get_available_versions())
+                description['available_versions'] = sorted({ds.version_id for ds in datasets})
+
+                cached_product = next(p for p in metadata_cache.dataproducts if p.product.__class__ is cls)
+                channel_enum_values_by_field = cached_product.channel_enum_values
+
+            else:
+                if not exclude_available_versions:
+                    description['available_versions'] = sorted(str(version) for version in cls.get_available_versions())
+                channel_enum_values_by_field = cls.fetch_channel_id_values()
+
+            for field, enum_values in channel_enum_values_by_field.items():
+                field_description = next(d for d in description['available_fields'] if d['name'] == field.name)
+                field_description.update({'enum_values': sorted(enum_values)})
 
         except KeyError as err:
             logging.error(f'Failed to retrieve expected metadata for product {cls.get_full_id()}: {err}')
@@ -254,6 +278,39 @@ class DataProduct(ABC):
     @classmethod
     def has_channel_id_fields(cls) -> bool:
         return len([f.name for f in cls.get_available_fields() if f.is_channel_id_column]) > 0
+
+    @classmethod
+    def fetch_channel_id_values(cls) -> Mapping[DataProductField, Set[str]]:
+        """
+        Pull channel id values from the stateful metadata cache
+        """
+        channel_id_fields = [f for f in cls.get_available_fields() if f.is_channel_id_column]
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            sql = """
+                SELECT *
+                FROM _meta_dataproducts_channelidvalues as civ
+                WHERE civ.dataproduct_id in (
+                    SELECT mdp.id
+                        FROM _meta_dataproducts as mdp 
+                        JOIN _meta_dataproducts_channelidvalues civ on mdp.id = civ.dataproduct_id
+                        WHERE mdp.name = %(product_id_str)s 
+                )
+                """
+            try:
+                cur.execute(sql, {'product_id_str': cls.get_full_id()})
+            except Exception as err:
+                raise err.__class__(f'query failed with {err}: {sql}')
+
+            metadata = {}
+            for field in channel_id_fields:
+                metadata[field] = set()
+
+            for row in cur.fetchall():
+                field = next(f for f in channel_id_fields if f.name == row['field_name'])
+                metadata[field].add(row['value'])
+
+            return {f: sorted(values) for f, values in metadata.items()}
 
     @classmethod
     def ensure(cls):
