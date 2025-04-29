@@ -59,8 +59,8 @@ def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[DataProductField, Co
             cur.execute(sql)
             result_rows = cur.fetchall()
         except Exception as err:
-            logging.warning(f'query failed with {err}: {sql}')
-            return None
+            logging.error(f'query failed with {err}: {sql}')
+            raise err
 
     results = {}
     # Initialise the results structure - this is necessary to ensure null-sets are created for products with no ingested
