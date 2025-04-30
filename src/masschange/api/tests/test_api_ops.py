@@ -27,7 +27,6 @@ channel_id_additional_parameters = {
     'TNK1B': '&filter=tank_id=1',
     'TIM1A': '&filter=ts_suppid=3',
     'SCA1A': '&filter=sca_id=1',
-    'SCA1B': '&filter=sca_id=1',
     'IMU1A': '&filter=gyro_id=1',
     'IMU1B': '&filter=gyro_id=1',
     'IHK1A': '&filter=sensorname=39',
@@ -35,7 +34,8 @@ channel_id_additional_parameters = {
     'CLK1A': '&filter=clock_id=-1',
     'CLK1B': '&filter=clock_id=-1',
     'GNV1A_PRN': '&filter=prn_id=3',
-    'GPS1A': '&filter=prn_id=7&filter=ant_id=0',
+    'GPS1A': '&filter=prn_id=2&filter=ant_id=0',
+    'GPS1B': '&filter=prn_id=2&filter=ant_id=0',
     'TIM1B': '&filter=ts_suppid=0',
     'LHK1A': '&filter=sensorname=TMA_PMH_CURRENT',
     'LHK1B': '&filter=sensorname=TMA_PMH_CURRENT',
@@ -75,8 +75,8 @@ def test_gracefo_data_select(ds: Dataset):
     if ds.is_time_series_dataset():
         if data_span is not None and (ds.product.time_series_interval == timedelta(
                 milliseconds=100) or ds.product.time_series_interval == timedelta(seconds=1)):
-            if ds.product.id_suffix == 'AHK1A':
-                # AHK1A is 1Hz cadence, but with ten rows per 'tick', each covering different fields
+            if ds.product.id_suffix == 'AHK1A' or ds.product.id_suffix == 'AHK1B':
+                # AHK1A and AHK1B is 1Hz cadence, but with ten rows per 'tick', each covering different fields
                 expected_data_count = 600
             else:
                 expected_data_count = (test_span_end - test_span_begin) / ds.product.time_series_interval
