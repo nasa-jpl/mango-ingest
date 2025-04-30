@@ -15,7 +15,7 @@ class GraceFOGps1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'GPS1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(seconds=1)
+    time_series_interval = timedelta(seconds=10)
     processing_level = '1B'
 
     @classmethod
