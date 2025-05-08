@@ -5,7 +5,8 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Any
+from pathlib import Path
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -41,6 +42,12 @@ class DataFileReader(ABC):
             - dataset_version
         """
         pass
+
+    @classmethod
+    def accepts(cls, filepath: Union[Path, str]):
+        filename = os.path.basename(filepath)
+        accept_patterns = [cls.get_input_file_default_regex(), cls.get_zipped_input_file_default_regex()]
+        return any(re.match(pattern, filename) for pattern in accept_patterns)
 
     @classmethod
     def extract_instrument_id(cls, filepath: str) -> str:
