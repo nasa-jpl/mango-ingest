@@ -5,8 +5,10 @@ from masschange.ingest.executor.datafilereaders.baseevents import EventsFileRead
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
     DerivedAsciiDataFileReaderColumn
 
+import numpy as np
 
-class GraceFOSpacecraftEventsDataFileReader(EventsFileReader):
+
+class GraceFOProblemFilesEventsDataFileReader(EventsFileReader):
 
     @classmethod
     def get_reference_epoch(cls) -> datetime:
@@ -26,27 +28,20 @@ class GraceFOSpacecraftEventsDataFileReader(EventsFileReader):
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
-            DerivedAsciiDataFileReaderColumn(name='spacecraftevent', np_type='U100', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='problem_files', np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name='time', np_type='U50', unit=None),
-            DerivedAsciiDataFileReaderColumn(name='created', np_type='U50', unit=None),
-            DerivedAsciiDataFileReaderColumn(name='createdby', np_type='U50', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='gps_time', np_type=np.double, unit=None),
+            DerivedAsciiDataFileReaderColumn(name='created', np_type='U100', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='createdby', np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name='spacecraft', np_type='U6', unit=None),
-            DerivedAsciiDataFileReaderColumn(name='meta', np_type='U100', unit=None)
+            DerivedAsciiDataFileReaderColumn(name='data', np_type='U10000', unit=None)
         ]
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        """Converts GPS time represented as a string in format 'YYYY-MM-DD HH:MM:SS GPS'
-        to datetime object in GPS time."""
-        try:
-            return datetime.strptime(row.time, '%Y-%m-%d %H:%M:%S GPS')
-        except ValueError as err:
-            # ValueError is raised if the date_string and format can’t be parsed by time.strptime()
-            # or if it returns a value which isn’t a time tuple.
-            msg = f" Unsupported format for spacecraft event time in Event yaml file: {row.time}.\n \
-            Supported format: 'YYYY-MM-DD HH:MM:SS GPS'"
-            raise ValueError(msg)
+        return cls.get_reference_epoch() + timedelta(seconds=row.gps_time)
+
     @classmethod
     def get_event_type_filter(cls) -> str:
-        return 'spacecraftevent'
+        return 'problem_files'
 
