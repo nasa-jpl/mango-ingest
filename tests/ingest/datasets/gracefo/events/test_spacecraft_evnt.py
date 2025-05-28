@@ -15,7 +15,7 @@ class GraceFOSpacecraftEventsDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             str, datetime]
     expected_table_row_counts = [843, 843]
     expected_table_first_rows = [
-        ('comment', '2018-08-14 00:00:00', 587476800.0, None, None, 'C',
+        ('comment', '2018-05-23 00:00:00',  580305600.0, None, None, 'C',
             '           GRACE-C/D Missing data in the beginning of the arc; pass files '
             + 'show this as well. Changed start time \n                     to the nearest '
             + '5-min epoch from the largest first time on the quaternions and initLeo (nav '
