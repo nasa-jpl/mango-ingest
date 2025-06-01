@@ -1,0 +1,64 @@
+import os
+from datetime import datetime
+from pathlib import Path
+
+import psycopg2
+from psycopg2 import extras
+
+from masschange.dataproducts.dataproduct import DataProduct
+from masschange.db.conn import get_db_cursor
+from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
+from masschange.ingest.manager.fileingestrecord import FileIngestRecord
+from masschange.ingest.manager.filestatus import FileStatus
+
+
+class IngestManager:
+
+    def __init__(self):
+        ensure_ingest_manager_tables_exist()
+
+    def register(self, filepath: Path, product: DataProduct) -> FileIngestRecord:
+        # TODO: integrate product attribute (currently not included in
+
+        file_last_modified = datetime.fromtimestamp(
+            os.stat(filepath).st_ctime)  # TODO: double-check that this behaves as expected
+
+        sql = """
+              INSERT INTO _ingestmgr_crawled_files (id, src_filepath, src_file_last_modified)
+              VALUES (DEFAULT, %(filepath)s, %(last_modified)s)
+              RETURNING *
+              """
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
+            try:
+                cur.execute(sql, {'filepath': str(filepath), 'last_modified': file_last_modified})
+                result = cur.fetchone()
+                return FileIngestRecord.from_postgres_dict(result)
+
+            except Exception as e:
+                raise RuntimeError(f'Registration of {filepath} with ingest manager failed with "{e}"')
+
+    def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
+        """
+        Update the status of the row corresponding to the given file ingest record (by id).
+        :param record:
+        :param status:
+        :return: the up-to-date file ingest record
+        """
+
+        sql = f"""
+              UPDATE _ingestmgr_crawled_files
+              SET {status.db_column_name} = NOW()
+              WHERE id = %(id)s
+              RETURNING *
+              """
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
+            try:
+                cur.execute(sql, {'id': record.id})
+                # TODO: sanity check that exactly one result was changed
+                result = cur.fetchone()
+                return FileIngestRecord.from_postgres_dict(result)
+
+            except Exception as e:
+                raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
