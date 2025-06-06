@@ -17,11 +17,13 @@ def ensure_ingest_manager_tables_exist() -> None:
             (
             id SERIAL PRIMARY KEY,
             src_filepath  VARCHAR NOT NULL,
-            src_file_last_modified DATE NOT NULL,
-            crawled_at DATE DEFAULT NULL,
-            staged_at DATE DEFAULT NULL,
-            ingestion_started_at DATE DEFAULT NULL,
-            ingestion_terminated_at INTERVAL DEFAULT NULL,
+            status  VARCHAR NOT NULL,
+            product_id_str  VARCHAR NOT NULL, -- TODO: fkey this off _meta_dataproducts
+            src_file_last_modified TIMESTAMP NOT NULL,
+            crawled_at TIMESTAMP DEFAULT NULL,
+            staged_at TIMESTAMP DEFAULT NULL,
+            ingestion_started_at TIMESTAMP DEFAULT NULL,
+            ingestion_terminated_at TIMESTAMP DEFAULT NULL,
             ingestion_error_msg TEXT DEFAULT NULL
             );
             
@@ -36,6 +38,10 @@ def ensure_ingest_manager_tables_exist() -> None:
             CREATE INDEX IF NOT EXISTS idx_ingestion_started_at_is_null
             ON {INGEST_MANAGER_TABLE_NAME} (ingestion_started_at)
             WHERE ingestion_started_at IS NULL;
+            
+            CREATE INDEX IF NOT EXISTS idx_ingestion_terminated_at_is_null
+            ON {INGEST_MANAGER_TABLE_NAME} (ingestion_started_at)
+            WHERE ingestion_terminated_at IS NULL;
             
             CREATE INDEX IF NOT EXISTS idx_ingestion_error_msg_not_null
             ON {INGEST_MANAGER_TABLE_NAME} (ingestion_error_msg)
