@@ -4,10 +4,12 @@ from pathlib import Path
 
 import psycopg2
 from psycopg2 import extras
+from psycopg2.errors import UniqueViolation
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
+from masschange.ingest.manager.errors import FileAlreadyRegisteredError
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.filestatus import FileStatus
 
@@ -24,17 +26,19 @@ class IngestManager:
             os.stat(filepath).st_ctime)  # TODO: double-check that this behaves as expected
 
         sql = """
-              INSERT INTO _ingestmgr_crawled_files (id, src_filepath, src_file_last_modified)
-              VALUES (DEFAULT, %(filepath)s, %(last_modified)s)
+              INSERT INTO _ingestmgr_crawled_files (id, src_filepath, product_id_str, status, src_file_last_modified)
+              VALUES (DEFAULT, %(filepath)s, %(product_full_id_str)s, %(status)s, %(last_modified)s)
               RETURNING *
               """
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'filepath': str(filepath), 'last_modified': file_last_modified})
+                cur.execute(sql, {'filepath': str(filepath), 'product_full_id_str': product.get_full_id(), 'status': str(FileStatus.CRAWLED), 'last_modified': file_last_modified})
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
 
+            except UniqueViolation:
+                raise FileAlreadyRegisteredError(f'File {filepath} last-modified at {file_last_modified} is already registered in crawler table')
             except Exception as e:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with "{e}"')
 
@@ -48,14 +52,14 @@ class IngestManager:
 
         sql = f"""
               UPDATE _ingestmgr_crawled_files
-              SET {status.db_column_name} = NOW()
+              SET status = %(status)s, {status.db_column_name} = NOW()
               WHERE id = %(id)s
               RETURNING *
               """
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'id': record.id})
+                cur.execute(sql, {'id': record.id, 'status': str(status)})
                 # TODO: sanity check that exactly one result was changed
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
