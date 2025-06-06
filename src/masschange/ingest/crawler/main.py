@@ -12,7 +12,6 @@ from typing import Union, Collection
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import get_dataproducts
-from masschange.ingest.manager.errors import FileAlreadyRegisteredError
 from masschange.ingest.manager.filestatus import FileStatus
 from masschange.ingest.manager.ingestmanager import IngestManager
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
@@ -59,9 +58,6 @@ class DataProductFileCrawler:
         try:
             log.debug(f'Registering file for ingestion: {src_filepath}')
             file_ingest_record = self.ingest_manager.register(src_filepath, product)
-        except FileAlreadyRegisteredError as e:
-            log.warning(e)
-            return
         except Exception as e:
             log.error(f'Registration of {src_filepath} with ingest manager failed with {e.__class__}: {e}')
             return
