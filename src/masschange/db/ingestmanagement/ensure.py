@@ -24,8 +24,11 @@ def ensure_ingest_manager_tables_exist() -> None:
             staged_at TIMESTAMP DEFAULT NULL,
             ingestion_started_at TIMESTAMP DEFAULT NULL,
             ingestion_terminated_at TIMESTAMP DEFAULT NULL,
-            ingestion_error_msg TEXT DEFAULT NULL
+            ingestion_error_msg TEXT DEFAULT NULL,
+            
+            UNIQUE (src_filepath, src_file_last_modified)
             );
+            
             
             CREATE INDEX IF NOT EXISTS idx_crawled_at_is_null
             ON {INGEST_MANAGER_TABLE_NAME} (crawled_at)
