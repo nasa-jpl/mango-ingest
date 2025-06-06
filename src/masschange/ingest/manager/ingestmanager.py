@@ -4,12 +4,10 @@ from pathlib import Path
 
 import psycopg2
 from psycopg2 import extras
-from psycopg2.errors import UniqueViolation
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.db.conn import get_db_cursor
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
-from masschange.ingest.manager.errors import FileAlreadyRegisteredError
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.filestatus import FileStatus
 
@@ -28,6 +26,7 @@ class IngestManager:
         sql = """
               INSERT INTO _ingestmgr_crawled_files (id, src_filepath, product_id_str, status, src_file_last_modified)
               VALUES (DEFAULT, %(filepath)s, %(product_full_id_str)s, %(status)s, %(last_modified)s)
+              ON CONFLICT (src_filepath, src_file_last_modified) DO UPDATE SET status = excluded.status, crawled_at = excluded.crawled_at
               RETURNING *
               """
 
@@ -37,10 +36,8 @@ class IngestManager:
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
 
-            except UniqueViolation:
-                raise FileAlreadyRegisteredError(f'File {filepath} last-modified at {file_last_modified} is already registered in crawler table')
             except Exception as e:
-                raise RuntimeError(f'Registration of {filepath} with ingest manager failed with "{e}"')
+                raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
     def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
         """
