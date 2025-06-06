@@ -20,7 +20,7 @@ def ensure_ingest_manager_tables_exist() -> None:
             status  VARCHAR NOT NULL,
             product_id_str  VARCHAR NOT NULL, -- TODO: fkey this off _meta_dataproducts
             src_file_last_modified TIMESTAMP NOT NULL,
-            crawled_at TIMESTAMP DEFAULT NULL,
+            crawled_at TIMESTAMP DEFAULT NOW(),
             staged_at TIMESTAMP DEFAULT NULL,
             ingestion_started_at TIMESTAMP DEFAULT NULL,
             ingestion_terminated_at TIMESTAMP DEFAULT NULL,
