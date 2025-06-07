@@ -1,7 +1,8 @@
 # Yes, this is a job for an ORM like SQLAlchemy, but a fix-up later is preferable to delaying implementation of the
 # ingestion manager even longer to incorporate one - alexdunnjpl 20250508
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import resolve_dataproduct
@@ -13,7 +14,7 @@ class FileIngestRecord:
             id: int,
             product: DataProduct,
             src_filepath: str,
-            staged_filepath: str,
+            staged_filepath: Union[str, Path, None],
             crawled_at: datetime,
             staged_at: Optional[datetime] = None,
             ingestion_started_at: Optional[datetime] = None,
@@ -24,7 +25,7 @@ class FileIngestRecord:
         self.id = id
         self.product = product
         self.src_filepath = src_filepath
-        self.staged_filepath = staged_filepath
+        self.staged_filepath: Path = None if staged_filepath is None else Path(staged_filepath)
         self.crawled_at = crawled_at
         self.staged_at = staged_at
         self.ingestion_started_at = ingestion_started_at
@@ -38,7 +39,7 @@ class FileIngestRecord:
             "id": self.id,
             "product_id_str": self.product.get_full_id(),
             "src_filepath": self.src_filepath,
-            "staged_filepath": self.src_filepath,
+            "staged_filepath": None if self.staged_filepath is None else str(self.staged_filepath),
             "crawled_at": self.crawled_at,
             "staged_at": self.staged_at,
             "ingestion_started_at": self.ingestion_started_at,
@@ -54,7 +55,7 @@ class FileIngestRecord:
             id=row["id"],
             product=resolve_dataproduct(row["product_id_str"]),
             src_filepath=row["src_filepath"],
-            staged_filepath=row["staged_filepath"],
+            staged_filepath=None if row["staged_filepath"] is None else Path(row["staged_filepath"]),
             crawled_at=row["crawled_at"],
             staged_at=row.get("staged_at"),
             ingestion_started_at=row.get("ingestion_started_at"),
