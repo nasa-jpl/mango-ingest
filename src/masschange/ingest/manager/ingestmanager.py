@@ -61,6 +61,26 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
 
+    @staticmethod
+    def set_terminated(record: FileIngestRecord, success: bool) -> FileIngestRecord:
+
+        status = FileStatus.INGEST_SUCCESS if success else FileStatus.INGEST_TERMINATED
+        sql = f"""
+                      UPDATE {INGEST_MANAGER_TABLE_NAME}
+                      SET status = '{status}', ingestion_terminated_at = NOW()
+                      WHERE id = %(id)s
+                      RETURNING *
+                      """
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
+            try:
+                cur.execute(sql, {'id': record.id})
+                result = cur.fetchone()
+                return FileIngestRecord.from_postgres_dict(result)
+
+            except Exception as e:
+                raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with {e.__class__}: {e}')
+
     def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
