@@ -74,7 +74,7 @@ class DataProductFileCrawler:
             shutil.copyfile(src_filepath, staging_dest_filepath)
 
             # set file staged
-            self.ingest_manager.set_status(file_ingest_record, FileStatus.STAGED)
+            self.ingest_manager.set_staged(file_ingest_record, staging_dest_filepath)
 
             if self._remove_src_files_on_stage:
                 log.debug(f'Removing source file: {src_filepath}')

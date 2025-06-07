@@ -39,6 +39,26 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
+    def set_staged(self, record: FileIngestRecord, staged_path: Path) -> FileIngestRecord:
+
+        status = FileStatus.STAGED
+        sql = f"""
+                      UPDATE _ingestmgr_crawled_files
+                      SET status = %(status)s, staged_filepath = %(staged_filepath)s, {status.db_column_name} = NOW()
+                      WHERE id = %(id)s
+                      RETURNING *
+                      """
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
+            try:
+                cur.execute(sql, {'id': record.id, 'status': str(status), 'staged_filepath': staged_path})
+                result = cur.fetchone()
+                return FileIngestRecord.from_postgres_dict(result)
+
+            except Exception as e:
+                raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
+
+
     def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
