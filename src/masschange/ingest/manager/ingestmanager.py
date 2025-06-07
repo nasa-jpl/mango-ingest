@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 import psycopg2
 from psycopg2 import extras
@@ -32,7 +33,8 @@ class IngestManager:
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'filepath': str(filepath), 'product_full_id_str': product.get_full_id(), 'status': str(FileStatus.CRAWLED), 'last_modified': file_last_modified})
+                cur.execute(sql, {'filepath': str(filepath), 'product_full_id_str': product.get_full_id(),
+                                  'status': str(FileStatus.CRAWLED), 'last_modified': file_last_modified})
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
 
@@ -58,7 +60,6 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
 
-
     def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
@@ -83,3 +84,33 @@ class IngestManager:
 
             except Exception as e:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
+
+
+    @staticmethod
+    def fetch_next_valid_job() -> Union[FileIngestRecord, None]:
+        sql = f"""
+            WITH successfully_locked_valid_job_rows AS (
+                SELECT *
+                FROM {INGEST_MANAGER_TABLE_NAME}
+                WHERE status = 'STAGED'
+                    AND src_filepath NOT IN (
+        --             The set of all src_filepaths with a job currently ingesting
+                        SELECT DISTINCT src_filepath
+                        FROM {INGEST_MANAGER_TABLE_NAME}
+                        WHERE status = '{FileStatus.INGEST_STARTED}'
+                    )
+                LIMIT 1
+                FOR UPDATE
+            )
+        
+            UPDATE {INGEST_MANAGER_TABLE_NAME}
+            SET status = '{FileStatus.INGEST_STARTED}', ingestion_started_at = NOW()
+            FROM successfully_locked_valid_job_rows
+            WHERE {INGEST_MANAGER_TABLE_NAME}.id = successfully_locked_valid_job_rows.id
+            RETURNING *
+        """
+
+        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
+            cur.execute(sql)
+            result = cur.fetchone()
+            return None if result is None else FileIngestRecord.from_postgres_dict(result)
