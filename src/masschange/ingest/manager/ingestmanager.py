@@ -8,6 +8,7 @@ from psycopg2 import extras
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.db.conn import get_db_cursor
+from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.filestatus import FileStatus
@@ -24,8 +25,8 @@ class IngestManager:
         file_last_modified = datetime.fromtimestamp(
             os.stat(filepath).st_ctime)  # TODO: double-check that this behaves as expected
 
-        sql = """
-              INSERT INTO _ingestmgr_crawled_files (id, src_filepath, product_id_str, status, src_file_last_modified)
+        sql = f"""
+              INSERT INTO {INGEST_MANAGER_TABLE_NAME} (id, src_filepath, product_id_str, status, src_file_last_modified)
               VALUES (DEFAULT, %(filepath)s, %(product_full_id_str)s, %(status)s, %(last_modified)s)
               ON CONFLICT (src_filepath, src_file_last_modified) DO UPDATE SET status = excluded.status, crawled_at = excluded.crawled_at
               RETURNING *
@@ -45,7 +46,7 @@ class IngestManager:
 
         status = FileStatus.STAGED
         sql = f"""
-                      UPDATE _ingestmgr_crawled_files
+                      UPDATE {INGEST_MANAGER_TABLE_NAME}
                       SET status = %(status)s, staged_filepath = %(staged_filepath)s, {status.db_column_name} = NOW()
                       WHERE id = %(id)s
                       RETURNING *
@@ -69,7 +70,7 @@ class IngestManager:
         """
 
         sql = f"""
-              UPDATE _ingestmgr_crawled_files
+              UPDATE {INGEST_MANAGER_TABLE_NAME}
               SET status = %(status)s, {status.db_column_name} = NOW()
               WHERE id = %(id)s
               RETURNING *
