@@ -6,7 +6,8 @@ import tarfile
 import tempfile
 from datetime import datetime
 from io import StringIO
-from typing import Iterable
+from pathlib import Path
+from typing import Iterable, Union
 
 import pandas
 import pandas as pd
@@ -126,11 +127,13 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(product: DataProduct, src_filepath: str):
+def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
+
+    src_filepath = str(src_filepath)
 
     reader = product.get_reader()
 
