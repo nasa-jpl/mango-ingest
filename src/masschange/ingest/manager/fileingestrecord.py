@@ -3,11 +3,15 @@
 from datetime import datetime
 from typing import Optional
 
+from masschange.dataproducts.dataproduct import DataProduct
+from masschange.dataproducts.utils import resolve_dataproduct
+
 
 class FileIngestRecord:
     def __init__(
             self,
             id: int,
+            product: DataProduct,
             src_filepath: str,
             staged_filepath: str,
             crawled_at: datetime,
@@ -18,6 +22,7 @@ class FileIngestRecord:
             ingestion_error_message: Optional[str] = None,
     ):
         self.id = id
+        self.product = product
         self.src_filepath = src_filepath
         self.staged_filepath = staged_filepath
         self.crawled_at = crawled_at
@@ -31,6 +36,7 @@ class FileIngestRecord:
         """Convert the object into a dictionary suitable for psycopg2 INSERT/UPDATE."""
         return {
             "id": self.id,
+            "product_id_str": self.product.get_full_id(),
             "src_filepath": self.src_filepath,
             "staged_filepath": self.src_filepath,
             "crawled_at": self.crawled_at,
@@ -46,6 +52,7 @@ class FileIngestRecord:
         """Create an object from a dictionary returned by psycopg2 (e.g. from cursor.fetchone())."""
         return cls(
             id=row["id"],
+            product=resolve_dataproduct(row["product_id_str"]),
             src_filepath=row["src_filepath"],
             staged_filepath=row["staged_filepath"],
             crawled_at=row["crawled_at"],
