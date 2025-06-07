@@ -17,6 +17,7 @@ def ensure_ingest_manager_tables_exist() -> None:
             (
             id SERIAL PRIMARY KEY,
             src_filepath  VARCHAR NOT NULL,
+            staged_filepath  VARCHAR DEFAULT NULL,
             status  VARCHAR NOT NULL,
             product_id_str  VARCHAR NOT NULL, -- TODO: fkey this off _meta_dataproducts
             src_file_last_modified TIMESTAMP NOT NULL,

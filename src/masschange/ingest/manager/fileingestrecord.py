@@ -9,6 +9,7 @@ class FileIngestRecord:
             self,
             id: int,
             src_filepath: str,
+            staged_filepath: str,
             crawled_at: datetime,
             staged_at: Optional[datetime] = None,
             ingestion_started_at: Optional[datetime] = None,
@@ -18,6 +19,7 @@ class FileIngestRecord:
     ):
         self.id = id
         self.src_filepath = src_filepath
+        self.staged_filepath = staged_filepath
         self.crawled_at = crawled_at
         self.staged_at = staged_at
         self.ingestion_started_at = ingestion_started_at
@@ -30,6 +32,7 @@ class FileIngestRecord:
         return {
             "id": self.id,
             "src_filepath": self.src_filepath,
+            "staged_filepath": self.src_filepath,
             "crawled_at": self.crawled_at,
             "staged_at": self.staged_at,
             "ingestion_started_at": self.ingestion_started_at,
@@ -44,6 +47,7 @@ class FileIngestRecord:
         return cls(
             id=row["id"],
             src_filepath=row["src_filepath"],
+            staged_filepath=row["staged_filepath"],
             crawled_at=row["crawled_at"],
             staged_at=row.get("staged_at"),
             ingestion_started_at=row.get("ingestion_started_at"),
