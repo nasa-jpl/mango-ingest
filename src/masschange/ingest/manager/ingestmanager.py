@@ -42,7 +42,7 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
-    def set_staged(self, record: FileIngestRecord, staged_path: Path) -> FileIngestRecord:
+    def set_staged(self, record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
 
         status = FileStatus.STAGED
         sql = f"""
