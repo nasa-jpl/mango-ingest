@@ -16,6 +16,7 @@ services:
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
       - $SOURCE_DATA_ROOT:/input
+      - $SSL_CERTS_PATH:/certs
     user: root
     command: conda run -n masschange /app/masschange/start_api.sh
   mango-db:
