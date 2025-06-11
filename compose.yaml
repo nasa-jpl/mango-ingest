@@ -10,6 +10,7 @@ services:
     environment:
       - API_PROXY_HOST
       - API_ROOT_PATH
+      - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
       - TSDB_HOST
       - TSDB_PORT
