@@ -26,8 +26,8 @@ RUN mkdir $HOME \
 
 # Install conda
 USER root
-RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3-latest-Linux-x86_64.sh \
-  && bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
+RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O /tmp/Miniconda3-latest-Linux-x86_64.sh \
+    && bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
 ENV PATH=$PATH:$HOME/miniconda/condabin
 
 # Set up non-src-dependent conda environment
