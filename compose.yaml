@@ -10,12 +10,14 @@ services:
     environment:
       - API_PROXY_HOST
       - API_ROOT_PATH
+      - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
       - $SOURCE_DATA_ROOT:/input
+      - $SSL_CERTS_PATH:/certs
     user: root
     command: conda run -n masschange /app/masschange/start_api.sh
   mango-db:
