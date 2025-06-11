@@ -9,3 +9,4 @@ src/masschange/build
 .run
 **/__pycache__
 logs
+.env
