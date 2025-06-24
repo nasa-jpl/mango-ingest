@@ -36,9 +36,13 @@ class OffredFileReaderTestCase(unittest.TestCase):
     def test_load_raw_data_from_file(self):
         data = StubGraceFOOffredDataFileReader._load_raw_data_from_file(self.data_file)
         self.assertEqual(data['utc'][24], 'value1')
-        self.assertEqual(data['value_int'][24],'7')
-        self.assertEqual(data['unit'][24], 'eee_unit')
-        self.assertEqual(data['pcf_name'][24],'EEE.en')
+        self.assertEqual(data['value_str'][24], '')
+        self.assertEqual(data['value_int'][24], None)
+        self.assertEqual(data['unit'][24], '')
+        self.assertEqual(data['pcf_name'][24], 'FFF.ev')
+        self.assertEqual(data['value_int'][30],'7')
+        self.assertEqual(data['unit'][30], 'eee_unit')
+        self.assertEqual(data['pcf_name'][30],'EEE.en')
 
     def test_get_data_column_types(self):
         types = GraceFOOffredDataFileReader._get_data_column_types(self.data_file, 100)
@@ -47,5 +51,6 @@ class OffredFileReaderTestCase(unittest.TestCase):
         self.assertEqual(types[1], np.float32)
         self.assertEqual(types[2], np.float32)
         self.assertEqual(types[3], np.float32)
-        self.assertEqual(types[4], pd.Int64Dtype)
-        self.assertEqual(types[5], 'U100')
+        self.assertEqual(types[4], 'U100')
+        self.assertEqual(types[5], pd.Int64Dtype)
+        self.assertEqual(types[6], 'U100')

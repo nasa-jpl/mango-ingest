@@ -132,7 +132,7 @@ class OffredFileReader(AsciiDataFileReader):
         data = np.loadtxt(
             fname=filename,
             skiprows=2,
-            delimiter=None,  # split rows by whitespace chunks
+            delimiter='\t',  # split rows by tab
             usecols=([col.index for col in datafile_column_defs]),
             dtype=[(col.name, col.np_dtype) for col in datafile_column_defs],
             ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
@@ -209,7 +209,7 @@ class OffredFileReader(AsciiDataFileReader):
         data = np.loadtxt(
             fname=filename,
             skiprows=2,
-            delimiter=None,  # split rows by whitespace chunks
+            delimiter='\t',  # split rows by tab
             dtype=[(name, cls.str_dtype) for name in field_names],
             max_rows=num_rows,
             ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
