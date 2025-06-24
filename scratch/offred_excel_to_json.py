@@ -1,13 +1,14 @@
+from typing import List
 import pandas as pd
 import json
 
-def excel_2_json(excel_fpath: str, json_fpath: str, columns_to_keep):
+def excel_2_json(excel_fpath: str, json_fpath: str, columns_to_keep: List[str]):
     """
-    Finds and returns a row in OFFRED Excel sheet that describes a field specified by field_name.
-
+    Create JSON file with metadata for OFFRED variables from Excel table
     Args:
         excel_filepath (str): Path to the Excel file that describes OFFRED data
         json_fpath: (str): Path to output file in JSON format
+        columns_to_keep: (list): List of column names in Excel table to include in the JSON file
     """
 
     # Read the Excel file.
