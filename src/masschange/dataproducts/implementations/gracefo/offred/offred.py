@@ -14,7 +14,8 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'OFFRED'
     instrument_ids = {'GF1', 'GF2'}
-    time_series_interval = timedelta(milliseconds=100)
+    # TODO: frequency is per type of data. Need to figure out optimal common frequency
+    time_series_interval = timedelta(seconds=30)
     processing_level = '1A' # TODO: confirm it. May be it is 'None'
 
     @classmethod
@@ -29,7 +30,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
             
             pcf_name VARCHAR(15),
             unit VARCHAR(15),
-            value_int int ,
+            value_int bigint ,
             value_float float,
             value_string VARCHAR(100),
             
