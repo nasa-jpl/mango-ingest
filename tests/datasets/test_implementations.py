@@ -2,6 +2,7 @@ import unittest
 
 from masschange.dataproducts.utils import get_dataproduct_classes
 from masschange.ingest.executor.datafilereaders.baseevents import EventsFileReader
+from masschange.ingest.executor.datafilereaders.base_offred import OffredFileReader
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
@@ -21,12 +22,18 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
                 raise NotImplementedError(str(err))
 
     def test_mandatory_filename_regex_capture_groups(self):
-        mandatory_capture_group_names = {
-            'instrument_id',
-            'dataset_version'
-        }
         dataset_implementations = get_dataproduct_classes()
         for implementation in dataset_implementations:
+            if isinstance(implementation.get_reader(), OffredFileReader):
+                mandatory_capture_group_names = {
+                    'instrument_id',
+                }
+            else:
+                mandatory_capture_group_names = {
+                    'instrument_id',
+                    'dataset_version'
+                }
+
             for capture_group_name in mandatory_capture_group_names:
                 try:
                     self.assertIn(f'(?P<{capture_group_name}>', implementation.get_reader().get_input_file_default_regex())

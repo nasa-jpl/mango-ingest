@@ -24,7 +24,7 @@ class GraceFOSoeEventsDataProduct(DataProduct):
             gps_time double precision not null,
             created VARCHAR(100),
             createdby VARCHAR(100),
-            comment VARCHAR(1024),
+            comments VARCHAR(1024),
             spacecraft VARCHAR(6),
             meta VARCHAR(500),
             timestamp timestamptz not null
