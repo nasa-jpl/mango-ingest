@@ -37,7 +37,7 @@ class GraceFOSoeEventsDataFileReader(EventsFileReader):
             DerivedAsciiDataFileReaderColumn(name='spacecraft', np_type='U6', unit=None),
             DerivedAsciiDataFileReaderColumn(name='meta', np_type='U500', unit=None)
             # For SOE event, the 'data' field is not stored in the database, because the same info is
-            # recorded the 'meta' field in a short format
+            # recorded in the 'meta' field in a short format
         ]
 
     @classmethod

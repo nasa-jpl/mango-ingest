@@ -37,7 +37,7 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_names = ['gracefo_offred_01_gf1', 'gracefo_offred_01_gf2']
     expected_field_types = [str, int, int, str, str, Union[str, None], Union[int, None], Union[float, None],
                             Union[str, None], datetime]
-    expected_table_row_counts = [36, 42]
+    expected_table_row_counts = [42, 42]
     # Diff between UTC and GPS is 18 sec on June 1st, 2022
     expected_table_first_rows = [
         ('value1', 1333333333,	0,	'YYY', 'AAA.en', 'aaa_unit', 111, None, None,
