@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from datetime import datetime, timedelta, date
-from typing import Iterable, Union
+from typing import Iterable
 
 
 class TimeSpan:
@@ -56,23 +54,3 @@ class TimeSpan:
 
     def __str__(self):
         return f'TimeSpan(begin={self.begin.isoformat()}, end={self.end.isoformat()})'
-
-    @classmethod
-    def max_span(cls) -> TimeSpan:
-        return TimeSpan(begin=datetime.min, end=datetime.max)
-
-    def intersection(self, other: Union[TimeSpan, None]) -> Union[TimeSpan, None]:
-        if other is None:
-            return None
-
-        no_overlap = not (self.contains(other.begin) or other.contains(self.begin))
-        if no_overlap:
-            return None
-
-        return TimeSpan(begin=max(self.begin, other.begin), end=min(self.end, other.end))
-
-    def union(self, other: Union[TimeSpan, None]) -> Union[TimeSpan, None]:
-        if other is None:
-            return self
-
-        return TimeSpan(begin=min(self.begin, other.begin), end=max(self.end, other.end))
