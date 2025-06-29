@@ -27,7 +27,10 @@ def ensure_ingest_manager_tables_exist() -> None:
             ingestion_terminated_at TIMESTAMP DEFAULT NULL,
             ingestion_error_msg TEXT DEFAULT NULL,
             
-            UNIQUE (src_filepath, src_file_last_modified)
+--             TODO: product_id_str is currently used as a proxy for the disambiguation string, though that assumes a 1:1 
+--              relationship between reader and product.  If this results in a problem, an explicit column for the 
+--              reader disambiguation string must be created and used instead
+            UNIQUE (src_filepath, product_id_str, src_file_last_modified)
             );
             
             
