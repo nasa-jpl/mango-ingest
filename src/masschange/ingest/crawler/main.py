@@ -12,7 +12,6 @@ from typing import Union, Collection
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import get_dataproducts
-from masschange.ingest.manager.filestatus import FileStatus
 from masschange.ingest.manager.ingestmanager import IngestManager
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 from masschange.utils.logging import configure_root_logger
@@ -49,56 +48,56 @@ class DataProductFileCrawler:
             self.process(filepath)
 
     def process(self, src_filepath: Union[Path, str]):
-        product = self.get_product_matching(src_filepath)
-        if product is None:
-            return
-
-        log.info(f'Processing file: {src_filepath} as {product.get_full_id()}')
-
-        try:
-            log.debug(f'Registering file for ingestion: {src_filepath}')
-            file_ingest_record = self.ingest_manager.register(src_filepath, product)
-        except Exception as e:
-            log.error(f'Registration of {src_filepath} with ingest manager failed with {e.__class__}: {e}')
-            return
-
-        filename = os.path.basename(src_filepath)
-        file_subdir_name = str(file_ingest_record.id)
-        staging_dest_dirpath = os.path.join(self.staging_root_path, file_subdir_name)
-        staging_dest_filepath = os.path.join(staging_dest_dirpath, filename)
-
-        try:
-            # copy file to staging location
-            log.debug(f'Staging {src_filepath} into {staging_dest_filepath}')
-            os.makedirs(os.path.dirname(staging_dest_filepath), exist_ok=True)
-            shutil.copyfile(src_filepath, staging_dest_filepath)
-
-            # set file staged
-            self.ingest_manager.set_staged(file_ingest_record, staging_dest_filepath)
-
-            if self._remove_src_files_on_stage:
-                log.debug(f'Removing source file: {src_filepath}')
-                # remove source file, having successfully executed the copy/update
-                os.remove(src_filepath)
-
-        except Exception as e:
-            log.error(f'Staging of file {src_filepath} failed with {e.__class__}: "{e}"')
-            shutil.rmtree(staging_dest_dirpath, ignore_errors=True)
-
-    @classmethod
-    def get_product_matching(cls, filepath: Path) -> Union[DataProduct, None]:
-        matching_products = [product for product in cls.products_cache if product.get_reader().accepts(filepath)]
+        # TODO: confirm whether or not zipped-file support is actually part of the production requirements, or if it should be excised
+        matching_products = [product for product in self.products_cache if product.get_reader().accepts(src_filepath, exclude_zips=True)]
         matching_product_count = len(matching_products)
 
         if matching_product_count == 0:
-            log.warning(f'Unrecognised file in staging area: {filepath}')
-            return None
+            log.warning(f'Unrecognised file in staging area: {src_filepath}')
+            return
 
-        if matching_product_count != 1:
-            log.error(f'File at {filepath} matches multiple products: {[p.get_full_id() for p in matching_products]}')
-            return None
+        disambiguation_required = matching_product_count > 1
+        log.info(f'Processing file: {src_filepath}{" (with disambiguation)" if disambiguation_required else ""}')
 
-        return matching_products[0]
+        for product in matching_products:
+
+            if disambiguation_required:
+                log.debug(f'Processing {src_filepath}, disambiguated as {product.get_full_id()}')
+
+            try:
+                log.debug(f'Registering file for ingestion: {src_filepath}')
+                file_ingest_record = self.ingest_manager.register(src_filepath, product)
+            except Exception as e:
+                log.error(f'Registration of {src_filepath} with ingest manager failed with {e.__class__}: {e}')
+                return
+
+            src_filename = os.path.basename(src_filepath)
+            staging_filename = src_filename if not disambiguation_required else encode_product_into_filename(product, src_filename)
+            file_subdir_name = str(file_ingest_record.id)
+            staging_dest_dirpath = os.path.join(self.staging_root_path, file_subdir_name)
+            staging_dest_filepath = os.path.join(staging_dest_dirpath, staging_filename)
+
+            try:
+                # copy file to staging location
+                log.debug(f'Staging {src_filepath} into {staging_dest_filepath}')
+                os.makedirs(os.path.dirname(staging_dest_filepath), exist_ok=True)
+                shutil.copyfile(src_filepath, staging_dest_filepath)
+
+                # set file staged
+                self.ingest_manager.set_staged(file_ingest_record, staging_dest_filepath)
+
+            except Exception as e:
+                log.error(f'Staging of file {src_filepath} failed with {e.__class__}: "{e}"')
+                shutil.rmtree(staging_dest_dirpath, ignore_errors=True)
+
+        if self._remove_src_files_on_stage:
+            log.debug(f'Removing source file: {src_filepath}')
+            # remove source file, having successfully executed the copy/update
+            os.remove(src_filepath)
+
+def encode_product_into_filename(product: DataProduct, filename: str) -> str:
+    disambiguation_suffix = product.get_reader().get_disambiguation_suffix()
+    return f'{filename}{disambiguation_suffix}'
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(
