@@ -68,7 +68,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False, limit_update_to: TimeSpan = TimeSpan.max_span()):
     """
     Refresh all continuous aggregates for a given TimeSeriesDataset.
     Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
@@ -82,33 +82,30 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: b
     #  *prior* to calling  refresh_continuous_aggregates() in all relevant contexts.
     #  For safety, this really means a wrapper function that ensures ordering.
     data_span = dataset.get_data_span()
+    update_span = limit_update_to if data_span is None else data_span.intersection(limit_update_to)
+
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
         if enable_chunking:
             chunk_max_row_count = 10e6
-            if data_span is None:
-                chunking_required = False
-            else:
-                input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
-                estimated_row_count = int(data_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
-                chunking_required = estimated_row_count > chunk_max_row_count
+            input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
+            estimated_row_count = int(update_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
+            chunking_required = estimated_row_count > chunk_max_row_count
 
             if chunking_required:
                 chunk_count = math.ceil(estimated_row_count / chunk_max_row_count)
-                chunk_duration = data_span.duration / chunk_count
+                chunk_duration = update_span.duration / chunk_count
 
-                chunk_span = TimeSpan(begin=data_span.begin, duration=chunk_duration)
-                while chunk_span.end < data_span.end:
+                chunk_span = TimeSpan(begin=update_span.begin, duration=chunk_duration)
+                while chunk_span.end < update_span.end:
                     _refresh_continuous_aggregate(materialized_view_name, chunk_span)
                     chunk_span = TimeSpan(chunk_span.end, duration=chunk_span.duration)
                     _refresh_continuous_aggregate(materialized_view_name, chunk_span)
 
             else:
-                refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
-                _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+                _refresh_continuous_aggregate(materialized_view_name, update_span)
         else:
-            refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
-            _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+            _refresh_continuous_aggregate(materialized_view_name, update_span)
 
 
 def _refresh_continuous_aggregate(materialized_view_name: str, refresh_span: TimeSpan):
