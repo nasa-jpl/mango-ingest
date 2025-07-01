@@ -86,8 +86,8 @@ def get_zipped_input_iterable(root_dir: str,
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
         if tar_fp.endswith('.zip'):
-            with zipfile.ZipFile(tar_fp, 'r') as zip_ref:
-                zip_ref.extractall(temp_dir)
+            with zipfile.ZipFile(tar_fp, 'r') as zf:
+                zf.extractall(temp_dir)
         else:
             with tarfile.open(tar_fp) as tf:
                 tf.extractall(temp_dir)
