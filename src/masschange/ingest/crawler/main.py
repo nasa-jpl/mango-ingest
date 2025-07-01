@@ -55,7 +55,7 @@ class DataProductFileCrawler:
         matching_product_count = len(matching_products)
 
         if matching_product_count == 0:
-            log.warning(f'Unrecognised file in staging area: {src_filepath}')
+            log.debug(f'Unrecognised file in staging area: {src_filepath}')
             return
 
         disambiguation_required = matching_product_count > 1
