@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import tarfile
+import zipfile
 import tempfile
 from datetime import datetime
 from io import StringIO
@@ -84,8 +85,12 @@ def get_zipped_input_iterable(root_dir: str,
             enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
-        with tarfile.open(tar_fp) as tf:
-            tf.extractall(temp_dir)
+        if tar_fp.endswith('.zip'):
+            with zipfile.ZipFile(tar_fp, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+        else:
+            with tarfile.open(tar_fp) as tf:
+                tf.extractall(temp_dir)
 
         for fp in order_filepaths_by_filename(
                 enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
@@ -93,7 +98,6 @@ def get_zipped_input_iterable(root_dir: str,
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
-
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
