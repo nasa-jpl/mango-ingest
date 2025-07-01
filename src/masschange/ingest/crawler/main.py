@@ -7,6 +7,7 @@ import argparse
 import logging
 import os
 import shutil
+import time
 from pathlib import Path
 from typing import Union, Collection
 
@@ -38,10 +39,11 @@ class DataProductFileCrawler:
             log.warning('Files are not being removed upon staging - this should only happen during development and '
                         'should be addressed if crawler is being run as a service rather than a single job.')
 
-    def run(self):
-        log.info(f'File-system crawl started for src root path {self.src_root_path}, staging files at '
-                 f'{self.staging_root_path}, {"removing" if self._remove_src_files_on_stage else "not removing"} source '
-                 f'files when staged')
+    def run(self, silence_start_log: bool = False):
+        if not silence_start_log:
+            log.info(f'File-system crawl started for src root path {self.src_root_path}, staging files at '
+                     f'{self.staging_root_path}, {"removing" if self._remove_src_files_on_stage else "not removing"} source '
+                     f'files when staged')
 
         filepaths = map(Path, enumerate_files_in_dir_tree(str(self.src_root_path)))
         for filepath in filepaths:
@@ -111,9 +113,13 @@ if __name__ == '__main__':
     ap.add_argument('--remove-src-files', action='store_true', default=False, dest='remove_src_files',
                     help='remove files from src upon stage - for safety, must be invoked manually and should be set in '
                          'production')
+    ap.add_argument('--loop', action='store_true', default=False, dest='loop_execution',)
 
     configure_root_logger()
     args = ap.parse_args()
 
     crawler = DataProductFileCrawler(args.src, args.dest, args.remove_src_files)
     crawler.run()
+    while args.loop_execution:
+        time.sleep(5)
+        crawler.run()
