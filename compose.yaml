@@ -12,10 +12,12 @@ services:
       - API_ROOT_PATH
       - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
+      - LOGS_ROOT
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
+      - $LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
@@ -32,6 +34,24 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - $PERSIST_LOCATION:/home/postgres/pgdata/data
+  mango-crawler:
+    build: .
+    networks:
+      - mango-backend
+    restart: 'always'
+    environment:
+      - PERSIST_LOCATION
+      - SOURCE_DATA_ROOT
+      - LOGS_ROOT
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $LOGS_ROOT:/logs
+      - $SOURCE_DATA_ROOT:/input
+      - $INGEST_STAGING_ROOT:/staging
+    user: root
+    command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
 networks:
   mango-backend:
     driver: bridge
