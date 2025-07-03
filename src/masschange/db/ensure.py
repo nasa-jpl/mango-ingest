@@ -12,7 +12,7 @@ from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_e
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 
 from masschange.db.metadata.update import update_metadata
-from masschange.utils.logging import configure_root_logger
+from masschange.utils.logging import configure_root_logger, get_log_filepath
 
 log = logging.getLogger()
 
@@ -87,7 +87,8 @@ def ensure_all_db_state(database_name: str, populate_dataproducts_versions=False
 
 
 if __name__ == '__main__':
-    configure_root_logger()
+    log_filepath = get_log_filepath(service_name='ensure')
+    configure_root_logger(log_filepath=log_filepath)
 
     database_name = os.environ['TSDB_DATABASE']
     logging.info(f'Ensuring all database state for db "{database_name}"')
