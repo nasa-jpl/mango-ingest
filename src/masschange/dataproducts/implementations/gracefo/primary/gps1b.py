@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.gps1b import GraceFOGps1BDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOGps1BDataProduct(TimeSeriesDataProduct):
@@ -14,7 +15,7 @@ class GraceFOGps1BDataProduct(TimeSeriesDataProduct):
     mission = GraceFO
     id_suffix = 'GPS1B'
     instrument_ids = {'C', 'D'}
-    time_series_interval = timedelta(seconds=1)
+    time_series_interval = timedelta(seconds=10)
     processing_level = '1B'
 
     @classmethod
@@ -31,7 +32,9 @@ class GraceFOGps1BDataProduct(TimeSeriesDataProduct):
             prod_flag VARCHAR(16) not null,
             qualflg VARCHAR(8) not null,
             
-            timestamp timestamptz not null,
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null ,
             
             CA_range double precision,
             L1_range double precision,

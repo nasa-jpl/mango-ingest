@@ -2,7 +2,6 @@ import logging
 from collections.abc import Collection
 from typing import Type
 
-from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.utils.packaging import import_submodules
 from masschange.dataproducts import implementations as datasetimplementations
@@ -44,6 +43,8 @@ def get_dataproducts() -> Collection[DataProduct]:
 def get_time_series_dataproducts() -> Collection[DataProduct]:
     return [cls() for cls in get_time_series_dataproduct_classes()]
 
+def resolve_dataproduct(product_full_id: str) -> DataProduct:
+    return next(p for p in get_dataproducts() if p.get_full_id() ==product_full_id)
 
 def resolve_dataset(dataset_id: str) -> DataProduct:
     datasets_by_name = {ds().get_full_id(): ds() for ds in get_dataproduct_classes()}
@@ -54,3 +55,21 @@ def resolve_dataset(dataset_id: str) -> DataProduct:
         err_msg = f"Failed to resolve provided dataset_id (got '{dataset_id}', expected one of {sorted(datasets_by_name.keys())})"
         log.error(err_msg)
         raise ValueError(err_msg)
+
+
+def get_schema_updates_for_flag_fields(prefix: str, num_of_fields: int) -> str:
+    """
+    Convenience method that returns a string that could be inserted to DataProduct's
+    table schema to add fields for boolean quality flags.
+    Quality flag filed name format is <prefix>_<n>
+
+    Parameters
+    ----------
+    prefix: str prefix for the name of the field
+    num_of_fields: int number of columns
+
+    Returns a string to be inserted to a SQL create table statement to add derived columns
+    -------
+
+    """
+    return "".join([f'{prefix}_{str(i)} boolean not null, \n' for i in range(num_of_fields)])

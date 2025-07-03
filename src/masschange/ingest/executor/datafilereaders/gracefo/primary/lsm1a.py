@@ -3,7 +3,10 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
+
 
 class GraceFOLsm1ADataFileReader(AsciiDataFileReader):
     @classmethod
@@ -25,11 +28,15 @@ class GraceFOLsm1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='ns'),
             AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='S'),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=4, name='internalSensor0', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=5, name='internalSensor1', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=6, name='commanded0', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=7, name='commanded1', np_type=int, unit=None),
-            AsciiDataFileReaderColumn(index=8, name='qualflg', np_type='U8', unit=None),
+            AsciiDataFileReaderColumn(index=4, name='internalSensor0', np_type=int, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=5, name='internalSensor1', np_type=int, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=6, name='commanded0', np_type=int, unit=None,
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=7, name='commanded1', np_type=int, unit=None,
+                                      aggregations=['min', 'max']),
+            ArrayLikeAsciiDataFileReaderColumn(index=8, name='qualflg', np_type='U8', array_size=8),
         ]
 
     @classmethod

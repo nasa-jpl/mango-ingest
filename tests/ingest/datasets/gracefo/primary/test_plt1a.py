@@ -12,14 +12,16 @@ class GraceFOPlt1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_field_types = [int, str, str,
                             float, float, float,
                             float, float, float,
-                            float, str, datetime,
+                            float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime,
                             ]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
         (738849301, 'C', 'D',
          -0.000571730421932842, -4106820.187053568, 545180.4943109694,
          -5494199.497742502, 5975.636698578506, -1023.307817170906,
-         -4581.752951524871,  '00000000', datetime(2023, 5, 31, 23, 55, 1, tzinfo=timezone.utc))
+         -4581.752951524871,  '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 5, 31, 23, 55, 1, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

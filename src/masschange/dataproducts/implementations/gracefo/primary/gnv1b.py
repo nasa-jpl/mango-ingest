@@ -4,6 +4,7 @@ from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.gnv1b import GraceFOGnv1BDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
+from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOGnv1BDataProduct(TimeSeriesDataProduct):
@@ -44,7 +45,8 @@ class GraceFOGnv1BDataProduct(TimeSeriesDataProduct):
           
             location geometry(Point,4326),
             orbit_direction CHAR not null,
-
-            timestamp timestamptz not null
+            {get_schema_updates_for_flag_fields("qualflg", 8)}
+            
+            timestamp timestamptz not null 
         """
     
