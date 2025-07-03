@@ -1,6 +1,6 @@
 version: '3'
 services:
-  mango-api:
+  api:
     build: .
     networks:
       - mango-backend
@@ -22,7 +22,7 @@ services:
       - $SSL_CERTS_PATH:/certs
     user: root
     command: conda run -n masschange /app/masschange/start_api.sh
-  mango-db:
+  db:
     user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
     networks:
@@ -34,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - $PERSIST_LOCATION:/home/postgres/pgdata/data
-  mango-crawler:
+  ingest-crawler:
     build: .
     networks:
       - mango-backend
@@ -51,7 +51,7 @@ services:
       - $INGEST_STAGING_ROOT:/staging
     user: root
     command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
-  mango-ingest-worker:
+  ingest-worker:
     build: .
     networks:
       - mango-backend
@@ -68,7 +68,7 @@ services:
       - $INGEST_STAGING_ROOT:/staging
     user: root
     command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
-  mango-ensure:
+  ensure:
     build: .
     networks:
       - mango-backend
