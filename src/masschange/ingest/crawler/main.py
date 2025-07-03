@@ -32,6 +32,8 @@ class DataProductFileCrawler:
     def __init__(self, src_root_path: Union[Path, str], staging_root_path: Union[Path, str], remove_src_files_on_stage: bool):
         self.src_root_path = Path(src_root_path)
         self.staging_root_path = Path(staging_root_path)
+        self.skipped_files_root_path = self.staging_root_path / "skipped"
+        os.makedirs(self.skipped_files_root_path, exist_ok=True)
         self.ingest_manager = IngestManager()
         self._remove_src_files_on_stage = remove_src_files_on_stage
 
@@ -55,7 +57,13 @@ class DataProductFileCrawler:
         matching_product_count = len(matching_products)
 
         if matching_product_count == 0:
-            log.debug(f'Unrecognised file in staging area: {src_filepath}')
+            src_filepath = Path(src_filepath)
+            archived_filepath =  self.skipped_files_root_path / Path(src_filepath).name
+            log.warning(f'Unrecognised file in staging area: {src_filepath} - moving to {archived_filepath}')
+            if src_filepath.is_symlink():
+                src_filepath.unlink()
+            else:
+                shutil.move(src_filepath, archived_filepath)
             return
 
         disambiguation_required = matching_product_count > 1
@@ -121,5 +129,5 @@ if __name__ == '__main__':
     crawler = DataProductFileCrawler(args.src, args.dest, args.remove_src_files)
     crawler.run()
     while args.loop_execution:
-        time.sleep(5)
-        crawler.run()
+        time.sleep(1)
+        crawler.run(silence_start_log=True)
