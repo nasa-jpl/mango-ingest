@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader, AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
+from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
+    ArrayLikeAsciiDataFileReaderColumn
 
 
 # Star Camera Assembly data
@@ -23,11 +25,16 @@ class GraceFOSca1BDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
-
+        # Note: for SCA1B, sca_id is not exactly a channel_id_column: it is a code for
+        # a combination of cameras, and in the data this code does not change with a
+        # regular frequency. For example, in a sample file is stays at 23 for about 1200 records,
+        # than changes to 19.
+        # If we chose to have sca_id as a channel_id_column, we wouldn't be able to treat
+        # SCA1B as a time series dataset.
         return [
             AsciiDataFileReaderColumn(index=0, name='gps_time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=2, name='sca_id', np_type=np.ubyte, unit=None, is_channel_id_column=True),
+            AsciiDataFileReaderColumn(index=2, name='sca_id', np_type=np.ubyte, unit=None),
             AsciiDataFileReaderColumn(index=3, name='quatangle', np_type=np.double, unit=None,
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='quaticoeff', np_type=np.double, unit=None,
@@ -38,7 +45,7 @@ class GraceFOSca1BDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='qual_rss', np_type=np.double, unit=None,
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=8, name='qualflg', np_type='U8', unit=None)
+            ArrayLikeAsciiDataFileReaderColumn(index=8, name='qualflg', np_type='U8', array_size=8)
         ]
 
     @classmethod

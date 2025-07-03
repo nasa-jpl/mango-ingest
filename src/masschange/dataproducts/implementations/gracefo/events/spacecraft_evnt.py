@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
-from masschange.ingest.executor.datafilereaders.gracefo.events.spacecraft_events import GraceFOSpacecraftEventsDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.events.spacecraft_evnt import GraceFOSpacecraftEventsDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.dataproduct import DataProduct
 
@@ -19,11 +19,12 @@ class GraceFOSpacecraftEventsDataProduct(DataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            spacecraftevent VARCHAR(100),
+            spacecraft_event VARCHAR(100),
             time VARCHAR(50),
-            created VARCHAR(50),
-            createdby VARCHAR(50),
+            gps_time double precision not null,
+            created VARCHAR(100),
+            createdby VARCHAR(100),
             spacecraft VARCHAR(6),
-            meta VARCHAR(100),
+            data VARCHAR(10000),
             timestamp timestamptz not null
         """

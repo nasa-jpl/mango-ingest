@@ -9,7 +9,8 @@ class GraceFOKbr1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOKbr1ADataProduct
     expected_table_names = ['gracefo_kbr1a_04_c', 'gracefo_kbr1a_04_d']
 
-    expected_field_types = [int, int, str, int, int, str, str, datetime,
+    expected_field_types = [int, int, str, int, int, str, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime,
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[float, type(None)], Union[float, type(None)], Union[float, type(None)],
                             Union[int, type(None)], Union[int, type(None)], Union[int, type(None)],
@@ -19,7 +20,8 @@ class GraceFOKbr1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
                             ]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
-        (738849600,  50000,  'C',  51, 9, '0011000000000000', '00000000', datetime(2023, 6, 1, 0, 0, 0, 50000, tzinfo=timezone.utc),
+        (738849600,  50000,  'C',  51, 9, '0011000000000000', '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 6, 1, 0, 0, 0, 50000, tzinfo=timezone.utc),
          None, None, None,
          None, None, None,
          None, None, None,
@@ -28,7 +30,8 @@ class GraceFOKbr1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
          None, None
         ),
 
-        (738849600,  50000, 'D',  50, 11, '0011000000000000',   '00000000', datetime(2023, 6, 1, 0, 0, 0, 50000, tzinfo=timezone.utc),
+        (738849600,  50000, 'D',  50, 11, '0011000000000000',   '00000000',
+         False, False, False, False, False, False, False, False, datetime(2023, 6, 1, 0, 0, 0, 50000, tzinfo=timezone.utc),
          None, None, None,
          None, None, None,
          None, None, None,

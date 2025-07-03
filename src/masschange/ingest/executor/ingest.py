@@ -3,10 +3,12 @@ import logging
 import os
 import shutil
 import tarfile
+import zipfile
 import tempfile
 from datetime import datetime
 from io import StringIO
-from typing import Iterable
+from pathlib import Path
+from typing import Iterable, Union
 
 import pandas
 import pandas as pd
@@ -84,8 +86,12 @@ def get_zipped_input_iterable(root_dir: str,
             enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
-        with tarfile.open(tar_fp) as tf:
-            tf.extractall(temp_dir)
+        if tar_fp.endswith('.zip'):
+            with zipfile.ZipFile(tar_fp, 'r') as zf:
+                zf.extractall(temp_dir)
+        else:
+            with tarfile.open(tar_fp) as tf:
+                tf.extractall(temp_dir)
 
         for fp in order_filepaths_by_filename(
                 enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
@@ -93,7 +99,6 @@ def get_zipped_input_iterable(root_dir: str,
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
-
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
@@ -126,11 +131,13 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(product: DataProduct, src_filepath: str):
+def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
+
+    src_filepath = str(src_filepath)
 
     reader = product.get_reader()
 

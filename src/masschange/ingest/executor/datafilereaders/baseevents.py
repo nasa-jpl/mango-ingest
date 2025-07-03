@@ -27,7 +27,18 @@ class EventsFileReader(AsciiDataFileReader):
         for i, event in enumerate(filtered_content):
             data = np.array(cls._get_values_by_keys(flatten_nested_dict(event), [col.name for col in column_defs]))
             data_row = np.core.records.fromarrays(data, dtype=np.dtype([(col.name, col.np_dtype) for col in column_defs]))
+
             data_rec[i] = data_row
+
+        # replace commas with semicolons, because commas break conversion to csv during ingestion
+        # replace '\n' with '\\n' to store multiline strings as a single line for csv conversion
+        for column_name in data_rec.dtype.names:
+            col_dtype = data_rec.dtype[column_name]
+
+            # Check if the field's data is a fixed-length Unicode strings
+            if col_dtype.kind == 'U':
+                data_rec[column_name] = np.char.replace(data_rec[column_name], ',', ";")
+                data_rec[column_name] = np.char.replace(data_rec[column_name], '\n', '\\n')
         return data_rec
 
     @classmethod
@@ -41,7 +52,7 @@ class EventsFileReader(AsciiDataFileReader):
     @abstractmethod
     def get_event_type_filter(cls) -> str:
         """
-        Event YAML file contains data for different types of events, for example, 'spacecraftevent','operator'.
+        Event YAML file contains data for different types of events, for example, 'spacecraft_event','soe_event'.
         We want to have separate readers for each type of events.
         This method returns the event type for the reader.
         The name should correspond to the event type key in the input events YAML file

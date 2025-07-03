@@ -11,13 +11,16 @@ class GraceFOVkb1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     dataset_cls = GraceFOVkb1BDataProduct
     expected_table_names = ['gracefo_vkb1b_04_c', 'gracefo_vkb1b_04_d']
-    expected_field_types = [int, str, float, float, float, float, str, datetime]
+    expected_field_types = [int, str, float, float, float, float, str,
+                            bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [1, 1]
     expected_table_first_rows = [
         (580219200, 'C', 1.4444, 1, -0.00012, 0.00031,
-         '00000000', datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc)),
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc)),
         (580219200, 'D', 1.44446, 1, 4e-05, 0.00016,
-         '00000000', datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc))
+         '00000000', False, False, False, False, False, False, False, False,
+         datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()
