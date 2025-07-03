@@ -129,5 +129,5 @@ if __name__ == '__main__':
     crawler = DataProductFileCrawler(args.src, args.dest, args.remove_src_files)
     crawler.run()
     while args.loop_execution:
-        time.sleep(5)
-        crawler.run()
+        time.sleep(1)
+        crawler.run(silence_start_log=True)
