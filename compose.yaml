@@ -12,7 +12,7 @@ services:
       - API_ROOT_PATH
       - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT
+      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
@@ -41,7 +41,7 @@ services:
     restart: 'always'
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT
+      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
@@ -58,7 +58,7 @@ services:
     restart: 'always'
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT
+      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
@@ -73,10 +73,11 @@ services:
     networks:
       - mango-backend
     environment:
-      - LOGS_ROOT
+      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
+      - LOGS_ROOT=/logs
     volumes:
       - $LOGS_ROOT:/logs
     user: root
