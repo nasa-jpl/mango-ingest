@@ -68,6 +68,20 @@ services:
       - $INGEST_STAGING_ROOT:/staging
     user: root
     command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+  mango-ensure:
+    build: .
+    networks:
+      - mango-backend
+    environment:
+      - LOGS_ROOT
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $LOGS_ROOT:/logs
+    user: root
+    command: conda run -n masschange python /app/masschange/src/masschange/db/ensure.py
+
 networks:
   mango-backend:
     driver: bridge
