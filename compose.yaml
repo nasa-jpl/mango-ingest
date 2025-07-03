@@ -56,6 +56,9 @@ services:
     networks:
       - mango-backend
     restart: 'always'
+    deploy:
+      mode: replicated
+      replicas: 8
     environment:
       - SOURCE_DATA_ROOT
       - LOGS_ROOT=/logs
