@@ -15,7 +15,7 @@ from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import get_dataproducts
 from masschange.ingest.manager.ingestmanager import IngestManager
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
-from masschange.utils.logging import configure_root_logger
+from masschange.utils.logging import configure_root_logger, get_log_filepath
 
 log = logging.getLogger()
 
@@ -123,7 +123,8 @@ if __name__ == '__main__':
                          'production')
     ap.add_argument('--loop', action='store_true', default=False, dest='loop_execution',)
 
-    configure_root_logger()
+    log_filepath = get_log_filepath(service_name='crawler')
+    configure_root_logger(log_filepath=log_filepath)
     args = ap.parse_args()
 
     crawler = DataProductFileCrawler(args.src, args.dest, args.remove_src_files)

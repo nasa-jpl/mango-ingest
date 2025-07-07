@@ -12,10 +12,12 @@ services:
       - API_ROOT_PATH
       - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
+      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
+      - $LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
@@ -32,6 +34,58 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - $PERSIST_LOCATION:/home/postgres/pgdata/data
+  mango-crawler:
+    build: .
+    networks:
+      - mango-backend
+    restart: 'always'
+    environment:
+      - SOURCE_DATA_ROOT
+      - LOGS_ROOT=/logs
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $LOGS_ROOT:/logs
+      - $SOURCE_DATA_ROOT:/input
+      - $INGEST_STAGING_ROOT:/staging
+    user: root
+    command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
+  mango-ingest-worker:
+    build: .
+    networks:
+      - mango-backend
+    restart: 'always'
+    deploy:
+      mode: replicated
+      replicas: 8
+    environment:
+      - SOURCE_DATA_ROOT
+      - LOGS_ROOT=/logs
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - $LOGS_ROOT:/logs
+      - $SOURCE_DATA_ROOT:/input
+      - $INGEST_STAGING_ROOT:/staging
+    user: root
+    command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+  mango-ensure:
+    build: .
+    networks:
+      - mango-backend
+    environment:
+      - LOGS_ROOT=/logs
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+      - LOGS_ROOT=/logs
+    volumes:
+      - $LOGS_ROOT:/logs
+    user: root
+    command: conda run -n masschange python /app/masschange/src/masschange/db/ensure.py
+
 networks:
   mango-backend:
     driver: bridge
