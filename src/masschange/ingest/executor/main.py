@@ -7,7 +7,7 @@ from datetime import timedelta
 from masschange.ingest.executor import ingest
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.ingestmanager import IngestManager
-from masschange.utils.logging import configure_root_logger
+from masschange.utils.logging import configure_root_logger, get_log_filepath
 
 
 class IngestExecutor:
@@ -49,7 +49,8 @@ if __name__ == "__main__":
     ap.add_argument('--loop', action='store_true', default=False, dest='loop_forever',
                     help='Keep polling forever, rather than terminating when no more valid jobs are available')
 
-    configure_root_logger()
+    log_filepath = get_log_filepath(service_name='ingest-worker')
+    configure_root_logger(log_filepath=log_filepath)
     args = ap.parse_args()
 
     executor = IngestExecutor()
