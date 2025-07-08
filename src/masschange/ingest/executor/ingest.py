@@ -156,7 +156,9 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
+    # TODO: re-enable - do not merge
+    logging.debug('SKIPPING CAGG REFRESH - DEV DEBUG ONLY!!!')
+    # refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
