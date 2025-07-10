@@ -1,8 +1,11 @@
 import functools
 import logging
 import random
+from collections.abc import Iterable, Collection
 from datetime import timedelta, datetime
-from typing import Callable, Dict, Tuple, Hashable, Any
+from typing import Callable, Dict, Tuple, Hashable, Any, TypeVar
+
+T = TypeVar('T')
 
 
 def get_human_readable_timedelta(td: timedelta) -> str:
@@ -70,3 +73,20 @@ def flatten_nested_dict(d: Dict, ignore_key_collisions: bool = False) -> Dict:
             raise ValueError(f'Encountered duplicate key "{k}" when attempting to flatten nested dict')
 
     return result
+
+
+def exactly_one(iterable: Iterable[T], throw_on_zero: bool = True) -> T:
+    """
+    Coerces an iterable with expected length 1 to its single element, else throws a ValueError.
+    If throw_on_zero is False, returns None on zero-length iterable instead of throwing a ValueError.
+    """
+    elements = list(iterable)
+
+    elements_count = len(elements)
+    if elements_count == 0 and not throw_on_zero:
+        return None
+    elif elements_count != 1:
+        raise ValueError(f'Expected exactly one element - got {elements_count}')
+
+    return elements[0]
+

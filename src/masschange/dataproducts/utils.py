@@ -43,6 +43,8 @@ def get_dataproducts() -> Collection[DataProduct]:
 def get_time_series_dataproducts() -> Collection[DataProduct]:
     return [cls() for cls in get_time_series_dataproduct_classes()]
 
+def resolve_dataproduct(product_full_id: str) -> DataProduct:
+    return next(p for p in get_dataproducts() if p.get_full_id() ==product_full_id)
 
 def resolve_dataset(dataset_id: str) -> DataProduct:
     datasets_by_name = {ds().get_full_id(): ds() for ds in get_dataproduct_classes()}

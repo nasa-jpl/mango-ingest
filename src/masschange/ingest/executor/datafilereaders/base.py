@@ -5,7 +5,8 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from datetime import datetime, timedelta
-from typing import Any
+from pathlib import Path
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -31,6 +32,23 @@ class DataFileReader(ABC):
         """
         pass
 
+
+    @classmethod
+    def get_disambiguated_input_file_regex(cls) -> str:
+        """
+        Returns the regex pattern to identify non-zipped datafiles to which a reader/product-specific string was
+        appended for the purpose of disambiguating files contain data from multiple different products.
+        """
+        default_pattern = cls.get_input_file_default_regex()
+        default_pattern_contains_terminal = default_pattern.endswith('$')
+        default_pattern_without_terminal = default_pattern[:-1] if default_pattern_contains_terminal else default_pattern
+        modified_pattern = default_pattern_without_terminal + cls.get_disambiguation_suffix() + ('$' if default_pattern_contains_terminal else '')
+        return modified_pattern
+
+    @classmethod
+    def get_disambiguation_suffix(cls) -> str:
+        return cls.__name__
+
     @classmethod
     @abstractmethod
     def get_zipped_input_file_default_regex(cls) -> str:
@@ -43,17 +61,38 @@ class DataFileReader(ABC):
         pass
 
     @classmethod
+    def accepts(cls, filepath: Union[Path, str], exclude_zips: bool = False):
+        filename = os.path.basename(filepath)
+
+        accept_patterns = [cls.get_input_file_default_regex(), cls.get_disambiguated_input_file_regex()]
+        if not exclude_zips:
+            accept_patterns.append(cls.get_zipped_input_file_default_regex())
+
+        return any(re.match(pattern, filename) for pattern in accept_patterns)
+
+    @classmethod
+    def get_applicable_regex_pattern(cls, filename: str) -> str:
+        '''
+        Return the applicable regex pattern depending on whether the filename contains a disambiguation suffix.
+        This is necessary to ensure capture groups work correctly in extract_*()
+        '''
+        is_disambiguated = filename.endswith(cls.get_disambiguation_suffix())
+        return cls.get_disambiguated_input_file_regex() if is_disambiguated else cls.get_input_file_default_regex()
+
+    @classmethod
     def extract_instrument_id(cls, filepath: str) -> str:
         """Extract instruments id from unzipped input file"""
         filename = os.path.split(filepath)[-1]
-        satellite_id_char = re.search(cls.get_input_file_default_regex(), filename).group('instrument_id')
+        pattern = cls.get_applicable_regex_pattern(filename)
+        satellite_id_char = re.search(pattern, filename).group('instrument_id')
         return satellite_id_char
 
     @classmethod
     def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         """Extract version id from unzipped input file"""
         filename = os.path.split(filepath)[-1]
-        dataset_version_id = re.search(cls.get_input_file_default_regex(), filename).group('dataset_version')
+        pattern = cls.get_applicable_regex_pattern(filename)
+        dataset_version_id = re.search(pattern, filename).group('dataset_version')
         return DatasetVersion(dataset_version_id)
 
     @classmethod

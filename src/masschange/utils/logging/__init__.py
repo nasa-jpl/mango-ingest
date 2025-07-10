@@ -1,9 +1,10 @@
 import logging
 import os
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 
-def configure_root_logger(log_filepath: Optional[str] = None, log_level: int = logging.DEBUG,
+def configure_root_logger(log_filepath: Optional[Union[Path, str]] = None, log_level: int = logging.DEBUG,
                           log_format: str = f'%(asctime)s [%(levelname)s] - %(message)s'):
     logging.root.setLevel(log_level)
     logging.root.handlers.clear()
@@ -33,3 +34,6 @@ def configure_root_logger(log_filepath: Optional[str] = None, log_level: int = l
             logging.root.addHandler(file_handler)
         except (OSError, PermissionError):
             logging.error(f'failed to add log handler for path due to permission error: {log_filepath}')
+
+def get_log_filepath(service_name: Union[Path, str]) -> Path:
+    return Path(os.environ.get('LOGS_ROOT') or '/tmp') / service_name / 'latest.log'
