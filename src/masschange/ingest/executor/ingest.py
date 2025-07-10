@@ -7,7 +7,8 @@ import zipfile
 import tempfile
 from datetime import datetime
 from io import StringIO
-from typing import Iterable
+from pathlib import Path
+from typing import Iterable, Union
 
 import pandas
 import pandas as pd
@@ -26,7 +27,7 @@ from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_datase
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.db.metadata.update import update_metadata
-from masschange.utils.logging import configure_root_logger
+from masschange.utils.logging import configure_root_logger, get_log_filepath
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
 
@@ -130,11 +131,13 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 print("Error: %s" % error)
 
 
-def ingest_file_to_db(product: DataProduct, src_filepath: str):
+def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
         log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
+
+    src_filepath = str(src_filepath)
 
     reader = product.get_reader()
 
@@ -181,8 +184,7 @@ def get_args() -> argparse.Namespace:
 if __name__ == '__main__':
     args = get_args()
 
-    logs_root = os.environ.get('MASSCHANGE_INGEST_LOGS_ROOT') or tempfile.mkdtemp()
-    log_filepath = os.path.join(logs_root, f'ingest_{datetime.now().isoformat()}.log')
+    log_filepath = get_log_filepath(service_name='ingest')
     configure_root_logger(log_filepath=log_filepath)
 
     database_name = os.environ['TSDB_DATABASE']
