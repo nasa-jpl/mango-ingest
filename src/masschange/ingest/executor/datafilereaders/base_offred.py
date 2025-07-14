@@ -125,18 +125,31 @@ class OffredFileReader(AsciiDataFileReader):
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None)
         ]
 
+
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
-        # read all data into memory
-        data = np.loadtxt(
-            fname=filename,
-            skiprows=2,
-            delimiter='\t',  # split rows by tab
-            usecols=([col.index for col in datafile_column_defs]),
-            dtype=[(col.name, col.np_dtype) for col in datafile_column_defs],
-            ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
-        )
+
+
+        def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
+            """
+            Wrapper for np.loadtxt call, to pass encoding and to avoid repeating all other arguments
+            """
+            return np.loadtxt(
+                fname=filename,
+                skiprows=2,
+                delimiter='\t',  # split rows by tab
+                usecols=([col.index for col in datafile_column_defs]),
+                dtype=[(col.name, col.np_dtype) for col in datafile_column_defs],
+                encoding = encoding,
+                ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
+            )
+
+        try:  # Try UTF-8 (default) first
+            data = _loadtxt_wrapper()
+        except UnicodeDecodeError:
+            print(f"UTF-8 decoding failed for {filename}. Trying cp1252...")
+            data =  _loadtxt_wrapper(encoding='cp1252')
 
         num_data_columns = len(datafile_column_defs) - 4
 
@@ -206,14 +219,27 @@ class OffredFileReader(AsciiDataFileReader):
         types = []
         # read data from first num_rows as a strings
         field_names = cls._get_field_names(filename)
-        data = np.loadtxt(
-            fname=filename,
-            skiprows=2,
-            delimiter='\t',  # split rows by tab
-            dtype=[(name, cls.str_dtype) for name in field_names],
-            max_rows=num_rows,
-            ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
-        )
+
+        def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
+            """
+            Wrapper for np.loadtxt call, to pass encoding and to avoid repeating all other arguments
+            """
+            return np.loadtxt(
+                fname=filename,
+                skiprows=2,
+                delimiter='\t',  # split rows by tab
+                dtype=[(name, cls.str_dtype) for name in field_names],
+                max_rows=num_rows,
+                encoding = encoding,
+                ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
+            )
+
+        try:  # Try UTF-8 (default) first
+            data = _loadtxt_wrapper()
+        except UnicodeDecodeError:
+            print(f"UTF-8 decoding failed while trying to solve column types, file: {filename}. Trying cp1252...")
+            data =  _loadtxt_wrapper(encoding='cp1252')
+
         for idx, name in enumerate(field_names):
             if idx > 3:
                 types.append(cls._get_column_type(data[name]))
