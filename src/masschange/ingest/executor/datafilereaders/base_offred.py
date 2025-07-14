@@ -95,7 +95,7 @@ class OffredFileReader(AsciiDataFileReader):
                     f' expected: {static_field_names}...')
 
         dyn_col_defs = []
-        types = cls._get_data_column_types(data_fpath, 29950)
+        types = cls._get_data_column_types(data_fpath, 100)
 
         # skip first 4 names because they are related to the timestamp and are assumed to be the same for all input files
         for idx, name, in enumerate(field_names[4:]):
