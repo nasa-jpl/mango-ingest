@@ -20,12 +20,15 @@ class IngestExecutor:
             available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job()
             if available_job is None and loop_forever:
                 time.sleep(self.poll_sleep_delay.total_seconds())
+                logging.debug(f'No jobs available - sleeping {self.poll_sleep_delay.total_seconds()}sec')
                 continue
             elif available_job is None and not loop_forever:
                 # If no jobs are available, return
+                logging.debug(f'No jobs available - terminating ingestion process')
                 return
 
             try:
+                logging.debug(f'Ingesting job {available_job.id}: {available_job.staged_filepath}')
                 ingest.ingest_file_to_db(available_job.product, available_job.staged_filepath)
             except Exception as e:
                 logging.error(f'Failed to ingest file {available_job.staged_filepath}: {e}')

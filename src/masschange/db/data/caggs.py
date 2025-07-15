@@ -1,10 +1,10 @@
 import logging
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Collection, Set
 
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
-from masschange.dataproducts.dataset import Dataset
 from masschange.db.conn import get_db_cursor
 from masschange.utils.timespan import TimeSpan
 
@@ -68,7 +68,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: bool = False):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limit: TimeSpan = None, enable_chunking: bool = False):
     """
     Refresh all continuous aggregates for a given TimeSeriesDataset.
     Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
@@ -77,42 +77,51 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, enable_chunking: b
     """
     log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
 
+    temporal_span_limit = temporal_span_limit or TimeSpan(begin=datetime.min.replace(tzinfo=timezone.utc), end=datetime.max.replace(tzinfo=timezone.utc))
+
     # TODO: consider optimising this to use metadata cache, as using min/max(timestamp) directly becomes expensive at
     #  long data spans (60-120sec for 30 years, at time of testing) - this will require that the metadata is updated
     #  *prior* to calling  refresh_continuous_aggregates() in all relevant contexts.
     #  For safety, this really means a wrapper function that ensures ordering.
     data_span = dataset.get_data_span()
+    refresh_span = data_span.intersection(temporal_span_limit)
+
+    if refresh_span is None:
+        log.warning(f'No intersection between temporal_span_limit {temporal_span_limit} and {dataset.get_table_name()} data_span {data_span} - no cagg refresh triggered')
+        return
+
     for aggregation_level in dataset.product.get_available_aggregation_levels():
-        materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
         if enable_chunking:
             chunk_max_row_count = 10e6
-            if data_span is None:
-                chunking_required = False
-            else:
-                input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
-                estimated_row_count = int(data_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
-                chunking_required = estimated_row_count > chunk_max_row_count
+
+            input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
+            estimated_row_count = int(refresh_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
+            chunking_required = estimated_row_count > chunk_max_row_count
 
             if chunking_required:
                 chunk_count = math.ceil(estimated_row_count / chunk_max_row_count)
-                chunk_duration = data_span.duration / chunk_count
+                chunk_duration = refresh_span.duration / chunk_count
 
-                chunk_span = TimeSpan(begin=data_span.begin, duration=chunk_duration)
-                while chunk_span.end < data_span.end:
-                    _refresh_continuous_aggregate(materialized_view_name, chunk_span)
+                chunk_span = TimeSpan(begin=refresh_span.begin, duration=chunk_duration)
+                while chunk_span.end < refresh_span.end:
+                    _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
                     chunk_span = TimeSpan(chunk_span.end, duration=chunk_span.duration)
-                    _refresh_continuous_aggregate(materialized_view_name, chunk_span)
+                    _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
 
             else:
                 refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
-                _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+                _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
         else:
             refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
-            _refresh_continuous_aggregate(materialized_view_name, refresh_span)
+            _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
 
 
-def _refresh_continuous_aggregate(materialized_view_name: str, refresh_span: TimeSpan):
+def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_depth: int, refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
+    materialized_view_name = dataset.get_table_or_view_name(aggregation_depth)
+    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_depth)
+    refresh_span = get_refresh_span(materialized_view_name, bucket_interval, refresh_span)
+
     log.info(f'refreshing {materialized_view_name} for {refresh_span}')
 
     with get_db_cursor(autocommit=True) as cur:
@@ -138,11 +147,14 @@ def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: Time
 
     """
 
+    # TODO: This should be resolved dynamically, but can be statically-set for now
+    timestamp_column_name = TimeSeriesDataProduct.TIMESTAMP_COLUMN_NAME
+
     sql = f"""
-    select min(bucket), max(bucket)
+    select min({timestamp_column_name}), max({timestamp_column_name})
     from {view_name}
-    where bucket >= ('{data_span.begin.isoformat()}'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
-      and bucket <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
+    where {timestamp_column_name} >= ('{data_span.begin.isoformat()}'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
+      and {timestamp_column_name} <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
       """
 
     with get_db_cursor() as cur:
