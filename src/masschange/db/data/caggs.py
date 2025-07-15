@@ -84,7 +84,7 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
     #  *prior* to calling  refresh_continuous_aggregates() in all relevant contexts.
     #  For safety, this really means a wrapper function that ensures ordering.
     data_span = dataset.get_data_span()
-    refresh_span = data_span.intersection(temporal_span_limit)
+    refresh_span = temporal_span_limit.intersection(data_span)
 
     if refresh_span is None:
         log.warning(f'No intersection between temporal_span_limit {temporal_span_limit} and {dataset.get_table_name()} data_span {data_span} - no cagg refresh triggered')
