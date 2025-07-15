@@ -5,7 +5,7 @@ import shutil
 import tarfile
 import zipfile
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
 from typing import Iterable, Union
@@ -146,8 +146,8 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
 
 
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
-    data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]),
-                                  end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]))
+    data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc),
+                                  end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc))
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
 
     ensure_dataset_table_exists(dataset)
@@ -156,7 +156,7 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset)  # TODO: Determine whether this slows down as already-ingested data span increases - may need to limit to data_temporal_span
+    refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
