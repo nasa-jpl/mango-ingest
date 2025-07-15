@@ -1,7 +1,7 @@
 
 from collections.abc import Sequence
 from datetime import timedelta, datetime
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.dataproducts.dataproduct import DataProduct
@@ -109,6 +109,13 @@ class TimeSeriesDataProduct(DataProduct):
     def get_available_data_intervals(cls) -> List[timedelta]:
         """Return the full-resolution data interval, plus any data aggregate intervals"""
         return [cls.time_series_interval] + list(cls._generate_cagg_bucket_intervals())
+
+    def get_cagg_bucket_interval(cls, aggregation_level: int) -> Union[timedelta, None]:
+        if aggregation_level > cls.get_required_aggregation_level_count():
+            raise ValueError(f'Aggregation level {aggregation_level} is too high for {cls.__name__} (max is {cls.get_required_aggregation_level_count()})')
+
+        bucket_invervals_by_aggregation_level = [None] + list(cls._generate_cagg_bucket_intervals())
+        return bucket_invervals_by_aggregation_level[aggregation_level]
 
     @classmethod
     def _generate_cagg_bucket_intervals(cls) -> Sequence[timedelta]:
