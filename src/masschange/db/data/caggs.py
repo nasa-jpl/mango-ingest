@@ -119,10 +119,10 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
             _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
 
 
-def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_depth: int, refresh_span: TimeSpan):
+def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
-    materialized_view_name = dataset.get_table_or_view_name(aggregation_depth)
-    refresh_span = get_refresh_span(dataset.product, refresh_span)
+    materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
+    refresh_span = get_refresh_span(dataset.product, aggregation_level, refresh_span)
     log.info(f'refreshing {materialized_view_name} over {refresh_span}')
 
     with get_db_cursor(autocommit=True) as cur:
