@@ -76,7 +76,15 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
     large span.
     """
 
-    temporal_span_limit = temporal_span_limit or dataset.get_data_span(use_cache=False)
+    if temporal_span_limit is None:
+        accurate_data_span = dataset.get_data_span(use_cache=False)
+
+        if accurate_data_span is None:
+            log.info(f'No data exists for {dataset.get_table_name()} - aborting cagg refresh')
+            return
+        else:
+            temporal_span_limit = accurate_data_span
+
 
     log.info(f'requesting refreshes for continuous aggregates for {dataset.get_table_name()} over {temporal_span_limit}')
 
