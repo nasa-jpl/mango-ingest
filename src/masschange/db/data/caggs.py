@@ -162,8 +162,8 @@ def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_sp
       """
 
     with get_db_cursor() as cur:
-        from_dt = data_span.begin - bucket_interval if data_span.begin != (datetime.min + bucket_interval) else datetime.min.replace(tzinfo=timezone.utc)
-        to_dt = data_span.end + bucket_interval if data_span.end < (datetime.max - bucket_interval) else datetime.max.replace(tzinfo=timezone.utc)
+        from_dt = data_span.begin - bucket_interval if data_span.begin != (datetime.min.replace(tzinfo=timezone.utc) + bucket_interval) else datetime.min.replace(tzinfo=timezone.utc)
+        to_dt = data_span.end + bucket_interval if data_span.end < (datetime.max.replace(tzinfo=timezone.utc) - bucket_interval) else datetime.max.replace(tzinfo=timezone.utc)
         log.debug(f'from_dt {from_dt} -> to_dt {to_dt} submitted to sql')
         cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
         results = cur.fetchone()
