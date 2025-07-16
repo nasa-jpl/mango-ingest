@@ -159,12 +159,12 @@ def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_sp
     sql = f"""
     select min({timestamp_column_name}), max({timestamp_column_name})
     from {view_name}
-    where {timestamp_column_name} >= ('{data_span.begin.isoformat()}'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
-      and {timestamp_column_name} <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
+    where {timestamp_column_name} >= ('%(from_dt)s'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
+      and {timestamp_column_name} <= ('%(to_dt)s'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
       """
 
     with get_db_cursor() as cur:
-        cur.execute(sql)
+        cur.execute(sql, {'from_dt': data_span.begin, 'to_dt': data_span.end})
         results = cur.fetchone()
         if None not in results:
             data_begin = results[0]
