@@ -154,7 +154,7 @@ def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_sp
     view_name = dataset.get_table_or_view_name(aggregation_level)
     bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
     log.debug(
-        f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_level}')
+        f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_level} and data span: {data_span}')
 
     sql = f"""
     select min({timestamp_column_name}), max({timestamp_column_name})
