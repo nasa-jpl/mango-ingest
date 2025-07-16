@@ -159,8 +159,8 @@ def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_sp
     sql = f"""
     select min({timestamp_column_name}), max({timestamp_column_name})
     from {view_name}
-    where {timestamp_column_name} >= ('%(from_dt)s'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
-      and {timestamp_column_name} <= ('%(to_dt)s'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
+    where {timestamp_column_name} >= (%(from_dt)s::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
+      and {timestamp_column_name} <= (%(to_dt)s::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
       """
 
     with get_db_cursor() as cur:
