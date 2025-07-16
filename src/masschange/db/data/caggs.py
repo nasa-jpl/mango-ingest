@@ -122,10 +122,7 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_depth: int, refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
     materialized_view_name = dataset.get_table_or_view_name(aggregation_depth)
-    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_depth)
-    log.debug(f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_depth}')
-    refresh_span = get_refresh_span(materialized_view_name, bucket_interval, refresh_span)
-
+    refresh_span = get_refresh_span(dataset.product, refresh_span)
     log.info(f'refreshing {materialized_view_name} over {refresh_span}')
 
     with get_db_cursor(autocommit=True) as cur:
@@ -134,7 +131,7 @@ def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_depth:
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
 
 
-def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: TimeSpan) -> TimeSpan:
+def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_span: TimeSpan) -> TimeSpan:
     """
     Get a refresh span enclosing all extant buckets which overlap a given data_span.  If no data exists in the materialized
     view yet, instead return a safe value which will ensure timescaledb does not complain about too-small a window.
@@ -154,6 +151,11 @@ def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: Time
     # TODO: This should be resolved dynamically, but can be statically-set for now
     timestamp_column_name = TimeSeriesDataProduct.TIMESTAMP_COLUMN_NAME
 
+    view_name = dataset.get_table_or_view_name(aggregation_level)
+    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
+    log.debug(
+        f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_level}')
+
     sql = f"""
     select min({timestamp_column_name}), max({timestamp_column_name})
     from {view_name}
@@ -168,7 +170,7 @@ def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: Time
             data_begin = results[0]
             data_end = results[1]
             resolved_span = TimeSpan(begin=data_begin - bucket_interval, end=data_end + bucket_interval)
-            log.debug(f'resolved span {resolved_span} from data')
+            log.debug(f'resolved span {resolved_span} from data begin {data_begin} end {data_end}')
         else:
             resolved_span = TimeSpan(begin=datetime.min, end=datetime.max)
             log.debug(f'No data found, resolving to maximal span')
