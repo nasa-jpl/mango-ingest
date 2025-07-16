@@ -109,13 +109,11 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
                 while chunk_span.end < refresh_span.end:
                     _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
                     chunk_span = TimeSpan(chunk_span.end, duration=chunk_span.duration)
-                    _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
+                _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
 
             else:
-                refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
                 _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
         else:
-            refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
             _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
 
 
