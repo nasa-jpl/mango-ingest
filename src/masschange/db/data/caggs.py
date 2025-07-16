@@ -76,7 +76,7 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
     large span.
     """
 
-    temporal_span_limit = temporal_span_limit or TimeSpan(begin=datetime.min.replace(tzinfo=timezone.utc), end=datetime.max.replace(tzinfo=timezone.utc))
+    temporal_span_limit = temporal_span_limit or dataset.get_data_span(use_cache=False)
 
     log.info(f'requesting refreshes for continuous aggregates for {dataset.get_table_name()} over {temporal_span_limit}')
 
@@ -117,10 +117,11 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
             _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
 
 
-def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, refresh_span: TimeSpan):
+def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
     materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
-    refresh_span = get_refresh_span(dataset, aggregation_level, refresh_span)
+    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
+    refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
     log.info(f'refreshing {materialized_view_name} over {refresh_span}')
 
     with get_db_cursor(autocommit=True) as cur:
@@ -146,34 +147,36 @@ def get_refresh_span(dataset: TimeSeriesDataset, aggregation_level: int, data_sp
 
     """
 
-    # TODO: This should be resolved dynamically, but can be statically-set for now
-    timestamp_column_name = TimeSeriesDataProduct.TIMESTAMP_COLUMN_NAME
-
-    view_name = dataset.get_table_or_view_name(aggregation_level)
+    # # TODO: This should be resolved dynamically, but can be statically-set for now
+    # timestamp_column_name = TimeSeriesDataProduct.TIMESTAMP_COLUMN_NAME
+    #
+    # view_name = dataset.get_table_or_view_name(aggregation_level)
     bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
-    log.debug(
-        f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_level} and data span: {data_span}')
-
-    sql = f"""
-    select min({timestamp_column_name}), max({timestamp_column_name})
-    from {view_name}
-    where {timestamp_column_name} >= %(from_dt)s
-      and {timestamp_column_name} <= %(to_dt)s;
-      """
-
-    with get_db_cursor() as cur:
-        from_dt = data_span.begin - bucket_interval if data_span.begin != (datetime.min.replace(tzinfo=timezone.utc) + bucket_interval) else datetime.min.replace(tzinfo=timezone.utc)
-        to_dt = data_span.end + bucket_interval if data_span.end < (datetime.max.replace(tzinfo=timezone.utc) - bucket_interval) else datetime.max.replace(tzinfo=timezone.utc)
-        log.debug(f'from_dt {from_dt} -> to_dt {to_dt} submitted to sql')
-        cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
-        results = cur.fetchone()
-        if None not in results:
-            data_begin = results[0]
-            data_end = results[1]
-            resolved_span = TimeSpan(begin=data_begin - bucket_interval, end=data_end + bucket_interval)
-            log.debug(f'resolved span {resolved_span} from data begin {data_begin} end {data_end}')
-        else:
-            resolved_span = TimeSpan(begin=datetime.min, end=datetime.max)
-            log.debug(f'No data found, resolving to maximal span')
-
-    return resolved_span
+    return TimeSpan(data_span.begin - bucket_interval, data_span.end + bucket_interval)
+    #
+    # log.debug(
+    #     f'dataset {dataset.get_table_name()} bucket interval: {bucket_interval} at aggregation depth {aggregation_level} and data span: {data_span}')
+    #
+    # sql = f"""
+    # select min({timestamp_column_name}), max({timestamp_column_name})
+    # from {view_name}
+    # where {timestamp_column_name} >= %(from_dt)s
+    #   and {timestamp_column_name} <= %(to_dt)s;
+    #   """
+    #
+    # with get_db_cursor() as cur:
+    #     from_dt = data_span.begin - bucket_interval if data_span.begin != (datetime.min.replace(tzinfo=timezone.utc) + bucket_interval) else datetime.min.replace(tzinfo=timezone.utc)
+    #     to_dt = data_span.end + bucket_interval if data_span.end < (datetime.max.replace(tzinfo=timezone.utc) - bucket_interval) else datetime.max.replace(tzinfo=timezone.utc)
+    #     log.debug(f'from_dt {from_dt} -> to_dt {to_dt} submitted to sql')
+    #     cur.execute(sql, {'from_dt': from_dt, 'to_dt': to_dt})
+    #     results = cur.fetchone()
+    #     if None not in results:
+    #         data_begin = results[0]
+    #         data_end = results[1]
+    #     resolved_span = TimeSpan(begin=data_begin - bucket_interval, end=data_end + bucket_interval)
+    #         log.debug(f'resolved span {resolved_span} from data begin {data_begin} end {data_end}')
+    #     else:
+    #         resolved_span = TimeSpan(begin=from_dt, end=to)
+    #         log.debug(f'No data found, resolving to maximal span')
+    #
+    # return resolved_span
