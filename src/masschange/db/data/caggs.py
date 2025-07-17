@@ -75,20 +75,28 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
     Unexpectedly, the refresh runtime increases superlinearly with timespan, so this is necessary when refreshing a
     large span.
     """
-    log.info(f'refreshing continuous aggregates for {dataset.get_table_name()}')
 
-    temporal_span_limit = temporal_span_limit or TimeSpan(begin=datetime.min.replace(tzinfo=timezone.utc), end=datetime.max.replace(tzinfo=timezone.utc))
+    if temporal_span_limit is None:
+        accurate_data_span = dataset.get_data_span(use_cache=False)
+
+        if accurate_data_span is None:
+            log.info(f'No data exists for {dataset.get_table_name()} - aborting cagg refresh')
+            return
+        else:
+            temporal_span_limit = accurate_data_span
 
     # TODO: consider optimising this to use metadata cache, as using min/max(timestamp) directly becomes expensive at
     #  long data spans (60-120sec for 30 years, at time of testing) - this will require that the metadata is updated
     #  *prior* to calling  refresh_continuous_aggregates() in all relevant contexts.
     #  For safety, this really means a wrapper function that ensures ordering.
     data_span = dataset.get_data_span()
-    refresh_span = data_span.intersection(temporal_span_limit)
+    refresh_span = temporal_span_limit.intersection(data_span)
 
     if refresh_span is None:
         log.warning(f'No intersection between temporal_span_limit {temporal_span_limit} and {dataset.get_table_name()} data_span {data_span} - no cagg refresh triggered')
         return
+
+    log.info(f'requesting cagg refreshes for {dataset.get_table_name()} over {temporal_span_limit}')
 
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         if enable_chunking:
@@ -106,61 +114,22 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
                 while chunk_span.end < refresh_span.end:
                     _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
                     chunk_span = TimeSpan(chunk_span.end, duration=chunk_span.duration)
-                    _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
+                _refresh_continuous_aggregate(dataset, aggregation_level, chunk_span)
 
             else:
-                refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
                 _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
         else:
-            refresh_span = TimeSpan(begin=datetime.min, end=datetime.max)
             _refresh_continuous_aggregate(dataset, aggregation_level, refresh_span)
 
 
-def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_depth: int, refresh_span: TimeSpan):
+def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
-    materialized_view_name = dataset.get_table_or_view_name(aggregation_depth)
-    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_depth)
-    refresh_span = get_refresh_span(materialized_view_name, bucket_interval, refresh_span)
-
-    log.info(f'refreshing {materialized_view_name} for {refresh_span}')
+    materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
+    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
+    refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
+    log.debug(f'refreshing cagg {materialized_view_name} over {refresh_span}')
 
     with get_db_cursor(autocommit=True) as cur:
         sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
         cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
-
-
-def get_refresh_span(view_name: str, bucket_interval: timedelta, data_span: TimeSpan) -> TimeSpan:
-    """
-    Get a dataspan enclosing all extant buckets which overlap a given data_span.  If no data exists in the materialized
-    view yet, instead return a safe value which will ensure timescaledb does not complain about too-small a window.
-
-    Parameters
-    ----------
-    view_name - the name of the materialized view
-    bucket_interval - the interval/size of this view's buckets
-    data_span - the span of data for which to resolve a refresh span
-
-    Returns
-    -------
-    an inclusive bucket span over which to refresh the continuous aggregate/materialized view
-
-    """
-
-    # TODO: This should be resolved dynamically, but can be statically-set for now
-    timestamp_column_name = TimeSeriesDataProduct.TIMESTAMP_COLUMN_NAME
-
-    sql = f"""
-    select min({timestamp_column_name}), max({timestamp_column_name})
-    from {view_name}
-    where {timestamp_column_name} >= ('{data_span.begin.isoformat()}'::timestamp - INTERVAL '{bucket_interval.total_seconds()} SECONDS')
-      and {timestamp_column_name} <= ('{data_span.end.isoformat()}'::timestamp + INTERVAL '{bucket_interval.total_seconds()} SECONDS');
-      """
-
-    with get_db_cursor() as cur:
-        cur.execute(sql)
-        results = cur.fetchone()
-        if None not in results:
-            return TimeSpan(begin=results[0], end=results[1] + bucket_interval)
-        else:
-            return TimeSpan(begin=datetime.min, end=datetime.max)
