@@ -20,7 +20,7 @@ class IngestExecutor:
             available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job()
             if available_job is None and loop_forever:
                 time.sleep(self.poll_sleep_delay.total_seconds())
-                logging.debug(f'No jobs available - sleeping {self.poll_sleep_delay.total_seconds()}sec')
+                # logging.debug(f'No jobs available - sleeping {self.poll_sleep_delay.total_seconds()}sec')
                 continue
             elif available_job is None and not loop_forever:
                 # If no jobs are available, return
