@@ -51,7 +51,3 @@ class GraceFOTdp1BDataFileReader(AsciiDataFileReader):
         # TODO: for other data, epoch is datetime(2000, 1, 1, 12). Make sure that this data has different epoch
         epoch = datetime(2000, 1, 1, 11, 59, 47)
         return epoch + timedelta(seconds=row.time)
-
-    @classmethod
-    def _get_first_prod_flag_data_column_position(cls) -> int:
-        return 6
