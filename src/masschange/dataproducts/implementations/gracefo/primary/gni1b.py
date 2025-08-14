@@ -8,6 +8,11 @@ from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
 class GraceFOGni1BDataProduct(TimeSeriesDataProduct):
+
+    # TODO: from Chris e-mail:
+    # File format is the same as GNI1B.  The files span 30 hours centered around one day, so there will be overlap in
+    # time between consecutive files – we may need to discuss the best way to handle this.
+
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOGni1BDataFileReader()
