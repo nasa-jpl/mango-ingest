@@ -48,6 +48,9 @@ class GraceFOTdp1BDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
+        return cls.get_reference_epoch() + timedelta(seconds=row.time)
+
+    @classmethod
+    def get_reference_epoch(cls) -> datetime:
         # TODO: for other data, epoch is datetime(2000, 1, 1, 12). Make sure that this data has different epoch
-        epoch = datetime(2000, 1, 1, 11, 59, 47)
-        return epoch + timedelta(seconds=row.time)
+        return datetime(2000, 1, 1, 11, 59, 47)
