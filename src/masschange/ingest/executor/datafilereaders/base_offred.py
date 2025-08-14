@@ -114,6 +114,7 @@ class OffredFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name='obt_Fraction', np_type=np.uint, unit='millisecond'),
             AsciiDataFileReaderColumn(index=3, name='OBTfType', np_type='U3', unit=None),
+            DerivedAsciiDataFileReaderColumn(name='source_file_name', np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
@@ -122,7 +123,8 @@ class OffredFileReader(AsciiDataFileReader):
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_float, np_type=cls.float_dtype, unit=None,
                                              aggregations=['min', 'max']),
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None)
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None),
+
         ]
 
 
@@ -166,6 +168,8 @@ class OffredFileReader(AsciiDataFileReader):
         for name in [col.name for col in datafile_column_defs[:4]]:
             data_rec[name] = np.tile(data[name], num_data_columns)
 
+        # add source file name to the  array
+        data_rec['source_file_name'] [:]= os.path.basename(filename)
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
         data_rec[cls.col_name_float] = None

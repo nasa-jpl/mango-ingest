@@ -27,12 +27,14 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
             obt_integer bigint not null, 
             obt_fraction int not null, 
             obt_type VARCHAR(3),
+            source_file_name VARCHAR(100),
             
             pcf_name VARCHAR(15),
             unit VARCHAR(15),
             value_int bigint ,
             value_float float,
-            value_string VARCHAR(100),
+            value_str VARCHAR(100),
+            
             
             timestamp timestamptz not null 
         """
