@@ -7,6 +7,8 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 
 
 class GraceFOOffredDataProduct(TimeSeriesDataProduct):
+    DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME = True   # if True, delete duplicates based on source file name,
+                                                                # rather than time range.
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOOffredDataFileReader()

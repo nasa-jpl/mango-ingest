@@ -112,6 +112,16 @@ def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
         cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
+def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str):
+    table_name = dataset.get_table_name()
+    with get_db_cursor() as cur:
+        sql = f"""
+            DELETE 
+            FROM {table_name}
+                WHERE   {dataset.product.SOURCE_FILE_COLUMN_NAME} = '{source_file_name}'
+                """
+        cur.execute(sql)
+        log.debug(f'purged data from {table_name} for source file name {source_file_name}')
 
 def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     """
@@ -154,7 +164,10 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
-    delete_overlapping_data(dataset, data_temporal_span)
+    if dataset.product.DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME:
+        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
+    else:
+        delete_overlapping_data(dataset, data_temporal_span)
     ingest_df(pd_df, table_name)
     refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
