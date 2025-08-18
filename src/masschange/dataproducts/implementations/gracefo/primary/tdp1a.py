@@ -21,7 +21,7 @@ class GraceFOTdp1ADataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            time double precision not null,
+            time bigint not null,
             nominal_value double precision not null,
             value double precision not null,
             sigma double precision not null,
