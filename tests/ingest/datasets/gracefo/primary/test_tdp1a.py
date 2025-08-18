@@ -8,13 +8,13 @@ class GraceFOTdp1ADatasetReaderTestCase(DatasetReaderTestCaseBase):
     data_is_zipped = False
     dataset_cls = GraceFOTdp1ADataProduct
     expected_table_names = ['gracefo_tdp1a_04_c', 'gracefo_tdp1a_04_d']
-    expected_field_types = [float, float, float, float, str, datetime]
-    expected_table_row_counts = [7, 7]
+    expected_field_types = [int, float, float, float, str, datetime]
+    expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
-        (775958800.0000,  0.00000000000000,  -110937.208992753,  0.0368,
-         '.Satellite.GPS23.Clk.Bias', datetime(2024, 8, 3, 12, 6, 27, tzinfo=timezone.utc)),
-        (775958800.0000,  0.00000000000000,  -110937.208992753,  0.0368,
-         '.Satellite.GPS23.Clk.Bias', datetime(2024, 8, 3, 12, 6, 27, tzinfo=timezone.utc))
+        (741430800,  0.000000000000000e+00, -1.044695742597549e+01,  5.007258707185389e-03,
+         '.Satellite.GRACEC.Clk.Bias', datetime(2023, 6, 30, 20, 59, 47, tzinfo=timezone.utc)),
+        (741430800,  0.000000000000000e+00, -4.453536590253631e+00,
+         4.930929621334951e-03, '.Satellite.GRACED.Clk.Bias', datetime(2023, 6, 30, 20, 59, 47, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()
