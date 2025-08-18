@@ -30,6 +30,12 @@ class DataProduct(ABC):
     query_result_limit = 36000
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
+    DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME = False  # if True, delete duplicates based on source file name,
+                                                                # rather than time range.
+                                                                # The dataproduct must have a column
+                                                                # which name is defined by SOURCE_FILE_COLUMN_NAME
+    SOURCE_FILE_COLUMN_NAME = 'source_file_name'  # must be considered reserved.
+
     LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
 
     @classmethod

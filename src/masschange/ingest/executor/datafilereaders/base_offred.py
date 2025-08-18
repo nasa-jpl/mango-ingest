@@ -112,8 +112,8 @@ class OffredFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='utc', np_type='U21', unit=None),
             AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=2, name='obt_Fraction', np_type=np.uint, unit='millisecond'),
-            AsciiDataFileReaderColumn(index=3, name='OBTfType', np_type='U3', unit=None),
+            AsciiDataFileReaderColumn(index=2, name='obt_fraction', np_type=np.uint, unit='millisecond'),
+            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
             DerivedAsciiDataFileReaderColumn(name='source_file_name', np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
 
