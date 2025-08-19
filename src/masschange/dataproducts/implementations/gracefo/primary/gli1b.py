@@ -1,24 +1,19 @@
 from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
-from masschange.ingest.executor.datafilereaders.gracefo.primary.gni1b import GraceFOGni1BDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.gli1b import GraceFOGli1BDataFileReader
 from masschange.missions import GraceFO
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
 
-class GraceFOGni1BDataProduct(TimeSeriesDataProduct):
-
-    # TODO: from Chris e-mail:
-    # File format is the same as GNI1B.  The files span 30 hours centered around one day, so there will be overlap in
-    # time between consecutive files – we may need to discuss the best way to handle this.
-
+class GraceFOGli1BDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_reader(cls) -> DataFileReader:
-        return GraceFOGni1BDataFileReader()
+        return GraceFOGli1BDataFileReader()
 
     mission = GraceFO
-    id_suffix = 'GNI1B'
+    id_suffix = 'GLI1B'
     instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(seconds=1)
     processing_level = '1B'
