@@ -113,6 +113,13 @@ def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
 def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str):
+
+    # sanity check: make sure that column SOURCE_FILE_COLUMN_NAME exists in the product
+    if not dataset.product.SOURCE_FILE_COLUMN_NAME in [f.name for f in dataset.product.get_available_fields()]:
+        raise RuntimeError(f" {dataset.product.__class__.__name__} does not have a column "
+                           f"'{dataset.product.SOURCE_FILE_COLUMN_NAME}' needed for removal of duplicated data by the "
+                           f"source file name...")
+
     table_name = dataset.get_table_name()
     with get_db_cursor() as cur:
         sql = f"""
