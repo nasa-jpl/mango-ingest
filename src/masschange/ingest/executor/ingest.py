@@ -120,6 +120,15 @@ def delete_overlapping_data_by_temporal_bounds(dataset: Dataset, data_temporal_s
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
 def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str):
+    '''
+    This function is designed for inputs where data of the same product type are distributed across multiple files,
+    all covering approximately the same time range. In such scenarios, it is not possible to rely on data span
+    for removing duplicated entries, so the name of the source file is used instead to prevent ingesting
+    the same file multiple times.
+
+    This method is particularly useful for sources like OFFRED data, which includes entries of the same product  type
+    across overlapping files.
+    '''
 
     # sanity check: make sure that column SOURCE_FILE_COLUMN_NAME exists in the product
     if not dataset.product.SOURCE_FILE_COLUMN_NAME in [f.name for f in dataset.product.get_available_fields()]:
