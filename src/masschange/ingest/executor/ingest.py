@@ -16,6 +16,7 @@ import psycopg2
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.dataset import Dataset
+from masschange.dataproducts.multipartfiledataproduct import MultipartFileDataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
@@ -100,7 +101,13 @@ def get_zipped_input_iterable(root_dir: str,
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
 
-def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
+def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
+    if isinstance(dataset.product, MultipartFileDataProduct):
+        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
+    else:
+        delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
+
+def delete_overlapping_data_by_temporal_bounds(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
     with get_db_cursor() as cur:
         sql = f"""
@@ -171,10 +178,8 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
-    if dataset.product.DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME:
-        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
-    else:
-        delete_overlapping_data(dataset, data_temporal_span)
+    delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
+
     ingest_df(pd_df, table_name)
     refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)

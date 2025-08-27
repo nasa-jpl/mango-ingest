@@ -76,13 +76,5 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
         self.assertEqual(previous_record_count * 2, current_record_count)
         self.assertEqual(self.expected_record_count, current_record_count)
 
-    def test_throw_if_no_source_file_name_column(self):
-            # test that an attempt to use data product with DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME=True
-            # and without SOURCE_FILE_COLUMN_NAME will throw
-            bad_product = GraceFOAcc1ADataProduct()
-            bad_product.DELETE_OVERLAP_ON_INGEST_BASED_ON_SOURCE_FILE_NAME = True
-            with self.assertRaisesRegex(RuntimeError, "GraceFOAcc1ADataProduct does not have a column 'source_file_name'"):
-                ingest_file_to_db(bad_product,  './tests/input_data/ingest/test_ingest/ACC1A_2023-06-03_C_04.txt')
-
 if __name__ == '__main__':
     unittest.main()
