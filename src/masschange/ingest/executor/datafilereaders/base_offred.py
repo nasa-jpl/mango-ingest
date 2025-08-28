@@ -297,6 +297,3 @@ class OffredFileReader(AsciiDataFileReader):
         # no versions for OFFREAD
         return DatasetVersion("01")
 
-    @classmethod
-    def source_file_column_name(cls):
-        return cls.SOURCE_FILE_COLUMN_NAME

@@ -132,11 +132,11 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
     '''
 
     # sanity check: make sure that a valid source file column name is defined in the reader
-    source_file_column_name = dataset.product.get_reader().source_file_column_name()
-    if ((not source_file_column_name) or
+    source_file_column_name = dataset.product.get_reader().SOURCE_FILE_COLUMN_NAME
+    if ((source_file_column_name is None) or
             (not source_file_column_name in [f.name for f in dataset.product.get_available_fields()])):
         raise RuntimeError(f" {dataset.product.get_reader().__class__.__name__} "
-                           f" should overwrite source_file_column_name() to return a valid column name for source files...")
+                           f" should set SOURCE_FILE_COLUMN_NAME to a valid column name for the source files...")
 
     table_name = dataset.get_table_name()
 
