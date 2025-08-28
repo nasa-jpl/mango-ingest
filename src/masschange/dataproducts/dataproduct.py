@@ -322,3 +322,4 @@ class DataProduct(ABC):
                 ON CONFLICT DO NOTHING;
                 """
             cur.execute(sql, {'name': cls.get_full_id(), 'label': cls.get_full_id()})
+            
