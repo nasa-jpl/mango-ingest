@@ -20,6 +20,7 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -100,7 +101,14 @@ def get_zipped_input_iterable(root_dir: str,
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
 
-def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
+def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
+
+    if dataset.product.get_reader().OVERWRITE_BEHAVIOR ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
+        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
+    else:
+        delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
+
+def delete_overlapping_data_by_temporal_bounds(dataset: Dataset, data_temporal_span: TimeSpan):
     table_name = dataset.get_table_name()
     with get_db_cursor() as cur:
         sql = f"""
@@ -112,6 +120,34 @@ def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan):
         cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
+def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str):
+    '''
+    This function is designed for inputs where data of the same product type are distributed across multiple files,
+    all covering approximately the same time range. In such scenarios, it is not possible to rely on data span
+    for removing duplicated entries, so the name of the source file is used instead to prevent ingesting
+    the same file multiple times.
+
+    This method is particularly useful for sources like OFFRED data, which includes entries of the same product type
+    across overlapping files.
+    '''
+
+    # sanity check: make sure that a valid source file column name is defined in the reader
+    source_file_column_name = dataset.product.get_reader().SOURCE_FILE_COLUMN_NAME
+    if ((source_file_column_name is None) or
+            (not source_file_column_name in [f.name for f in dataset.product.get_available_fields()])):
+        raise RuntimeError(f" {dataset.product.get_reader().__class__.__name__} "
+                           f" should set SOURCE_FILE_COLUMN_NAME to a valid column name for the source files...")
+
+    table_name = dataset.get_table_name()
+
+    with get_db_cursor() as cur:
+        sql = f"""
+            DELETE 
+            FROM {table_name}
+                WHERE   {source_file_column_name} = '{source_file_name}'
+                """
+        cur.execute(sql)
+        log.debug(f'purged data from {table_name} for source file name {source_file_name}')
 
 def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     """
@@ -154,7 +190,8 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
-    delete_overlapping_data(dataset, data_temporal_span)
+    delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
+
     ingest_df(pd_df, table_name)
     refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
