@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.ilg1a import GraceFOIlg1ADataFileReader
-from masschange.missions import GraceFO
+from masschange.missions import Missions
 from masschange.dataproducts.dataproduct import DataProduct
 
 
@@ -14,7 +14,7 @@ class GraceFOIlg1ADataProduct(DataProduct):
     def get_reader(cls) -> DataFileReader:
         return GraceFOIlg1ADataFileReader()
 
-    mission = GraceFO
+    mission = Missions.GraceFO
     id_suffix = 'ILG1A'
     instrument_ids = {'C', 'D'}
     processing_level = '1A'

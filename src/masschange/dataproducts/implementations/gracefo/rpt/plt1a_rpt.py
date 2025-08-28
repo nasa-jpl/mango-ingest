@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.rpt.plt1a_rpt import GraceFOPlt1ARptDataFileReader
-from masschange.missions import GraceFO
+from masschange.missions import Missions
 from masschange.dataproducts.timeseriesrptdataproduct import TimeSeriesRptDataProduct
 
 
@@ -11,7 +11,7 @@ class GraceFOPlt1ARptDataProduct(TimeSeriesRptDataProduct):
     def get_reader(cls) -> DataFileReader:
         return GraceFOPlt1ARptDataFileReader()
 
-    mission = GraceFO
+    mission = Missions.GraceFO
     id_suffix = 'PLT1A_RPT'
     instrument_ids = {'Y'}
     time_series_interval = timedelta(days=1)
