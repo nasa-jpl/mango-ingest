@@ -20,7 +20,7 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
-from masschange.ingest.utils.reader_overwrite_behavior import ReaderOverwriteBehavior
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -103,7 +103,7 @@ def get_zipped_input_iterable(root_dir: str,
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
 
-    if dataset.product.get_reader().overwrite_behavior() ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
+    if dataset.product.get_reader().OVERWRITE_BEHAVIOR ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
         delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
     else:
         delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
