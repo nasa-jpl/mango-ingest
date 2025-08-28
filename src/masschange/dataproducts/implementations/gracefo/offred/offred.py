@@ -1,12 +1,12 @@
 from datetime import timedelta
 
-from masschange.dataproducts.multipartfiledataproduct import TimeSeriesMultipartFileDataProduct
+from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import GraceFOOffredDataFileReader
 from masschange.missions import GraceFO
 
 
-class GraceFOOffredDataProduct(TimeSeriesMultipartFileDataProduct):
+class GraceFOOffredDataProduct(TimeSeriesDataProduct):
 
     @classmethod
     def get_reader(cls) -> DataFileReader:

@@ -16,11 +16,11 @@ import psycopg2
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.dataset import Dataset
-from masschange.dataproducts.multipartfiledataproduct import MultipartFileDataProduct
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
+from masschange.ingest.utils.reader_overwrite_behavior import ReaderOverwriteBehavior
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -102,7 +102,8 @@ def get_zipped_input_iterable(root_dir: str,
         shutil.rmtree(temp_dir)
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
-    if isinstance(dataset.product, MultipartFileDataProduct):
+
+    if dataset.product.overwrite_behavior() ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
         delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
     else:
         delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
@@ -126,22 +127,24 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
     for removing duplicated entries, so the name of the source file is used instead to prevent ingesting
     the same file multiple times.
 
-    This method is particularly useful for sources like OFFRED data, which includes entries of the same product  type
+    This method is particularly useful for sources like OFFRED data, which includes entries of the same product type
     across overlapping files.
     '''
 
-    # sanity check: make sure that column SOURCE_FILE_COLUMN_NAME exists in the product
-    if not dataset.product.SOURCE_FILE_COLUMN_NAME in [f.name for f in dataset.product.get_available_fields()]:
-        raise RuntimeError(f" {dataset.product.__class__.__name__} does not have a column "
-                           f"'{dataset.product.SOURCE_FILE_COLUMN_NAME}' needed for removal of duplicated data by the "
-                           f"source file name...")
+    # sanity check: make sure that a valid source file column name is defined in the reader
+    source_file_column_name = dataset.product.get_reader().source_file_column_name()
+    if ((not source_file_column_name) or
+            (not source_file_column_name in [f.name for f in dataset.product.get_available_fields()])):
+        raise RuntimeError(f" {dataset.product.get_reader().__class__.__name__} "
+                           f" should overwrite source_file_column_name() to return a valid column name for source files...")
 
     table_name = dataset.get_table_name()
+
     with get_db_cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
-                WHERE   {dataset.product.SOURCE_FILE_COLUMN_NAME} = '{source_file_name}'
+                WHERE   {source_file_column_name} = '{source_file_name}'
                 """
         cur.execute(sql)
         log.debug(f'purged data from {table_name} for source file name {source_file_name}')

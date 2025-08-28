@@ -17,9 +17,21 @@ from masschange.ingest.executor.errors import EmptyProductException
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.utils.arraylikefields import append_flag_fields
+from masschange.ingest.utils.reader_overwrite_behavior import ReaderOverwriteBehavior
 
 
 class DataFileReader(ABC):
+
+    @classmethod
+    def overwrite_behavior(cls):
+        return ReaderOverwriteBehavior.OVERWRITE_SPAN_EXTRACTED_FROM_FNAME
+
+    @classmethod
+    def source_file_column_name(cls):
+        if cls.overwrite_behavior() == ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
+             raise NotImplementedError("Method DataFileReader::source_file_column_name() should be overwritten in a child class "
+                                       "to return a valid column name containing source file name...")
+        return None
 
     @classmethod
     @abstractmethod
