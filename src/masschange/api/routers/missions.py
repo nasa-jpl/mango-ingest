@@ -5,16 +5,16 @@ from fastapi import APIRouter, HTTPException
 
 from masschange.dataproducts.utils import get_dataproduct_classes, get_dataproducts
 from masschange.db.metadata.cache import BulkMetadataCache
-from masschange.missions import Mission
+from masschange.missions import Missions
 
-available_missions: Iterable[Type[Mission]] = {dataset.mission for dataset in get_dataproduct_classes()}
+available_missions: Iterable[Missions] = {dataset.mission for dataset in get_dataproduct_classes()}
 
 router = APIRouter()
 
 
 @router.get('/', tags=['missions', 'metadata'])
 def get_available_missions():
-    return {'data': sorted([mission.id for mission in available_missions])}
+    return {'data': [mission.asdict() for mission in sorted(available_missions, key=lambda m: m.id)]}
 
 
 @router.get('/{mission_id}/products', tags=['missions', 'metadata'])
