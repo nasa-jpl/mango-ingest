@@ -22,13 +22,7 @@ from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
 class DataFileReader(ABC):
     OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_SPAN_EXTRACTED_FROM_FNAME
-
-    @classmethod
-    def source_file_column_name(cls):
-        if cls.OVERWRITE_BEHAVIOR == ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
-             raise NotImplementedError("Method DataFileReader::source_file_column_name() should be overwritten in a child class "
-                                       "to return a valid column name containing source file name...")
-        return None
+    SOURCE_FILE_COLUMN_NAME = None
 
     @classmethod
     @abstractmethod
