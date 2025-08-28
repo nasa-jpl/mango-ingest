@@ -323,6 +323,7 @@ class DataProduct(ABC):
                 """
             cur.execute(sql, {'name': cls.get_full_id(), 'label': cls.get_full_id()})
 
+
     @classmethod
     def overwrite_behavior(self):
         return self.get_reader().overwrite_behavior()
