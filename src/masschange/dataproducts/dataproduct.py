@@ -62,7 +62,7 @@ class DataProduct(ABC):
 
         description = {
             'description': cls.description,
-            'mission': cls.mission.id,
+            'mission': cls.mission.asdict(),
             'id': cls.id_suffix,
             'full_id': cls.get_full_id(),
             'processing_level': cls.processing_level,
