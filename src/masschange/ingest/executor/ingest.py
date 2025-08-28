@@ -103,7 +103,7 @@ def get_zipped_input_iterable(root_dir: str,
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
 
-    if dataset.product.overwrite_behavior() ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
+    if dataset.product.get_reader().overwrite_behavior() ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
         delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
     else:
         delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
