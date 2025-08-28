@@ -1,5 +1,4 @@
 from __future__ import annotations
-from abc import abstractmethod
 from typing import List, Dict
 import numpy as np
 import pandas as pd
@@ -11,11 +10,15 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn,\
     DerivedAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
+
 
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
     """
+    OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME
+    SOURCE_FILE_COLUMN_NAME='source_file_name'
 
     # Names for columns in output table.
     # They are used in multiple  places in the code,
@@ -112,8 +115,9 @@ class OffredFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='utc', np_type='U21', unit=None),
             AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=2, name='obt_Fraction', np_type=np.uint, unit='millisecond'),
-            AsciiDataFileReaderColumn(index=3, name='OBTfType', np_type='U3', unit=None),
+            AsciiDataFileReaderColumn(index=2, name='obt_fraction', np_type=np.uint, unit='millisecond'),
+            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
@@ -122,7 +126,8 @@ class OffredFileReader(AsciiDataFileReader):
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_float, np_type=cls.float_dtype, unit=None,
                                              aggregations=['min', 'max']),
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None)
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None),
+
         ]
 
 
@@ -166,6 +171,8 @@ class OffredFileReader(AsciiDataFileReader):
         for name in [col.name for col in datafile_column_defs[:4]]:
             data_rec[name] = np.tile(data[name], num_data_columns)
 
+        # add source file name to the  array
+        data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
         data_rec[cls.col_name_float] = None
@@ -289,3 +296,4 @@ class OffredFileReader(AsciiDataFileReader):
     def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         # no versions for OFFREAD
         return DatasetVersion("01")
+

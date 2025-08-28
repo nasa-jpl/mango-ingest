@@ -17,9 +17,12 @@ from masschange.ingest.executor.errors import EmptyProductException
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.utils.arraylikefields import append_flag_fields
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
 
 class DataFileReader(ABC):
+    OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_SPAN_EXTRACTED_FROM_FNAME
+    SOURCE_FILE_COLUMN_NAME = None
 
     @classmethod
     @abstractmethod
