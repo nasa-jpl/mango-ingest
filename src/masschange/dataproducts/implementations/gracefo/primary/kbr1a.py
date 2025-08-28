@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.kbr1a import GraceFOKbr1ADataFileReader
-from masschange.missions import GraceFO
+from masschange.missions import Missions
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.utils import get_schema_updates_for_flag_fields
 
@@ -12,7 +12,7 @@ class GraceFOKbr1ADataProduct(TimeSeriesDataProduct):
     def get_reader(cls) -> DataFileReader:
         return GraceFOKbr1ADataFileReader()
 
-    mission = GraceFO
+    mission = Missions.GraceFO
     id_suffix = 'KBR1A'
     instrument_ids = {'C', 'D'}
     time_series_interval = timedelta(milliseconds=100)

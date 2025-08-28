@@ -7,7 +7,7 @@ from typing import Set, Type, Dict, Collection, Union, Mapping
 
 import psycopg2
 
-from masschange.missions import Mission
+from masschange.missions import Mission, Missions
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductTimestampField, TimeSeriesDataProductLocationLookupField
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
@@ -22,7 +22,7 @@ log = logging.getLogger()
 class DataProduct(ABC):
     # TODO: Document this class properly
     description: str = ''
-    mission: Type[Mission]
+    mission: Missions
     id_suffix: str  # TODO: come up with a better name for this - it's used as a full id in the API so need to iron out the nomenclature
     instrument_ids: Set[str]
     processing_level: Union[str, None]

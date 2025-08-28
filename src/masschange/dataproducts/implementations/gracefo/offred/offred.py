@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import GraceFOOffredDataFileReader
-from masschange.missions import GraceFO
+from masschange.missions import Missions
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 
 
@@ -11,7 +11,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     def get_reader(cls) -> DataFileReader:
         return GraceFOOffredDataFileReader()
 
-    mission = GraceFO
+    mission = Missions.GraceFO
     id_suffix = 'OFFRED'
     instrument_ids = {'GF1', 'GF2'}
     # TODO: frequency is different per type of data. Need to figure out optimal common frequency
