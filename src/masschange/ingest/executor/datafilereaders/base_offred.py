@@ -1,5 +1,4 @@
 from __future__ import annotations
-from abc import abstractmethod
 from typing import List, Dict
 import numpy as np
 import pandas as pd
@@ -11,14 +10,14 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn,\
     DerivedAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
-from masschange.ingest.utils.reader_overwrite_behavior import ReaderOverwriteBehavior
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
 
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
     """
-
+    OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME
     SOURCE_FILE_COLUMN_NAME='source_file_name'
 
     # Names for columns in output table.
@@ -297,10 +296,6 @@ class OffredFileReader(AsciiDataFileReader):
     def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         # no versions for OFFREAD
         return DatasetVersion("01")
-
-    @classmethod
-    def overwrite_behavior(cls):
-        return ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME
 
     @classmethod
     def source_file_column_name(cls):
