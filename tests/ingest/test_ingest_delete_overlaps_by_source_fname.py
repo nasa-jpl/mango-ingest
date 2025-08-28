@@ -3,7 +3,6 @@ import unittest
 from tests.ingest.base import IngestTestCaseBase
 from datetime import datetime, timezone
 
-from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.implementations.gracefo.offred.offred import GraceFOOffredDataProduct
 from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import GraceFOOffredDataFileReader
 from masschange.ingest.executor.ingest import ingest_file_to_db

@@ -19,4 +19,3 @@ class GraceFOOffredDataFileReader(OffredFileReader):
         return '^(?P<instrument_id>GF[12])_CX_[A-Z]{3}_\d{1}_\d{9}_\d{4}.zip'
 
 
-

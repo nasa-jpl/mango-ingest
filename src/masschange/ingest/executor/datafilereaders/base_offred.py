@@ -11,11 +11,15 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn,\
     DerivedAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
+from masschange.ingest.utils.reader_overwrite_behavior import ReaderOverwriteBehavior
+
 
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
     """
+
+    SOURCE_FILE_COLUMN_NAME='source_file_name'
 
     # Names for columns in output table.
     # They are used in multiple  places in the code,
@@ -114,7 +118,7 @@ class OffredFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name='obt_fraction', np_type=np.uint, unit='millisecond'),
             AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
-            DerivedAsciiDataFileReaderColumn(name='source_file_name', np_type='U100', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U100', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
@@ -169,7 +173,7 @@ class OffredFileReader(AsciiDataFileReader):
             data_rec[name] = np.tile(data[name], num_data_columns)
 
         # add source file name to the  array
-        data_rec['source_file_name'] [:]= os.path.basename(filename)
+        data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
         data_rec[cls.col_name_float] = None
@@ -293,3 +297,11 @@ class OffredFileReader(AsciiDataFileReader):
     def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         # no versions for OFFREAD
         return DatasetVersion("01")
+
+    @classmethod
+    def overwrite_behavior(cls):
+        return ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME
+
+    @classmethod
+    def source_file_column_name(cls):
+        return cls.SOURCE_FILE_COLUMN_NAME
