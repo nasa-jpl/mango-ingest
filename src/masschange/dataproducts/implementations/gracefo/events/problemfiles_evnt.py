@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from masschange.ingest.executor.datafilereaders.base import DataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.events.problemfiles_evnt import GraceFOProblemFilesEventsDataFileReader
-from masschange.missions import GraceFO
+from masschange.missions import Missions
 from masschange.dataproducts.dataproduct import DataProduct
 
 
@@ -11,7 +11,7 @@ class GraceFOProblemFilesEventsDataProduct(DataProduct):
     def get_reader(cls) -> DataFileReader:
         return GraceFOProblemFilesEventsDataFileReader()
 
-    mission = GraceFO
+    mission = Missions.GraceFO
     id_suffix = 'PROBLEMFILES_EVNT'
     instrument_ids = {'C', 'D'}
     processing_level = None  # Events does not have a processing level.
