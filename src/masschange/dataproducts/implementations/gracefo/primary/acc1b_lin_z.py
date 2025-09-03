@@ -15,7 +15,7 @@ class GraceFOAcc1bLinZDataProduct(TimeSeriesDataProduct):
     id_suffix = 'ACC1B_LIN_Z'
     instrument_ids = {'C','D'}
     time_series_interval = timedelta(seconds=1)
-    processing_level = 'n/a'
+    processing_level = '1B'
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
