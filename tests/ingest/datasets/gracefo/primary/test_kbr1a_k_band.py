@@ -4,7 +4,7 @@ from masschange.dataproducts.implementations.gracefo.primary.kbr1a_k_band import
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFOKbr1AKDatasetReaderTestCase(DatasetReaderTestCaseBase):
+class GraceFOKbr1AKBandDatasetReaderTestCase(DatasetReaderTestCaseBase):
     test_data_path = './tests/input_data/test_unzipped/'
     data_is_zipped = False
     dataset_cls = GraceFOKbr1AKBandDataProduct
