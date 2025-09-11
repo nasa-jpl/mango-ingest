@@ -21,7 +21,7 @@ class GraceFOAcc1bLinZDataProduct(TimeSeriesDataProduct):
     def get_sql_table_schema(cls) -> str:
         return f"""
             time bigint not null,            
-            z double precision not null,
+            lin_z double precision not null,
             
             timestamp timestamptz not null 
         """

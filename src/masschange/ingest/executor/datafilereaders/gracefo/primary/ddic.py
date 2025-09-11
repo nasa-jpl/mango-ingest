@@ -7,7 +7,7 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
 
 
-class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
+class GraceFODdicDataFileReader(AsciiDataFileReader):
     """
     KBR Baseband Frequency
     """
@@ -18,7 +18,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
+        return '^DDIC_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[Y])_(?P<dataset_version>\d{2})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
@@ -30,13 +30,8 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.double, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='k_minus_0_75ka', np_type=np.double, unit='cycles',
-                                      aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=2, name='k_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
-                                      aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
+            AsciiDataFileReaderColumn(index=1, name='ddic', np_type=np.double, unit='cycles',
                                       aggregations=['min', 'max'])
-
         ]
 
     @classmethod

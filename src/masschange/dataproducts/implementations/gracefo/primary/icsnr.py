@@ -14,7 +14,7 @@ class GraceFOIcsnrDataProduct(TimeSeriesDataProduct):
     mission = Missions.GraceFO
     id_suffix = 'ICSNR'
     instrument_ids = {'C','D'}
-    time_series_interval = timedelta(seconds=200)
+    time_series_interval = timedelta(seconds=10)
     processing_level = '1A' # TODO: verify. Level is not in the file name
 
     @classmethod
