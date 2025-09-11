@@ -30,11 +30,11 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.double, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='k_minus_0_75ka', np_type=np.double, unit='??????',
+            AsciiDataFileReaderColumn(index=1, name='k_minus_0_75ka', np_type=np.double, unit='cycles',
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=2, name='k_snr', np_type=np.double, unit=None,
+            AsciiDataFileReaderColumn(index=2, name='k_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit=None,
+            AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max'])
 
         ]

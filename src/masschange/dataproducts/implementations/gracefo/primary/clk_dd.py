@@ -20,7 +20,17 @@ class GraceFOClkDdDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            time bigint not null,
+            time_c_prev bigint not null,
+            clk_c_prev double precision not null,
+            
+            time_c_curr bigint not null,
+            clk_c_curr double precision not null,
+            
+            time_d_prev bigint not null,
+            clk_d_prev double precision not null,
+            
+            time_d_curr bigint not null,
+            clk_d_curr double precision not null,
             
             clc_diff_c double precision not null,
             clc_diff_d double precision not null,
