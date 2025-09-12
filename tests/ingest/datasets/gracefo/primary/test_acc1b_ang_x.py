@@ -8,7 +8,7 @@ class GraceFOAcc1bAngXDatasetReaderTestCase(DatasetReaderTestCaseBase):
     test_data_path = './tests/input_data/test_unzipped/'
     data_is_zipped = False
     dataset_cls = GraceFOAcc1bAngXDataProduct
-    expected_table_names = ['gracefo_acc1b_ang_x_04_c', 'gracefo_acc1b_ang_x_04_d']
+    expected_table_names = ['gracefo_acc1b_ang_x_00_c', 'gracefo_acc1b_ang_x_00_d']
     expected_field_types = [int, float, datetime]
     expected_table_row_counts = [101,101]
     expected_table_first_rows = [
