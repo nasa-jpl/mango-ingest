@@ -26,7 +26,7 @@ class GraceFOAcc1bLinXDataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='x', np_type=np.double, unit='nano-meters/s^2',
+            AsciiDataFileReaderColumn(index=1, name='lin_x', np_type=np.double, unit='nano-meters/s^2',
                                       aggregations=['min', 'max'])
 
         ]

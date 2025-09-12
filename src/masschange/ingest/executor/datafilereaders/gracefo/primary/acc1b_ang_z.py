@@ -26,7 +26,7 @@ class GraceFOAcc1bAngZDataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='z', np_type=np.double, unit='micro-radians/s^2',
+            AsciiDataFileReaderColumn(index=1, name='ang_z', np_type=np.double, unit='micro-radians/s^2',
                                       aggregations=['min', 'max'])
 
         ]
