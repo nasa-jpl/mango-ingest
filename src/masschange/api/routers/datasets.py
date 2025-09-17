@@ -144,23 +144,33 @@ def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, resu
 def _get_fields(dataset, field_names, downsampling_factor):
     fields = set()
     dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+    using_aggregations = dataset.is_time_series_dataset() and downsampling_factor > 1
+    
+    # Track fields that are invalid for aggregation
+    invalid_fields_for_aggregation = []
 
     for field_name in field_names:
         try:
             field = dataset_fields_by_name[field_name]
             if dataset.is_time_series_dataset():
-                using_aggregations = downsampling_factor > 1
-
-                # when downsampling, only pick valid aggregable fields
-                # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
-                # fields value, which would be a loss since it significantly improves the docs
-                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
+                # when downsampling, validate that fields are aggregable
+                if using_aggregations and not field.has_aggregations and not field.is_lookup_field:
+                    invalid_fields_for_aggregation.append(field_name)
+                else:
                     fields.add(field)
             else:
                 fields.add(field)
         except KeyError:
             raise HTTPException(status_code=400,
-                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+                                detail=f'Field "{field_name}" not defined for dataset {dataset.product.get_full_id()} (expected one of {sorted([f.name for f in dataset.product.get_available_fields()])})')
+
+    # If there are invalid fields for aggregation, throw an error
+    if invalid_fields_for_aggregation:
+        available_aggregable_fields = sorted([f.name for f in dataset.product.get_available_fields() 
+                                            if f.has_aggregations or f.is_lookup_field or f.name == dataset.product.TIMESTAMP_COLUMN_NAME])
+        raise HTTPException(status_code=400,
+                           detail=f'Fields {invalid_fields_for_aggregation} are not aggregable and cannot be requested when downsampling is required. '
+                                 f'Available aggregable fields: {available_aggregable_fields}')
 
     #  ensure that timestamp column name is always present in query
     fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])

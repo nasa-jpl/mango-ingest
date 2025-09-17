@@ -270,3 +270,59 @@ def test_statistics_basic():
         path = f'{base_path}/{statistic.value}'
         response = client.get(path)
         assert response.status_code == 200
+
+
+def test_non_aggregable_fields_error_during_downsampling():
+    """Test that non-aggregable fields throw an error when downsampling is required"""
+    product = GraceFOAcc1ADataProduct()
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
+    dataset_data_span = dataset.get_data_span()
+    
+    assert dataset_data_span is not None
+    
+    # Use a large time span that will trigger automatic downsampling
+    test_span_begin = dataset_data_span.begin
+    test_span_end = test_span_begin + timedelta(days=8)  # Large span to force downsampling
+    
+    # Request a non-aggregable field (rcvtime_intg) along with timestamp
+    # This should trigger the error from the GitHub issue
+    path = f'/missions/{product.mission.id}/products/{product.id_suffix}/versions/04/instruments/C/data?' \
+           f'from_isotimestamp={test_span_begin.isoformat()}&to_isotimestamp={test_span_end.isoformat()}' \
+           f'&fields=timestamp&fields=rcvtime_intg'
+    
+    response = client.get(path)
+    
+    # Should return 400 Bad Request with a descriptive error message
+    assert response.status_code == 400
+    content = response.json()
+    assert 'detail' in content
+    assert 'rcvtime_intg' in content['detail']
+    assert 'not aggregable' in content['detail']
+    assert 'Available aggregable fields' in content['detail']
+
+
+def test_aggregable_fields_work_during_downsampling():
+    """Test that aggregable fields work correctly when downsampling is required"""
+    product = GraceFOAcc1ADataProduct()
+    dataset = TimeSeriesDataset(product, DatasetVersion('04'), 'C')
+    dataset_data_span = dataset.get_data_span()
+    
+    assert dataset_data_span is not None
+    
+    # Use a large time span that will trigger automatic downsampling
+    test_span_begin = dataset_data_span.begin
+    test_span_end = test_span_begin + timedelta(days=8)  # Large span to force downsampling
+    
+    # Request only aggregable fields (timestamp and lin_accl_x)
+    path = f'/missions/{product.mission.id}/products/{product.id_suffix}/versions/04/instruments/C/data?' \
+           f'from_isotimestamp={test_span_begin.isoformat()}&to_isotimestamp={test_span_end.isoformat()}' \
+           f'&fields=timestamp&fields=lin_accl_x'
+    
+    response = client.get(path)
+    
+    # Should return 200 OK since all requested fields are aggregable
+    assert response.status_code == 200
+    content = response.json()
+    assert 'data' in content
+    assert 'downsampling_factor' in content
+    assert content['downsampling_factor'] > 1  # Verify downsampling occurred
