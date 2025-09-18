@@ -154,7 +154,7 @@ def _get_fields(dataset, field_names, downsampling_factor):
             field = dataset_fields_by_name[field_name]
             if dataset.is_time_series_dataset():
                 # when downsampling, validate that fields are aggregable
-                if using_aggregations and not field.has_aggregations and not field.is_lookup_field:
+                if using_aggregations and not field.has_aggregations and not field.is_lookup_field and not field.name == dataset.product.TIMESTAMP_COLUMN_NAME:
                     invalid_fields_for_aggregation.append(field_name)
                 else:
                     fields.add(field)
