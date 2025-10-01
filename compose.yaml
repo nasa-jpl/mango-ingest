@@ -2,6 +2,8 @@ version: '3'
 services:
   mango-api:
     build: .
+    depends_on:
+      - mango-db
     networks:
       - mango-backend
     restart: 'always'
@@ -36,6 +38,8 @@ services:
       - $PERSIST_LOCATION:/home/postgres/pgdata/data
   mango-crawler:
     build: .
+    depends_on:
+      - mango-db
     networks:
       - mango-backend
     restart: 'always'
@@ -53,12 +57,14 @@ services:
     command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
     build: .
+    depends_on:
+      - mango-db
     networks:
       - mango-backend
     restart: 'always'
     deploy:
       mode: replicated
-      replicas: 8
+      replicas: 1
     environment:
       - SOURCE_DATA_ROOT
       - LOGS_ROOT=/logs
@@ -73,6 +79,8 @@ services:
     command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
   mango-ensure:
     build: .
+    depends_on:
+      - mango-db
     networks:
       - mango-backend
     environment:
