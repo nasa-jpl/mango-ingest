@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.1
+FROM registry.access.redhat.com/ubi8/python-39
 MAINTAINER alexdunnjpl "Alexander Dunn, Jet Propulsion Laboratory"
 LABEL description="Gravity Missions Analysis Tool Backend Systems"
 
@@ -12,6 +12,7 @@ ENV TSDB_DATABASE='masschange'
 # this requires hardcoding due to use in RUN [..] and the inability to use tilde expansion in some necessary contexts
 
 # Install core system dependencies
+USER root
 ENV HOME='/home/root'
 RUN mkdir $HOME \
   && mkdir /app \
