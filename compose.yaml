@@ -17,12 +17,10 @@ services:
       - API_ROOT_PATH
       - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
@@ -56,12 +54,10 @@ services:
     restart: 'always'
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
@@ -81,12 +77,10 @@ services:
       replicas: 1
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
@@ -99,12 +93,9 @@ services:
     networks:
       - mango-backend
     environment:
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - $HOST_PERSIST_LOGS_ROOT:/logs
     user: root
     command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/ensure.py
 
