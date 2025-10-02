@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 
-def configure_root_logger(log_filepath: Optional[Union[Path, str]] = None, log_level: int = logging.DEBUG,
+def configure_root_logger(log_filepath: Optional[Union[Path, str]] = None, log_level: int = logging.INFO,
                           log_format: str = f'%(asctime)s [%(levelname)s] - %(message)s'):
     logging.root.setLevel(log_level)
     logging.root.handlers.clear()
