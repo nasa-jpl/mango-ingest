@@ -3,7 +3,10 @@ services:
   mango-api:
     build: .
     depends_on:
-      - mango-db
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
@@ -27,6 +30,11 @@ services:
   mango-db:
     user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      retries: 600
+      timeout: 10s
     networks:
       - mango-backend
     restart: always
@@ -39,7 +47,10 @@ services:
   mango-crawler:
     build: .
     depends_on:
-      - mango-db
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
@@ -58,7 +69,10 @@ services:
   mango-ingest-worker:
     build: .
     depends_on:
-      - mango-db
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
@@ -80,7 +94,8 @@ services:
   mango-ensure:
     build: .
     depends_on:
-      - mango-db
+      mango-db:
+        condition: service_healthy
     networks:
       - mango-backend
     environment:
