@@ -36,4 +36,7 @@ def configure_root_logger(log_filepath: Optional[Union[Path, str]] = None, log_l
             logging.error(f'failed to add log handler for path due to permission error: {log_filepath}')
 
 def get_log_filepath(service_name: Union[Path, str]) -> Path:
-    return Path(os.environ.get('LOGS_ROOT') or '/tmp') / service_name / 'latest.log'
+    log_dir = Path('/logs') / service_name
+    os.makedirs(log_dir, exist_ok=True)
+    log_filepath = log_dir / 'latest.log'
+    return log_filepath
