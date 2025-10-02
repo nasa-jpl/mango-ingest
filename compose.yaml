@@ -26,7 +26,7 @@ services:
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
-    command: conda run -n masschange /app/masschange/start_api.sh
+    command: conda run --no-capture-output -n masschange /app/masschange/start_api.sh
   mango-db:
     user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
@@ -65,7 +65,7 @@ services:
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
     build: .
     depends_on:
@@ -90,7 +90,7 @@ services:
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
   mango-ensure:
     build: .
     depends_on:
@@ -106,7 +106,7 @@ services:
     volumes:
       - $HOST_PERSIST_LOGS_ROOT:/logs
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/db/ensure.py
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/ensure.py
 
 networks:
   mango-backend:
