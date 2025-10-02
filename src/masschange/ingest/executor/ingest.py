@@ -27,7 +27,7 @@ from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_datase
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.db.metadata.update import update_metadata
-from masschange.utils.logging import configure_root_logger, get_log_filepath
+from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
 
@@ -184,8 +184,7 @@ def get_args() -> argparse.Namespace:
 if __name__ == '__main__':
     args = get_args()
 
-    log_filepath = get_log_filepath(service_name='ingest')
-    configure_root_logger(log_filepath=log_filepath)
+    configure_root_logger(log_filepath=None)
 
     database_name = os.environ['TSDB_DATABASE']
     ensure_database_exists(database_name)
