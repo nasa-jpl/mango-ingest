@@ -1,3 +1,5 @@
+mkdir -p /logs/api
+
 #Start API server
 if [[ "${API_ENABLE_SSL:-0}" != "0" ]]; then
   uvicorn masschange.api.app:app \
