@@ -22,7 +22,7 @@ services:
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
+      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
@@ -43,7 +43,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $PERSIST_LOCATION:/home/postgres/pgdata/data
+      - $TSDB_PERSIST_ROOT:/home/postgres/pgdata/data
   mango-crawler:
     build: .
     depends_on:
@@ -61,7 +61,7 @@ services:
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
+      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
@@ -86,7 +86,7 @@ services:
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
+      - $HOST_PERSIST_LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
@@ -103,9 +103,8 @@ services:
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
-      - LOGS_ROOT=/logs
     volumes:
-      - $LOGS_ROOT:/logs
+      - $HOST_PERSIST_LOGS_ROOT:/logs
     user: root
     command: conda run -n masschange python /app/masschange/src/masschange/db/ensure.py
 
