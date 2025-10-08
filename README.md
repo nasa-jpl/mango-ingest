@@ -1,5 +1,8 @@
-# gma-data-backend
-Gravity Missions Analysis Tool data ingestion and API
+# MANGO Ingest
+Monitoring and ANalysis for Gravity Operations - Data ingestion and API
+
+## Contribution
+This repository is publicly readable, but in its current early stage of development is specialised to our internal use-case.  As such, we are not accepting external contributions at this time.
 
 ## Prerequisites
 - a running TimescaleDB instance
