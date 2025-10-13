@@ -7,6 +7,10 @@ import logging
 from importlib import resources
 from typing import Union, Any, List
 
+#BEGIN STOPGAP - edunn 20251023
+resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
+content = json.load(resource)
+#END STOPGAP
 
 class ProductFieldConfiguration:
     """
@@ -49,20 +53,23 @@ class ProductFieldConfiguration:
         #  Probably just wrap the file in a class which checks the creation/modification timestamp every time it's
         #  accessed and updates itself if that timestamp has changed
 
-        resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
-        content = json.load(resource)
+        # resource, content moved to global scope as performance stopgap until above implemented - edunn 20251013
+        # resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
+        # content = json.load(resource)
 
         try:
             product_properties = content[product.id_suffix]['properties']
         except KeyError as err:
-            logging.warning(f'Failed to resolve product "{product.id_suffix}" in "{resource.name}": {err}')
+            #TODO: fix noisy log
+            # logging.warning(f'Failed to resolve product "{product.id_suffix}" in "{resource.name}": {err}')
             return []
 
         try:
             property_thresholds = next(p for name, p in product_properties.items() if name == field.name)['thresholds']
         except (KeyError, StopIteration) as err:
-            logging.warning(
-                f'Failed to resolve property thresholds for "{field.name}" in product "{product.id_suffix}" in "{resource.name}": {err}')
+            #TODO: fix noisy log
+            # logging.warning(
+            #     f'Failed to resolve property thresholds for "{field.name}" in product "{product.id_suffix}" in "{resource.name}": {err}')
             return []
 
         result = []
