@@ -69,7 +69,7 @@ class DataProductField(ABC):
         raise NotImplementedError(f'python_type has not been implemented for {self.__class__} with name {self.name}')
 
     @property
-    def is_aggregable(self) -> bool:
+    def is_valid_statistical_target(self) -> bool:
         """Return whether statistical aggregation is supported for this field"""
         supported_types = {int, float}
         return self.python_type in supported_types and not self.is_constant
