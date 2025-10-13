@@ -160,7 +160,7 @@ def _get_fields(dataset, field_names, downsampling_factor):
                 fields.add(field)
         except KeyError:
             raise HTTPException(status_code=400,
-                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
+                                detail=f'Field "{field_name}" not defined for dataset {dataset.product.get_full_id()} (expected one of {sorted([f.name for f in dataset.product.get_available_fields()])})')
 
     #  ensure that timestamp column name is always present in query
     fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])
