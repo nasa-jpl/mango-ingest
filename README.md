@@ -25,6 +25,9 @@ New env vars have been created in the docker-compose to handle user mapping.  Th
 
 In bash, these may be set as expected.  On the staging server, we are currently limited to use of tcsh, which will require `setenv <key> <value>` syntax instead.
 
+## Docker Quickstart (in-progress - populate as part of ops server replacement deployment - edunn 20251002)
+...
+
 ## Docker Quickstart (OUTDATED)
 1. Clone repository
 2. Build image with `docker build -t masschange path/to/repository`
@@ -34,6 +37,11 @@ In bash, these may be set as expected.  On the staging server, we are currently 
 5. Confirm presence of ingested data in output root directory
 
 ## Dev Quickstart
+
+[!IMPORTANT]
+If using Rancher Desktop to support dockerized deployment on a development machine, it is critical that the env vars
+specifying bind-mounted paths used for input and staging be located under allowed paths (ex. /tmp/rancher-desktop, under
+default settings) See: https://stackoverflow.com/a/78782207
 
 ### Dependencies
  - `conda`

@@ -2,6 +2,11 @@ version: '3'
 services:
   mango-api:
     build: .
+    depends_on:
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
@@ -12,19 +17,22 @@ services:
       - API_ROOT_PATH
       - API_ENABLE_SSL
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $SSL_CERTS_PATH:/certs
     user: root
-    command: conda run -n masschange /app/masschange/start_api.sh
+    command: conda run --no-capture-output -n masschange /app/masschange/start_api.sh
   mango-db:
     user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      retries: 600
+      timeout: 10s
     networks:
       - mango-backend
     restart: always
@@ -33,58 +41,63 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $PERSIST_LOCATION:/home/postgres/pgdata/data
+      - $TSDB_PERSIST_ROOT:/home/postgres/pgdata/data
   mango-crawler:
     build: .
+    depends_on:
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
     build: .
+    depends_on:
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
     networks:
       - mango-backend
     restart: 'always'
     deploy:
       mode: replicated
-      replicas: 8
+      replicas: 1
     environment:
       - SOURCE_DATA_ROOT
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $LOGS_ROOT:/logs
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
   mango-ensure:
     build: .
+    depends_on:
+      mango-db:
+        condition: service_healthy
     networks:
       - mango-backend
     environment:
-      - LOGS_ROOT=/logs
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
-      - LOGS_ROOT=/logs
-    volumes:
-      - $LOGS_ROOT:/logs
     user: root
-    command: conda run -n masschange python /app/masschange/src/masschange/db/ensure.py
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/ensure.py
 
 networks:
   mango-backend:
