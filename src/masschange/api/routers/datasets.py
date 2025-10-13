@@ -211,7 +211,7 @@ async def get_statistic_for_field(
         field = dataset.product.get_field_by_name(field_name)
     except ValueError as err:
         raise HTTPException(status_code=400, detail=err)
-    if not field.is_aggregable:
+    if not field.is_valid_statistical_target:
         reason = "Field is const-valued" if field.is_constant else f"Field is of unsupported type {field.python_type.__name__}"
         raise HTTPException(status_code=400,detail=f'Cannot request statistical aggregate - {reason}')
 
