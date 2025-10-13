@@ -7,6 +7,10 @@ import logging
 from importlib import resources
 from typing import Union, Any, List
 
+#BEGIN STOPGAP - edunn 20251023
+resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
+content = json.load(resource)
+#END STOPGAP
 
 class ProductFieldConfiguration:
     """
@@ -49,8 +53,9 @@ class ProductFieldConfiguration:
         #  Probably just wrap the file in a class which checks the creation/modification timestamp every time it's
         #  accessed and updates itself if that timestamp has changed
 
-        resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
-        content = json.load(resource)
+        # resource, content moved to global scope as performance stopgap until above implemented - edunn 20251013
+        # resource = resources.open_text('masschange.static', 'QUALITY_CHECKS.json')
+        # content = json.load(resource)
 
         try:
             product_properties = content[product.id_suffix]['properties']
