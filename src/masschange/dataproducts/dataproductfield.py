@@ -81,6 +81,10 @@ class DataProductField(ABC):
     def has_aggregations(self):
         return len(self.aggregations) > 0
 
+    @property
+    def is_aggregable(self) -> bool:
+        return self.has_aggregations or self.is_lookup_field
+
     def __hash__(self):
         return self.name.__hash__()
 
