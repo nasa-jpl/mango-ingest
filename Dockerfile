@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.1
+FROM registry.access.redhat.com/ubi8/python-39
 MAINTAINER alexdunnjpl "Alexander Dunn, Jet Propulsion Laboratory"
 LABEL description="Gravity Missions Analysis Tool Backend Systems"
 
@@ -12,6 +12,7 @@ ENV TSDB_DATABASE='masschange'
 # this requires hardcoding due to use in RUN [..] and the inability to use tilde expansion in some necessary contexts
 
 # Install core system dependencies
+USER root
 ENV HOME='/home/root'
 RUN mkdir $HOME \
   && mkdir /app \
@@ -41,21 +42,7 @@ RUN ["/bin/bash", "--login", "-c", "$HOME/miniconda/condabin/conda init"]
 
 # Set application env vars
 ENV MASSCHANGE_REPO_ROOT=/app/masschange
-ENV MASSCHANGE_DATA_ROOT=/data
-ENV MASSCHANGE_INGEST_LOGS_ROOT=/data/logs
-ENV MASSCHANGE_INGEST_LOGS_ALIAS=/var/log/masschange-ingest
-ENV MASSCHANGE_API_LOGS_ROOT=/var/log/masschange-api
 ENV MASSCHANGE_CONFIG_ROOT=/home/root/.config/masschange
-
-# Create application directories
-USER 0
-RUN mkdir -p /data $MASSCHANGE_API_LOGS_ROOT \
- && chown -R root /data $MASSCHANGE_API_LOGS_ROOT \
- && chmod -R a+w /data
-
-
-# Create link to persistent ingest logs at expected log location
-RUN ln -s $MASSCHANGE_INGEST_LOGS_ROOT $MASSCHANGE_INGEST_LOGS_ALIAS
 
 # Copy application files
 USER 0
