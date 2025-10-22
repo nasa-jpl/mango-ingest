@@ -24,6 +24,6 @@ class GraceFOIcsnrDataProduct(TimeSeriesDataProduct):
             k_minus_0_75ka double precision not null,
             k_snr double precision not null,
             ka_snr double precision not null,
-            
+            subset_version VARCHAR(2) not null,
             timestamp timestamptz not null 
         """
