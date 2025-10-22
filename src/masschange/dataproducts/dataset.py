@@ -246,8 +246,9 @@ class Dataset:
             except psycopg2.errors.UndefinedColumn as err:
                 logging.error(f'Query failed due to mismatch between dataset definition and database schema: {err}')
                 available_columns = list_db_table_columns(table_name)
-                missing_columns = {f.name for f in self.product.get_available_fields() if
-                                   f.name not in available_columns and not f.is_lookup_field}
+                lookup_field_names = {f.name for f in fields if f.is_lookup_field}
+                missing_columns = {column_name for column_name in column_names if
+                                   column_name not in available_columns and column_name not in lookup_field_names}
                 raise ValueError(
                     f'Some fields are currently unavailable: {missing_columns}. Please remove these fields from your request and try again.')
             except Exception as err:
