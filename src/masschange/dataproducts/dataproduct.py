@@ -176,6 +176,7 @@ class DataProduct(ABC):
         timestamp_field: DataProductField = TimeSeriesDataProductTimestampField(cls.TIMESTAMP_COLUMN_NAME,
                                                                                           'n/a')
 
+        # special fields include timestamp, lookup fields, and expansion of array-like fields into their elements
         special_fields = {timestamp_field}
         if cls.LOCATION_COLUMN_NAME not in [field.name for field in cls.get_reader().get_fields()]:
             # GNV products have an inherent location field.  Other products require the addition of a field for the
@@ -185,6 +186,7 @@ class DataProduct(ABC):
                 'Latitude/Longitude (EPSG:4326)')
             special_fields.add(location_lookup_field)
 
+        # derive separate subfields from array-like fields
         for field in cls.get_reader().get_fields():
             if isinstance(field, ArrayLikeAsciiDataFileReaderColumn):
                 special_fields.update(generate_array_of_fields(field.name, field.array_size))
