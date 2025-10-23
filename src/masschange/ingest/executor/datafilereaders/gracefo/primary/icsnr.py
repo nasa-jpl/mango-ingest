@@ -1,10 +1,13 @@
 from collections.abc import Collection
 from datetime import datetime, timedelta
-
+import os
+import re
 import numpy as np
-
+import pandas as pd
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
-from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.base_columns import (AsciiDataFileReaderColumn,
+                                                                     DerivedAsciiDataFileReaderColumn)
+from masschange.dataproducts.datasetversion import DatasetVersion
 
 
 class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
@@ -18,13 +21,12 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
+        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{2})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
         # no-match pattern, because the data are never zipped
         return '$^'
-
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
@@ -35,8 +37,8 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=2, name='k_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
-                                      aggregations=['min', 'max'])
-
+                                      aggregations=['min', 'max']),
+            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type='U2', unit=None)
         ]
 
     @classmethod
@@ -47,3 +49,29 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
     def get_header_line_count(cls, filename: str) -> int:
         # No header in the file
         return 0
+
+    @classmethod
+    def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
+        # no versions, use default version 00
+        return DatasetVersion("00")
+
+
+    @classmethod
+    def extract_subset_version(cls, filepath: str) -> DatasetVersion:
+        """Extract subset version from input file name"""
+        filename = os.path.split(filepath)[-1]
+        pattern = cls.get_applicable_regex_pattern(filename)
+        dataset_version_id = re.search(pattern, filename).group('subset_version')
+        return DatasetVersion(dataset_version_id)
+
+    @classmethod
+    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+        # Overwrite the parent's method to add 'subset_version' column
+        df = super().load_data_from_file(filepath)
+
+        # insert column before the last column (timestamp)
+        insertion_index = len(df.columns) - 1
+        subset_ver = cls.extract_subset_version(filepath)
+        df.insert(loc=insertion_index, column="subset_version", value=subset_ver)
+
+        return df
