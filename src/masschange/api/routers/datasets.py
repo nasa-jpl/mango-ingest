@@ -102,7 +102,11 @@ async def get_data(
         to_isotimestamp = to_isotimestamp.replace(tzinfo=timezone.utc)
 
     filters = instantiate_filters(product, filter)
-    downsampling_factor = _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp)
+
+    try:
+        downsampling_factor = _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     fields = _get_fields(dataset, downsampling_factor, requested_field_names or None)
     aggregation_level = _get_aggregation_level(product, downsampling_factor)
