@@ -13,7 +13,8 @@ from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.db.conn import get_db_cursor
-from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_conditions, prepare_where_clause_parameters
+from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, \
+    prepare_where_clause_conditions, prepare_where_clause_parameters
 
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
@@ -43,7 +44,8 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
     version = DatasetVersion(version_id)
 
     if instrument_id not in product.instrument_ids:
-        raise HTTPException(status_code=400, detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
+        raise HTTPException(status_code=400,
+                            detail=f'Provided instrument_id "{instrument_id}" not in allowed values ({product.instrument_ids})')
 
     return DatasetFactory.create(product, version, instrument_id)
 
@@ -63,13 +65,15 @@ def instantiate_filters(product: TimeSeriesDataProduct,
 
     return filters
 
+
 @router.get('/versions/{version_id}/instruments/{instrument_id}', tags=['metadata'])
 async def describe_dataset_instance(dataset: Annotated[Dataset, Depends(dataset_parameters)]):
     metadata = dataset.product.describe(exclude_available_versions=True)
 
     dataset_specific_metadata = dataset.get_metadata_properties()
     if dataset_specific_metadata is None:
-        raise HTTPException(status_code=404, detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
+        raise HTTPException(status_code=404,
+                            detail=f'Could not resolve metadata for dataset {dataset.get_table_name()} - dataset may not exist or its metadata may be missing')
     additional_fields_metadata = dataset_specific_metadata.pop('channel_id_enums')
     for field_name, enumeration in additional_fields_metadata.items():
         field_metadata = next(f for f in metadata['available_fields'] if f['name'] == field_name)
@@ -85,6 +89,8 @@ async def get_data(
         to_isotimestamp: datetime = datetime(2022, 1, 1, 12, 1, tzinfo=timezone.utc),
         fields: Annotated[List[str], Query()] = None,
         downsampling_factor: int = None,
+        respect_data_limit: Annotated[bool, Query(
+            description='Set false to ignore limits on the data count returned in a single request, forcing the requested downsampling_factor')] = True,
         filter: Annotated[List[str], Query()] = None
 ):
     requested_field_names = fields or []
@@ -110,7 +116,8 @@ async def get_data(
             fields=fields,
             aggregation_level=aggregation_level,
             resolve_location=resolve_location,
-            filters=filters
+            filters=filters,
+            limit_data_span=respect_data_limit,
         )
 
         query_elapsed_ms = int((datetime.now() - query_start).total_seconds() * 1000)
@@ -122,23 +129,27 @@ async def get_data(
     return _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp,
                                       results, query_elapsed_ms, downsampling_factor)
 
-def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, results, query_elapsed_ms, downsampling_factor ):
+
+def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, results, query_elapsed_ms,
+                               downsampling_factor):
     data = {
-            'from_isotimestamp': from_isotimestamp.isoformat(),
-            'to_isotimestamp': to_isotimestamp.isoformat(),
-            'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
-            'data_count': len(results),
-            'query_elapsed_ms': query_elapsed_ms,
-            'data': results,
-            'downsampling_factor': downsampling_factor}
+        'from_isotimestamp': from_isotimestamp.isoformat(),
+        'to_isotimestamp': to_isotimestamp.isoformat(),
+        'data_begin': None if len(results) < 1 else results[0][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+        'data_end': None if len(results) < 1 else results[-1][product.TIMESTAMP_COLUMN_NAME].isoformat(),
+        'data_count': len(results),
+        'query_elapsed_ms': query_elapsed_ms,
+        'data': results,
+        'downsampling_factor': downsampling_factor}
     if product.is_time_series_dataproduct():
         aggregation_level = _get_aggregation_level(product, downsampling_factor)
         data['nominal_data_interval_seconds'] = product.get_nominal_data_interval(aggregation_level).total_seconds()
 
     return data
 
-def _get_fields(dataset: TimeSeriesDataset, downsampling_factor: int, requested_field_names: Iterable[str] = None) -> Collection[DataProductField]:
+
+def _get_fields(dataset: TimeSeriesDataset, downsampling_factor: int, requested_field_names: Iterable[str] = None) -> \
+Collection[DataProductField]:
     dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
     requested_field_names = requested_field_names or []
     return_all_default_fields = len(requested_field_names) == 0  # if no field names given, return everything available
@@ -148,14 +159,16 @@ def _get_fields(dataset: TimeSeriesDataset, downsampling_factor: int, requested_
 
     if return_all_default_fields:
         fields.update({field for field in dataset.product.get_available_fields() if (
-            not field.is_constant
-            and not field.is_lookup_field # omit expensive lookup fields when not explicitly asked for
-            and (field.is_aggregable or not using_aggregations) # if fields not specified, respond with all available fields regardless of whether aggregation is required
+                not field.is_constant
+                and not field.is_lookup_field  # omit expensive lookup fields when not explicitly asked for
+                and (field.is_aggregable or not using_aggregations)
+        # if fields not specified, respond with all available fields regardless of whether aggregation is required
         )})
     # else validate requested field_names as requested fields are accumulated
     # exclude timestamp from validation- it is never aggregable but must always be present
     else:
-        field_names_to_validate = sorted(fn for fn in requested_field_names if fn != dataset.product.TIMESTAMP_COLUMN_NAME)
+        field_names_to_validate = sorted(
+            fn for fn in requested_field_names if fn != dataset.product.TIMESTAMP_COLUMN_NAME)
 
         for field_name in field_names_to_validate:
             try:
@@ -173,11 +186,13 @@ def _get_fields(dataset: TimeSeriesDataset, downsampling_factor: int, requested_
 
     return fields
 
+
 def _get_aggregation_level(product, downsampling_factor):
     if product.is_time_series_dataproduct():
         return product.get_available_downsampling_factors().index(downsampling_factor)
     else:
         return 0  # always full resolution
+
 
 def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp):
     if dataset.is_time_series_dataset():
@@ -195,6 +210,7 @@ def _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to
         return downsampling_factor
     else:
         return 1
+
 
 SupportedStatisticsEnum = StrEnum('SupportedStatistics',
                                   sorted({'avg', 'min', 'max', 'count', 'stddev_pop', 'var_pop'}))
@@ -219,7 +235,7 @@ async def get_statistic_for_field(
         raise HTTPException(status_code=400, detail=err)
     if not field.is_valid_statistical_target:
         reason = "Field is const-valued" if field.is_constant else f"Field is of unsupported type {field.python_type.__name__}"
-        raise HTTPException(status_code=400,detail=f'Cannot request statistical aggregate - {reason}')
+        raise HTTPException(status_code=400, detail=f'Cannot request statistical aggregate - {reason}')
 
     # validate temporal span
     max_query_temporal_span = timedelta(days=31)
@@ -273,4 +289,3 @@ async def get_statistic_for_field(
         'result': result[0],
         'query_elapsed_ms': query_elapsed_ms,
     }
-
