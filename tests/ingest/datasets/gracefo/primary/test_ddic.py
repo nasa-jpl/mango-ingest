@@ -9,11 +9,11 @@ class GraceFODdicDatasetReaderTestCase(DatasetReaderTestCaseBase):
     data_is_zipped = False
     dataset_cls = GraceFODdicDataProduct
     expected_table_names = ['gracefo_ddic_00_y']
-    expected_field_types = [float, float, datetime]
-    expected_table_row_counts = [101,101]
+    expected_field_types = [float, float, str, datetime]
+    expected_table_row_counts = [200]
     expected_table_first_rows = [
-        (738849609.0, -0.00024859607219696045,
-         datetime(2023, 6, 1, 0, 0, 9, tzinfo=timezone.utc))
+        (739022409.0, -0.00019782409071922302, '00',
+         datetime(2023, 6, 3, 0, 0, 9, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()
