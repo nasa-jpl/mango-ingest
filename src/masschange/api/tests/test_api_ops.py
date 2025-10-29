@@ -47,7 +47,7 @@ channel_id_additional_parameters = {
 }
 
 
-@pytest.mark.parametrize("ds", permute_all_datasets())
+@pytest.mark.parametrize("ds", permute_all_datasets(), ids=lambda ds: ds.get_table_name())
 def test_gracefo_data_select(ds: Dataset):
     data_span = ds.get_data_span()
     test_span_begin = data_span.begin if data_span is not None else datetime(2000, 1, 1)
@@ -65,7 +65,9 @@ def test_gracefo_data_select(ds: Dataset):
     content = response.json()
 
     if response.status_code != 200:
-        print(json.dumps(content))
+        # provide descriptions for details hidden by parametrization
+        logging.error(f'Non-200 response for dataset {ds.product.get_full_id()} version {ds.version} instrument {ds.instrument_id} at path {path}')
+        logging.error(f'{content=}')
     assert response.status_code == 200
 
     # Omit variable-data-span-datasets from the test as the expected data count is unknown
@@ -127,7 +129,10 @@ def test_gracefo_data_stats(ds: TimeSeriesDataset):
         content = response.json()
 
         if response.status_code != 200:
-            print(json.dumps(content))
+            # provide descriptions for details hidden by parametrization
+            logging.error(
+                f'Non-200 response for dataset {ds.product.get_full_id()} version {ds.version} instrument {ds.instrument_id} field {field.name} at path {path}')
+            logging.error(f'{content=}')
         assert response.status_code == 200
 
         expected_attributes = ['from_isotimestamp', 'to_isotimestamp', 'field', 'statistic', 'result', 'query_elapsed_ms']
@@ -219,7 +224,7 @@ def test_product_metadata_basic():
                 assert agg['type'] in recognised_aggregation_types
 
 
-@pytest.mark.parametrize("ds", permute_all_datasets())
+@pytest.mark.parametrize("ds", permute_all_datasets(), ids=lambda ds: ds.get_table_name())
 def test_dataset_metadata(ds: TimeSeriesDataset):
     path = f'/missions/{ds.product.mission.id}/products/{ds.product.id_suffix}/versions/{ds.version}/instruments/{ds.instrument_id}'
     response = client.get(path)
