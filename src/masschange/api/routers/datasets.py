@@ -1,6 +1,7 @@
+from collections.abc import Collection
 from datetime import datetime, timedelta, date, time, timezone
 import logging
-from typing import Annotated, List, Union, Dict
+from typing import Annotated, List, Union, Iterable
 from psycopg2.extensions import cursor as Cursor
 import psycopg2
 from fastapi import APIRouter, HTTPException, Query, Path
@@ -10,6 +11,7 @@ from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
 from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_conditions, prepare_where_clause_parameters
 
@@ -85,6 +87,7 @@ async def get_data(
         downsampling_factor: int = None,
         filter: Annotated[List[str], Query()] = None
 ):
+    requested_field_names = fields or []
     product = dataset.product
 
     if from_isotimestamp.tzinfo is None:
@@ -92,18 +95,12 @@ async def get_data(
     if to_isotimestamp.tzinfo is None:
         to_isotimestamp = to_isotimestamp.replace(tzinfo=timezone.utc)
 
-    # TODO: Test this conditional
-    if fields == None:
-        fields = sorted(f.name for f in product.get_available_fields() if not f.is_constant and not f.is_lookup_field)
-
     filters = instantiate_filters(product, filter)
-    field_names = fields
     downsampling_factor = _get_downsampling_factor(dataset, downsampling_factor, from_isotimestamp, to_isotimestamp)
 
-    fields = _get_fields(dataset, field_names, downsampling_factor)
+    fields = _get_fields(dataset, downsampling_factor, requested_field_names or None)
     aggregation_level = _get_aggregation_level(product, downsampling_factor)
-    dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
-    resolve_location = dataset_fields_by_name.get(dataset.product.LOCATION_COLUMN_NAME) in fields
+    resolve_location = dataset.product.LOCATION_COLUMN_NAME in requested_field_names
 
     try:
         query_start = datetime.now()
@@ -141,29 +138,38 @@ def _get_results_with_metadata(product, from_isotimestamp, to_isotimestamp, resu
 
     return data
 
-def _get_fields(dataset, field_names, downsampling_factor):
-    fields = set()
+def _get_fields(dataset: TimeSeriesDataset, downsampling_factor: int, requested_field_names: Iterable[str] = None) -> Collection[DataProductField]:
     dataset_fields_by_name = {field.name: field for field in dataset.product.get_available_fields()}
+    requested_field_names = requested_field_names or []
+    return_all_default_fields = len(requested_field_names) == 0  # if no field names given, return everything available
+    using_aggregations = dataset.is_time_series_dataset() and downsampling_factor > 1
+    fields = set()
+    fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])  # timestamp must always be included
 
-    for field_name in field_names:
-        try:
-            field = dataset_fields_by_name[field_name]
-            if dataset.is_time_series_dataset():
-                using_aggregations = downsampling_factor > 1
+    if return_all_default_fields:
+        fields.update({field for field in dataset.product.get_available_fields() if (
+            not field.is_constant
+            and not field.is_lookup_field # omit expensive lookup fields when not explicitly asked for
+            and (field.is_aggregable or not using_aggregations) # if fields not specified, respond with all available fields regardless of whether aggregation is required
+        )})
+    # else validate requested field_names as requested fields are accumulated
+    # exclude timestamp from validation- it is never aggregable but must always be present
+    else:
+        field_names_to_validate = sorted(fn for fn in requested_field_names if fn != dataset.product.TIMESTAMP_COLUMN_NAME)
 
-                # when downsampling, only pick valid aggregable fields
-                # silently dropping non-aggregable fields isn't ideal, but the alternative is to lose the API default
-                # fields value, which would be a loss since it significantly improves the docs
-                if not using_aggregations or field.has_aggregations or field.is_lookup_field:
+        for field_name in field_names_to_validate:
+            try:
+                field = dataset_fields_by_name[field_name]
+
+                if using_aggregations and not field.is_aggregable:
+                    raise HTTPException(status_code=400,
+                                        detail=f'Specified/required downsampling factor "{downsampling_factor}" is >1, but field {field_name} cannot be aggregated')
+                else:
                     fields.add(field)
-            else:
-                fields.add(field)
-        except KeyError:
-            raise HTTPException(status_code=400,
-                                detail=f'Field "{field_name}" not defined for dataset {product.get_full_id()} (expected one of {sorted([f.name for f in product.get_available_fields()])})')
 
-    #  ensure that timestamp column name is always present in query
-    fields.add(dataset_fields_by_name[dataset.product.TIMESTAMP_COLUMN_NAME])
+            except KeyError:
+                raise HTTPException(status_code=400,
+                                    detail=f'Field "{field_name}" not defined for dataset {dataset.product.get_full_id()} (expected one of {sorted([f.name for f in dataset.product.get_available_fields()])})')
 
     return fields
 
@@ -211,7 +217,7 @@ async def get_statistic_for_field(
         field = dataset.product.get_field_by_name(field_name)
     except ValueError as err:
         raise HTTPException(status_code=400, detail=err)
-    if not field.is_aggregable:
+    if not field.is_valid_statistical_target:
         reason = "Field is const-valued" if field.is_constant else f"Field is of unsupported type {field.python_type.__name__}"
         raise HTTPException(status_code=400,detail=f'Cannot request statistical aggregate - {reason}')
 
