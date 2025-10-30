@@ -3,6 +3,8 @@ import unittest
 from masschange.dataproducts.utils import get_dataproduct_classes
 from masschange.ingest.executor.datafilereaders.baseevents import EventsFileReader
 from masschange.ingest.executor.datafilereaders.base_offred import OffredFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.ddic import GraceFODdicDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.icsnr import GraceFOIcsnrDataFileReader
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
@@ -23,8 +25,9 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
 
     def test_mandatory_filename_regex_capture_groups(self):
         dataset_implementations = get_dataproduct_classes()
+        readers_without_versions = (OffredFileReader, GraceFODdicDataFileReader, GraceFOIcsnrDataFileReader)
         for implementation in dataset_implementations:
-            if isinstance(implementation.get_reader(), OffredFileReader):
+            if isinstance(implementation.get_reader(), readers_without_versions):
                 mandatory_capture_group_names = {
                     'instrument_id',
                 }
