@@ -277,10 +277,35 @@ class Dataset:
         The maximal error will be equal to +/- the satellite's movement in one second (i.e. half the temporal resolution
         of the GNV dataset).
         TODO: N.B. this may only hold true for timespans where downsampling of the GNV is not required - need to confirm
+        For downsampling data, the location assigned at a time of the start of the bucket.
+        The buckets are aligned in an orderly fashion according to the bucket size, relative to some epoch, which
+        is a single system-wide value. So the bucket will almost invariable start some period of time prior to the first
+        datum. The time delta could be up to product.time_series_interval. For low-frequency datasets the time delta
+        could lead to a noticeable error in bucket's geolocation.
+
         A value of None will be assigned to input data for which there is no GNV data available.
         """
 
-        gnv_dataset: Dataset = DatasetFactory.create(GraceFOGnv1ADataProduct(), self.version, self.instrument_id)
+        # If GraceFOGnv1ADataProduct does not have a version equal the current product's version,
+        # try use version '00' (per recommendation from Chris). If '00' is not available, use the
+        # latest available GNV1A version
+        gnv_available_versions_values = GraceFOGnv1ADataProduct.describe()['available_versions']
+        if self.version.value not in gnv_available_versions_values:
+            if '00' in gnv_available_versions_values:
+                gnv_version = DatasetVersion('00')
+                logging.warning(
+                    f'Version {self.version.value} of GNV1A is not available. Falling back to version "00" for geolocation')
+            else:
+                gnv_available_versions_values.sort()
+                gnv_version = DatasetVersion(gnv_available_versions_values[-1])
+                logging.warning(
+                    f'Version {self.version.value} of GNV1A is not available. Using the latest version '
+                    f'{gnv_version.value} for geolocation')
+        else:
+            gnv_version = self.version
+
+        gnv_dataset: Dataset = DatasetFactory.create(GraceFOGnv1ADataProduct(), gnv_version, self.instrument_id)
+
         gnv_field_names = {gnv_dataset.product.TIMESTAMP_COLUMN_NAME, 'location'}
         gnv_fields = [f for f in gnv_dataset.product.get_available_fields() if f.name in gnv_field_names]
 

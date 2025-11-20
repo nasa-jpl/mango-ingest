@@ -295,5 +295,5 @@ class OffredFileReader(AsciiDataFileReader):
     @classmethod
     def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
         # no versions for OFFREAD
-        return DatasetVersion("01")
+        return DatasetVersion("00")
 
