@@ -1,0 +1,12 @@
+def greet():
+    print("Hello Open Source! This is my first contribution.")
+
+greet()
+# My First Contribution
+
+This is a practice file created while learning how to make a pull request.
+
+- Contributor: Anjali
+- Purpose: Practice PR workflow
+This is a sample file created to practice making a pull request.
+
