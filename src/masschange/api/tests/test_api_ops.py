@@ -10,6 +10,7 @@ from masschange.api.routers.datasets import SupportedStatisticsEnum
 from masschange.api.tests.utils import is_nearly_equal, permute_all_datasets
 from masschange.dataproducts.implementations.gracefo.primary.acc1a import GraceFOAcc1ADataProduct
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
+from masschange.dataproducts.implementations.gracefo.primary.icsnr import GraceFOIcsnrDataProduct
 from masschange.dataproducts.timeseriesdataset import TimeSeriesDataset
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.datasetversion import DatasetVersion
@@ -209,6 +210,57 @@ def test_downsampled_location_lookup():
     assert full_res_min_latitude <= downsampled_datum['location']['latitude'] <= full_res_max_latitude
     assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
 
+def test_downsampled_location_lookup_versions_missmatch():
+    # Test for a case when matching version ov GNV1A data is not available
+    product = GraceFOIcsnrDataProduct()
+    dataset = TimeSeriesDataset(product, DatasetVersion('00'), 'C')
+    dataset_data_span = dataset.get_data_span()
+
+    gnv_dataset = TimeSeriesDataset(GraceFOGnv1ADataProduct(), DatasetVersion('04'), 'C')
+    gnv_data_span = gnv_dataset.get_data_span()
+
+    assert dataset_data_span is not None
+    assert gnv_data_span is not None
+
+    test_span_begin = max(dataset_data_span.begin, gnv_data_span.begin)
+    test_span_end = test_span_begin + timedelta(minutes=2)
+    dt_format = '%Y-%m-%dT%H:%M:%S'
+
+    full_res_path = f'/missions/{dataset.product.mission.id}/products/{dataset.product.id_suffix}\
+/versions/{dataset.version}/instruments/{dataset.instrument_id}/data?\
+from_isotimestamp={test_span_begin.strftime(dt_format)}&to_isotimestamp={test_span_end.strftime(dt_format)}&fields=location'
+    full_res_response = client.get(full_res_path)
+
+    assert full_res_response.status_code == 200
+    full_res_content = full_res_response.json()
+
+    downsampling_factor = dataset.product.get_available_downsampling_factors()[2]
+    downsampled_path = f'/missions/{dataset.product.mission.id}/products/{dataset.product.id_suffix}\
+/versions/{dataset.version}/instruments/{dataset.instrument_id}/data?\
+from_isotimestamp={test_span_begin.strftime(dt_format)}&to_isotimestamp={test_span_end.strftime(dt_format)}\
+&fields=location&downsampling_factor={downsampling_factor}'
+    downsampled_response = client.get(downsampled_path)
+    assert downsampled_response.status_code == 200
+    downsampled_content = downsampled_response.json()
+
+    downsampled_datum = downsampled_content['data'][1]
+
+    # Timestamp for a bucket is at the beginning of the bucket. Check that the downsampling location is withing bounding
+    # box of full resolution data centered at the time of the downsampled data point, plus/minus the
+    # product.time_series_interval
+    bounding_box_start = datetime.fromisoformat(downsampled_datum['timestamp']) - product.time_series_interval
+    bounding_box_end = datetime.fromisoformat(downsampled_datum['timestamp']) + product.time_series_interval
+
+    full_res_data = [d for d in full_res_content['data'] if
+                     bounding_box_start <= datetime.fromisoformat(d['timestamp']) < bounding_box_end]
+
+    full_res_min_latitude = min(d['location']['latitude'] for d in full_res_data)
+    full_res_max_latitude = max(d['location']['latitude'] for d in full_res_data)
+    full_res_min_longitude = min(d['location']['longitude'] for d in full_res_data)
+    full_res_max_longitude = max(d['location']['longitude'] for d in full_res_data)
+
+    assert full_res_min_latitude <= downsampled_datum['location']['latitude'] <= full_res_max_latitude
+    assert full_res_min_longitude <= downsampled_datum['location']['longitude'] <= full_res_max_longitude
 
 def test_product_metadata_basic():
     path = f'/missions/GRACEFO/products/'

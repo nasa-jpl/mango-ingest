@@ -30,7 +30,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     data_file2 = './tests/input_data/GF1_CX_888888_XXX_7_777777777_7777_77777777777_77777777777.out'
     expected_record_count = 84 # 6 lines, 7 variables, 2 files
     def setUp(self):
-        self.dataset = DatasetFactory.create(self.product, DatasetVersion('01'), 'GF1' )
+        self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
         os.environ['OFFREAD_METADATA_FILE'] = './tests/input_data/offred/fake_fields_metadata.json'
         super().__init__()
 

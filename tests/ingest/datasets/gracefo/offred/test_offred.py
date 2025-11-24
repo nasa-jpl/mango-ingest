@@ -34,7 +34,7 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
     data_is_zipped = False
     maxDiff = None
     dataset_cls = StubGraceFOOffredDataProduct
-    expected_table_names = ['gracefo_offred_01_gf1', 'gracefo_offred_01_gf2']
+    expected_table_names = ['gracefo_offred_00_gf1', 'gracefo_offred_00_gf2']
     expected_field_types = [str, int, int, str, str, str, Union[str, None], Union[int, None], Union[float, None],
                             Union[str, None], datetime]
     expected_table_row_counts = [42, 42]
