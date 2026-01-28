@@ -1,7 +1,7 @@
 ################################################################################################
 #
 # This script recursively searches directory for .dat files,
-# converts them to ASCII files, and move the ASCII files to the ingest dropbox
+# converts them to ASCII files, and moves the ASCII files to the ingest dropbox
 #
 # Usage:
 #    python3.11 convert_bin2text_and_copy_to_dropbox.py [-h] [--script SCRIPT] [--dropbox_path DROPBOX_PATH]
