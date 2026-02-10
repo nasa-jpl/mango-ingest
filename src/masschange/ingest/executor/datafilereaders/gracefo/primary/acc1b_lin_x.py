@@ -5,6 +5,7 @@ import numpy as np
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
+from masschange.dataproducts.datasetversion import DatasetVersion
 
 
 class GraceFOAcc1bLinXDataFileReader(AsciiDataFileReader):
@@ -14,7 +15,7 @@ class GraceFOAcc1bLinXDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ACC1B-linX_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
+        return '^ACC1B_LIN_X_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
@@ -39,3 +40,8 @@ class GraceFOAcc1bLinXDataFileReader(AsciiDataFileReader):
     def get_header_line_count(cls, filename: str) -> int:
         # No header in the file
         return 0
+
+    @classmethod
+    def extract_dataset_version(cls, filepath: str) -> DatasetVersion:
+        # no versions, use default version 00
+        return DatasetVersion("00")
