@@ -1,3 +1,27 @@
+################################################################################################
+#
+# This script recursively searches directory for aux files (thet have fixed names),
+# constructs new names for the products, and copies them  to ingest dropbox with the new name.
+#
+# Usage:
+# usage: rename_aux_and_copy_to_dropbox.py [-h] [-d DROPBOX_PATH] root_input_dir
+#                  type{DDIC,ICSNR,CLK_DD,RESIDS,ACC1B_ANG_X,ACC1B_ANG_Y,ACC1B_ANG_Z,ACC1B_LIN_X,ACC1B_LIN_Y,ACC1B_LIN_Z}
+#
+# positional arguments:
+#   root_input_dir        The root input directory
+#   product_type           Prefix for supported types:choise:
+#                          {DDIC,ICSNR,CLK_DD,RESIDS,ACC1B_ANG_X,ACC1B_ANG_Y,
+#                          ACC1B_ANG_Z,ACC1B_LIN_X,ACC1B_LIN_Y,ACC1B_LIN_Z}
+#
+# options:
+#   -h, --help            show this help message and exit
+#   -d DROPBOX_PATH, --dropbox_path DROPBOX_PATH
+#                         Path to ingest dropbox, default: /soft/mango/input-data-dropbox/
+#
+# Example of call:
+#     python rename_aux_and_copy_to_dropbox.py <root_input_dir> ACC1B_ANG_X -d  <dropbox_location>
+#
+################################################################################################
 import os
 import re
 import shutil
