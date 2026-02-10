@@ -1,11 +1,10 @@
 ################################################################################################
 #
-# This script recursively searches directory for aux files (thet have fixed names),
-# constructs new names for the products, and copies them  to ingest dropbox with the new name.
+# This script recursively searches directory for aux files with predefined identifiers,
+# constructs new names for the products, and copies the re-named products to the ingest dropbox.
 #
 # Usage:
-# usage: rename_aux_and_copy_to_dropbox.py [-h] [-d DROPBOX_PATH] root_input_dir
-#                  type{DDIC,ICSNR,CLK_DD,RESIDS,ACC1B_ANG_X,ACC1B_ANG_Y,ACC1B_ANG_Z,ACC1B_LIN_X,ACC1B_LIN_Y,ACC1B_LIN_Z}
+# usage: rename_aux_and_copy_to_dropbox.py [-h] [-d DROPBOX_PATH] root_input_dir product_type
 #
 # positional arguments:
 #   root_input_dir        The root input directory
@@ -22,6 +21,7 @@
 #     python rename_aux_and_copy_to_dropbox.py <root_input_dir> ACC1B_ANG_X -d  <dropbox_location>
 #
 ################################################################################################
+
 import os
 import re
 import shutil
