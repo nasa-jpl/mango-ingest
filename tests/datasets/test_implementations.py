@@ -5,6 +5,12 @@ from masschange.ingest.executor.datafilereaders.baseevents import EventsFileRead
 from masschange.ingest.executor.datafilereaders.base_offred import OffredFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.ddic import GraceFODdicDataFileReader
 from masschange.ingest.executor.datafilereaders.gracefo.primary.icsnr import GraceFOIcsnrDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_ang_x import GraceFOAcc1bAngXDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_ang_y import GraceFOAcc1bAngYDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_ang_z import GraceFOAcc1bAngZDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_lin_x import GraceFOAcc1bLinXDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_lin_y import GraceFOAcc1bLinYDataFileReader
+from masschange.ingest.executor.datafilereaders.gracefo.primary.acc1b_lin_z import GraceFOAcc1bLinZDataFileReader
 
 class TestTimeSeriesDatasetImplementations(unittest.TestCase):
     def test_all_mandatory_attributes_defined(self):
@@ -25,7 +31,10 @@ class TestTimeSeriesDatasetImplementations(unittest.TestCase):
 
     def test_mandatory_filename_regex_capture_groups(self):
         dataset_implementations = get_dataproduct_classes()
-        readers_without_versions = (OffredFileReader, GraceFODdicDataFileReader, GraceFOIcsnrDataFileReader)
+        readers_without_versions = \
+            (OffredFileReader, GraceFODdicDataFileReader, GraceFOIcsnrDataFileReader,
+             GraceFOAcc1bAngXDataFileReader, GraceFOAcc1bAngYDataFileReader, GraceFOAcc1bAngZDataFileReader,
+             GraceFOAcc1bLinXDataFileReader, GraceFOAcc1bLinYDataFileReader, GraceFOAcc1bLinZDataFileReader)
         for implementation in dataset_implementations:
             if isinstance(implementation.get_reader(), readers_without_versions):
                 mandatory_capture_group_names = {
