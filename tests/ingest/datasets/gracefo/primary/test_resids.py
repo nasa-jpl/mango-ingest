@@ -1,15 +1,15 @@
 import unittest
 from datetime import datetime, timezone
-from masschange.dataproducts.implementations.gracefo.primary.gps_minus_kbr_range_resids \
-    import GraceFOGpsMinusKbrRangeResidsDdDataProduct
+from masschange.dataproducts.implementations.gracefo.primary.resids \
+    import GraceFOResidsDataProduct
 from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 
 
-class GraceFOGpsMinusKbrRangeResidsDdDatasetReaderTestCase(DatasetReaderTestCaseBase):
+class GraceFOResidsDatasetReaderTestCase(DatasetReaderTestCaseBase):
     test_data_path = './tests/input_data/test_unzipped/'
     data_is_zipped = False
-    dataset_cls = GraceFOGpsMinusKbrRangeResidsDdDataProduct
-    expected_table_names = ['gracefo_gps_minus_kbr_range_resids_04_y']
+    dataset_cls = GraceFOResidsDataProduct
+    expected_table_names = ['gracefo_resids_04_y']
     expected_field_types = [int, float, datetime]
     expected_table_row_counts = [101]
     expected_table_first_rows = [

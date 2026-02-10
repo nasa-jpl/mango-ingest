@@ -7,14 +7,14 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn
 
 
-class GraceFOGpsMinusKbrRangeResidsDataFileReader(AsciiDataFileReader):
+class GraceFOResidsDataFileReader(AsciiDataFileReader):
     @classmethod
     def get_reference_epoch(cls) -> datetime:
         return datetime(2000, 1, 1, 12)
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^GPSminusKBR-RangeResids_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[Y])_(?P<dataset_version>\d{2})\.txt$'
+        return '^RESIDS_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[Y])_(?P<dataset_version>\d{2})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
