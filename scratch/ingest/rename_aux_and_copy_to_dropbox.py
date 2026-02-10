@@ -27,6 +27,10 @@ import re
 import shutil
 import argparse
 
+
+# Mapping between short product types (as provided in script arguments) and the corresponding naming patterns of fixed product names on disk.
+# This mapping is used to locate and identify the appropriate products during the search process
+
 TYPE_TO_PATTERN_MAP = {
     'DDIC'   : r'^DDIC_seg_(?P<subset_version>\d{3})\.txt',
     'ICSNR'  : r'^ICSNR_(?P<instrument_id>[CD])_seg_(?P<subset_version>\d{3})\.txt',
