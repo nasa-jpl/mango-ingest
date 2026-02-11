@@ -42,8 +42,10 @@ class GraceFOTdp1ADataFileReader(AsciiDataFileReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='nominal_value', np_type=np.double, unit='None'),
-            AsciiDataFileReaderColumn(index=2, name='value', np_type=np.double, unit='None'),
-            AsciiDataFileReaderColumn(index=3, name='sigma', np_type=np.double, unit='None'),
+            AsciiDataFileReaderColumn(index=2, name='value', np_type=np.double, unit='None',
+                                      aggregations=['min', 'max']),
+            AsciiDataFileReaderColumn(index=3, name='sigma', np_type=np.double, unit='None',
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=4, name='name', np_type='U512', unit=None, is_channel_id_column=True)
         ]
 
