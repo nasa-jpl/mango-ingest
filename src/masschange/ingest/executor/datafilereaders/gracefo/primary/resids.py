@@ -29,7 +29,8 @@ class GraceFOResidsDataFileReader(AsciiDataFileReader):
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
         return [
             AsciiDataFileReaderColumn(index=0, name='time', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=1, name='kbr_gps_residual', np_type=np.double, unit='cm')
+            AsciiDataFileReaderColumn(index=1, name='kbr_gps_residual', np_type=np.double, unit='cm',
+                                      aggregations=['min', 'max'])
         ]
 
     @classmethod
