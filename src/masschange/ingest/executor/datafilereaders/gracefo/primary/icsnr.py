@@ -21,7 +21,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{2})\.txt$'
+        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{3})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
@@ -38,7 +38,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max']),
-            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type='U2', unit=None)
+            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type=np.uint16, unit=None)
         ]
 
     @classmethod
@@ -57,12 +57,11 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
 
     @classmethod
-    def extract_subset_version(cls, filepath: str) -> DatasetVersion:
+    def extract_subset_version(cls, filepath: str) -> int:
         """Extract subset version from input file name"""
         filename = os.path.split(filepath)[-1]
         pattern = cls.get_applicable_regex_pattern(filename)
-        dataset_version_id = re.search(pattern, filename).group('subset_version')
-        return DatasetVersion(dataset_version_id)
+        return np.uint16(re.search(pattern, filename).group('subset_version'))
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
