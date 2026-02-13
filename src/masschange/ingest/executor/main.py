@@ -32,8 +32,7 @@ class IngestExecutor:
                 ingest.ingest_file_to_db(available_job.product, available_job.staged_filepath)
             except Exception as e:
                 logging.error(f'Failed to ingest file {available_job.staged_filepath}: {e}')
-#                 TODO: ADD ERROR LOG WRITE TO DB
-                ingest_manager.set_terminated(available_job, success=False)
+                ingest_manager.set_terminated(available_job, success=False, err_msg=str(e))
                 continue
 
             try:
