@@ -38,7 +38,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max']),
-            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type=int, unit=None)
+            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type=np.uint16, unit=None)
         ]
 
     @classmethod
@@ -61,7 +61,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
         """Extract subset version from input file name"""
         filename = os.path.split(filepath)[-1]
         pattern = cls.get_applicable_regex_pattern(filename)
-        return int(re.search(pattern, filename).group('subset_version'))
+        return np.uint16(re.search(pattern, filename).group('subset_version'))
 
     @classmethod
     def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
