@@ -23,6 +23,6 @@ class GraceFODdicDataProduct(TimeSeriesDataProduct):
             time double precision not null,
             ddic double precision not null,
             
-            subset_version VARCHAR(2) not null,
+            subset_version int not null,
             timestamp timestamptz not null 
         """
