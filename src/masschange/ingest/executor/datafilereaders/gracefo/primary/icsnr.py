@@ -21,7 +21,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{2})\.txt$'
+        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{3})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
@@ -38,7 +38,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=3, name='ka_snr', np_type=np.double, unit='0.1db/Hz', # TODO: verify units
                                       aggregations=['min', 'max']),
-            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type='U2', unit=None)
+            DerivedAsciiDataFileReaderColumn(name='subset_version', np_type='U3', unit=None)
         ]
 
     @classmethod

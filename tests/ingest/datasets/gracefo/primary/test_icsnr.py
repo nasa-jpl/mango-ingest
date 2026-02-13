@@ -12,9 +12,9 @@ class GraceFOIcsnrDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_field_types = [float, float, float, float, str, datetime]
     expected_table_row_counts = [200,200]
     expected_table_first_rows = [
-        (739022409.0, -0.025890573859214783, 781.0, 767.0, '00',
+        (739022409.0, -0.025890573859214783, 781.0, 767.0, '000',
          datetime(2023, 6, 3, 0, 0, 9, tzinfo=timezone.utc)),
-        (739022409.0, -0.025527916848659515, 776.0, 760.0, '00',
+        (739022409.0, -0.025527916848659515, 776.0, 760.0, '000',
          datetime(2023, 6, 3, 0, 0, 9, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
