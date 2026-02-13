@@ -12,7 +12,7 @@ class GraceFODdicDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_field_types = [float, float, str, datetime]
     expected_table_row_counts = [200]
     expected_table_first_rows = [
-        (739022409.0, -0.00019782409071922302, '00',
+        (739022409.0, -0.00019782409071922302, '000',
          datetime(2023, 6, 3, 0, 0, 9, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':

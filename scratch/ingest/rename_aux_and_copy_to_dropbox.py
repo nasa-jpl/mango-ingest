@@ -122,7 +122,7 @@ def get_new_name(product_prefix, date_str, instrument_id, version):
         instrument_id = 'Y'
     if not version:
         return f'{product_prefix}_{date_str}_{instrument_id}.txt'
-    return f'{product_prefix}_{date_str}_{instrument_id}_{version[-2:]}.txt'
+    return f'{product_prefix}_{date_str}_{instrument_id}_{version}.txt'
 
 def main():
     parser = argparse.ArgumentParser(description=f"Recursively search directory for product files, "
