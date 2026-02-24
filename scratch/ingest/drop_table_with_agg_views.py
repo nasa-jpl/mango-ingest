@@ -31,7 +31,7 @@ def get_check_env(env_name: str) -> str:
         print(f"Error: The environment variable {env_name} is not set.")
         exit(1)
 
-def drop_table_with_agg_views(target_substring):
+def drop_table_with_agg_views(table_name):
     host = get_check_env("TSDB_HOST")
     port = get_check_env("TSDB_PORT")
     user = get_check_env("TSDB_USER")
@@ -57,11 +57,11 @@ def drop_table_with_agg_views(target_substring):
                        ORDER BY table_name DESC; \
                        """
 
-            cur.execute(find_sql, (f'%{target_substring}%',))
+            cur.execute(find_sql, (f'%{table_name}%',))
             targets = cur.fetchall()
 
             if not targets:
-                print(f"No tables or views found matching: {target_substring}")
+                print(f"No tables or views found matching: {table_name}")
                 return
 
             # 2. Iterate through results and drop each with CASCADE
