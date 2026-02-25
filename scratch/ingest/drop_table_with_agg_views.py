@@ -19,10 +19,41 @@
 #   python3 drop_table_with_agg_views.py gracefo_ddic_00_y
 #
 ################################################################################################
-import psycopg2
 import argparse
+from typing import List
 import os
-from psycopg2 import sql
+from masschange.dataproducts.utils import resolve_dataset
+from psycopg2 import connect, sql
+from masschange.dataproducts.datasetversion import DatasetVersion
+from masschange.dataproducts.datasetfactory import DatasetFactory
+
+def get_table_and_view_names(table_name) -> List[str]:
+    """
+    Get lists of view names (if applicable) and a table name,
+    starting with the highest aggregation level.
+
+    Parameters
+    ----------
+    table_name name of the table to drop
+
+    Returns
+    -------
+    List of view names and a table name, starting with the highest aggregation level
+    """
+    parts = table_name.split('_')
+    instrument = parts[-1].upper()
+    version = DatasetVersion(parts[-2])
+    dataset_id = '_'.join(parts[:-2]).upper()
+    product = resolve_dataset(dataset_id)
+    dataset = DatasetFactory.create(product, version, instrument)
+    if dataset.is_time_series_dataset():
+        level_count = product.get_required_aggregation_level_count()
+    else:
+        level_count = 0
+    names = []
+    for i in reversed(range(level_count + 1)):
+        names.append(dataset.get_table_or_view_name(i))
+    return names
 
 def get_check_env(env_name: str) -> str:
     try:
@@ -39,33 +70,31 @@ def drop_table_with_agg_views(table_name):
     dbname = get_check_env("TSDB_DATABASE")
 
     conn = None
+
+    names = get_table_and_view_names(table_name)
     try:
-        conn = psycopg2.connect(
+        conn = connect(
             dbname=dbname, user=user, password=password,
             host=host, port=port
         )
         conn.autocommit = True
 
         with conn.cursor() as cur:
-            # 1. Query the information_schema to find tables/views matching the name
-            find_sql = """
-                       SELECT table_schema, \
-                              table_name, \
-                              table_type
-                       FROM information_schema.tables
-                       WHERE table_name LIKE %s
-                       ORDER BY table_name DESC; \
-                       """
+            for name in names:
+                find_sql = """
+                           SELECT table_schema, \
+                                  table_name, \
+                                  table_type
+                           FROM information_schema.tables
+                           WHERE table_name = %s; \
+                           """
 
-            cur.execute(find_sql, (f'%{table_name}%',))
-            targets = cur.fetchall()
-
-            if not targets:
-                print(f"No tables or views found matching: {table_name}")
-                return
-
-            # 2. Iterate through results and drop each with CASCADE
-            for schema, name, obj_type in targets:
+                cur.execute(find_sql, (f'{name}',))
+                targets = cur.fetchall()
+                if not targets:
+                    print(f"No tables or views found matching: {name}")
+                    continue
+                schema, name, obj_type = targets[0]
                 # Determine the correct SQL keyword
                 prefix = "MATERIALIZED VIEW" if "VIEW" in obj_type else "TABLE"
 
@@ -75,7 +104,6 @@ def drop_table_with_agg_views(table_name):
                     sql.Identifier(schema),
                     sql.Identifier(name)
                 )
-
                 print(f"Executing: {drop_query.as_string(conn)}")
                 cur.execute(drop_query)
                 print(f"Successfully dropped {name} ({obj_type}).")
@@ -86,17 +114,17 @@ def drop_table_with_agg_views(table_name):
         if conn:
             conn.close()
 
+def get_args() -> argparse.Namespace:
+    ap = argparse.ArgumentParser(
+        prog='MassChange Data Ingester',
+        description='Given product data in a local directory, process that data and store it in database'
+    )
+    ap.add_argument('table_name',
+                    help='the id of the dataset to ingest <TO-DO: print out enumerated list of available ids>')
+    return ap.parse_args()
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=f"Drop a table with ll associated views. "
-                                                 f"Before run, please set the following  env variables: "
-                                                 "'TSDB_HOST', "
-                                                 "'TSDB_PORT', "
-                                                 "'TSDB_USER', "
-                                                 "'TSDB_PASSWORD', "
-                                                 "'TSDB_DATABASE'")
-
-    parser.add_argument("table_name", help="Name of the table to drop, for example, gracefo_act1b_04_c")
-    args = parser.parse_args()
+    args = get_args()
     drop_table_with_agg_views(args.table_name)
-
 
