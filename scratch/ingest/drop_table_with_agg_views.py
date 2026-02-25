@@ -117,10 +117,10 @@ def drop_table_with_agg_views(table_name):
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         prog='MassChange Data Ingester',
-        description='Given product data in a local directory, process that data and store it in database'
+        description='Drop a table and associated views'
     )
     ap.add_argument('table_name',
-                    help='the id of the dataset to ingest <TO-DO: print out enumerated list of available ids>')
+                    help='name of the table to drop')
     return ap.parse_args()
 
 
