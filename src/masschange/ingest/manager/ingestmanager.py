@@ -74,7 +74,7 @@ class IngestManager:
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'id': record.id, err_msg: err_msg})
+                cur.execute(sql, {'id': record.id, 'err_msg': err_msg})
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
 
