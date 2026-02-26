@@ -15,12 +15,14 @@ def list_files(
         id: Optional[int] = Query(None),
         status: Optional[FileStatus] = Query(None),
         product_id: Optional[str] = Query(None),
+        limit: Optional[int] = Query(100, gt=0, le=100000, description="Limit the number of results returned")
 ):
     """
     View all rows with optional filters
     :param id:
     :param status:
     :param product_id:
+    :param limit:
     :return:
     """
 
@@ -39,7 +41,7 @@ def list_files(
         query += " AND product_id_str = %s"
         params.append(product_id)
 
-    query += " ORDER BY id"
+    query += f" ORDER BY id DESC LIMIT {limit}"
 
     with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         cur.execute(query, tuple(params))

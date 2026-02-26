@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import psycopg2
 from psycopg2 import extras
@@ -62,19 +62,19 @@ class IngestManager:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with "{e}"')
 
     @staticmethod
-    def set_terminated(record: FileIngestRecord, success: bool) -> FileIngestRecord:
+    def set_terminated(record: FileIngestRecord, success: bool, err_msg: Optional[str] = None) -> FileIngestRecord:
 
         status = FileStatus.INGEST_SUCCESS if success else FileStatus.INGEST_TERMINATED
         sql = f"""
                       UPDATE {INGEST_MANAGER_TABLE_NAME}
-                      SET status = '{status}', ingestion_terminated_at = NOW()
+                      SET status = '{status}', ingestion_terminated_at = NOW(), ingestion_error_msg = %(err_msg)s
                       WHERE id = %(id)s
                       RETURNING *
                       """
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'id': record.id})
+                cur.execute(sql, {'id': record.id, 'err_msg': err_msg})
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
 
