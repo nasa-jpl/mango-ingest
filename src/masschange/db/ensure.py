@@ -26,10 +26,12 @@ def ensure_database_exists(db_name: str) -> None:
             log.info(f'Created missing database: "{db_name}"')
         except psycopg2.errors.DuplicateDatabase:
             pass
-        cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
-        cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
+
     conn.close()
 
+    with get_db_cursor(autocommit=True) as cur:
+        cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
+        cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
 
 def ensure_dataset(dataset: Dataset) -> None:
     ensure_dataset_table_exists(dataset)
