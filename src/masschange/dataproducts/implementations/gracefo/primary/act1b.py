@@ -27,6 +27,10 @@ class GraceFOAct1BDataProduct(TimeSeriesDataProduct):
             lin_accl_x double precision not null,
             lin_accl_y double precision not null,
             lin_accl_z double precision not null,
+            
+            ang_accl_x double precision not null,
+            ang_accl_y double precision not null,
+            ang_accl_z double precision not null,
 
             acl_x_res double precision not null,
             acl_y_res double precision not null,
