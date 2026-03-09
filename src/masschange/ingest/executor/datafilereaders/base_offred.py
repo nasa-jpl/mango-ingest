@@ -5,6 +5,9 @@ import pandas as pd
 from datetime import datetime, timedelta
 import json
 import os
+import zipfile
+import tempfile
+from pathlib import Path
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn,\
@@ -130,9 +133,52 @@ class OffredFileReader(AsciiDataFileReader):
 
         ]
 
-
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+        # unzip files to temp directory
+
+        # 1. Initialize a list to hold the data chunks (much lighter than a growing array)
+        data_chunks = []
+        with tempfile.TemporaryDirectory() as temp_dir:
+            print(f"Created temporary directory at: {temp_dir}")
+
+            # Open and extract the zip file
+            with zipfile.ZipFile(filename, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+                print(f"Successfully unzipped {filename} to temporary storage.")
+
+                # List files to verify
+                files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
+                print(f"Files extracted: {files}")
+
+
+                for each_file in files:
+                    print("QQQQQQQ ", each_file)
+                    data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
+
+            # 2. Perform ONE single concatenation (Memory efficient)
+            if data_chunks:
+                data = np.concatenate(data_chunks).view(np.recarray)
+                # #print("AAAAAAAAAA ", data.dtype.names)
+                # print("AAAAAAAAAA ", data.obt_integer[data.obt_integer == None])
+                # print("BBBBBBBB ", data.obt_fraction[data.obt_integer == None])
+                # print("AAAAAAAAAA ", data.view(np.recarray))
+                # # sort by time
+                # primary = data.obt_integer
+                # secondary = data.obt_fraction
+                # sorted_indices = np.lexsort((secondary, primary))
+                # sorted_data = data[sorted_indices]
+                #
+                # print("WWWWWW ", sorted_data)
+                # return sorted_data
+                return data
+            else:
+                return None
+
+
+
+    @classmethod
+    def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
 
@@ -207,6 +253,18 @@ class OffredFileReader(AsciiDataFileReader):
             # units are only make sense for .en fields
             if '.en' in col_def.name:
                 data_rec[cls.col_name_unit][start_row:end_row] = met_dict[col_name_parts[0].upper()]['UNIT']
+
+        # # sorted_indices = data_rec[:, 0].argsort()
+        # # sorted_data_rec = data_rec[sorted_indices]
+        # #
+        # # #data_rec.sort(order=['utc'])
+        #
+        # primary = data_rec.obt_integer
+        # secondary = data_rec.obt_fraction
+        # sorted_indices = np.lexsort((secondary, primary))
+        # sorted_data_rec = data_rec[sorted_indices]
+
+        print("WWWWWWWWWW ", data_rec.dtype.names, data_rec.dtype)
         return data_rec
 
     @classmethod
