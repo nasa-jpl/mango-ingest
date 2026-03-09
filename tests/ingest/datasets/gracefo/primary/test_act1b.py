@@ -7,15 +7,15 @@ from tests.ingest.datasets.base import DatasetReaderTestCaseBase
 class GraceFOAct1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
     dataset_cls = GraceFOAct1BDataProduct
     expected_table_names = ['gracefo_act1b_04_c', 'gracefo_act1b_04_d']
-    expected_field_types = [int, str, float, float, float, float, float, float, str,
+    expected_field_types = [int, str, float, float, float, float, float, float, float, float, float, str,
                             bool, bool, bool, bool, bool, bool, bool, bool, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
-        (738849600, 'C', -2.77938114592582e-07, -1.064874232988739e-05, -1.83231564779496e-07,
+        (738849600, 'C', -2.77938114592582e-07, -1.064874232988739e-05, -1.83231564779496e-07,0,0,0,
          -8.959451256558249e-11, 1.161562708673709e-09, 2.238855841952048e-10,  '00000000',
          False, False, False, False, False, False, False, False,
          datetime(2023, 6, 1, 0, 0, 0, tzinfo=timezone.utc)),
-        (738849600, 'D', 2.766468091592577e-07, 1.064957039541215e-05, -1.832523708702873e-07,
+        (738849600, 'D', 2.766468091592577e-07, 1.064957039541215e-05, -1.832523708702873e-07,0,0,0,
          3.760645125225072e-10, -3.938861161960659e-10, 6.198529328673559e-11,  '00000000',
          False, False, False, False, False, False, False, False,
          datetime(2023, 6, 1, 0, 0, 0, tzinfo=timezone.utc))
