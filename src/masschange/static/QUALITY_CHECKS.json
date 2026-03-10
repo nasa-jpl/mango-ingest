@@ -114,7 +114,44 @@
     }
   },
   "ACT1B": {
-    "properties": {}
+    "properties": {
+      "ang_accl_x": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": 0
+            }
+          }
+        ]
+      },
+      "ang_accl_y": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": 0
+            }
+          }
+        ]
+      },
+      "ang_accl_z": {
+        "thresholds": [
+          {
+            "effective_since": null,
+            "effective_until": null,
+            "limits": {
+              "lower": 0,
+              "upper": 0
+            }
+          }
+        ]
+      }
+    }
   },
   "ACT1B_RPT": {
     "properties": {
