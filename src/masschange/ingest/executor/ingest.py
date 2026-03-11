@@ -213,7 +213,6 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     end_time = time.time()
     elapsed_time = end_time - start_time
     log.info(f"QQQQQQ reading time: {elapsed_time} seconds")
-
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc))
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
@@ -234,7 +233,7 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
     ingest_end_time = time.time()
     ingest_elapsed_time = ingest_end_time - ingest_start_time
-    log.info(f"WWWWWWW ingest time: {ingest_elapsed_time} seconds")
+    log.info(f"Ingest time: {ingest_elapsed_time} seconds")
 
 
 
