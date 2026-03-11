@@ -43,6 +43,7 @@ class IngestManager:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
     def set_staged(self, record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
+        # TODO: rework to leverage IngestManager.set_status() - edunn 20260311
 
         status = FileStatus.STAGED
         sql = f"""
@@ -63,6 +64,7 @@ class IngestManager:
 
     @staticmethod
     def set_terminated(record: FileIngestRecord, success: bool, err_msg: Optional[str] = None) -> FileIngestRecord:
+        # TODO: rework to leverage IngestManager.set_status() - edunn 20260311
 
         status = FileStatus.INGEST_SUCCESS if success else FileStatus.INGEST_TERMINATED
         sql = f"""
