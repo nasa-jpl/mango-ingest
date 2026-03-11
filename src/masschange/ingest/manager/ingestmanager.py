@@ -83,7 +83,8 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with {e.__class__}: {e}')
 
-    def set_status(self, record: FileIngestRecord, status: FileStatus, err_msg: Optional[str] = None) -> FileIngestRecord:
+    @staticmethod
+    def set_status(record: FileIngestRecord, status: FileStatus, err_msg: Optional[str] = None) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
         :param record:
