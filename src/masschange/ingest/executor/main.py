@@ -5,6 +5,7 @@ import time
 from datetime import timedelta
 
 from masschange.ingest.executor import ingest
+from masschange.ingest.executor.errors import EmptyProductException
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.ingestmanager import IngestManager
 from masschange.utils.logging import configure_root_logger
@@ -30,6 +31,9 @@ class IngestExecutor:
             try:
                 logging.debug(f'Ingesting job {available_job.id}: {available_job.staged_filepath}')
                 ingest.ingest_file_to_db(available_job.product, available_job.staged_filepath)
+            except EmptyProductException:
+                logging.debug(f'Valid file had zero records {available_job.id}: {available_job.staged_filepath}')
+                pass
             except Exception as e:
                 logging.error(f'Failed to ingest file {available_job.staged_filepath}: {e}')
                 ingest_manager.set_terminated(available_job, success=False, err_msg=str(e))
