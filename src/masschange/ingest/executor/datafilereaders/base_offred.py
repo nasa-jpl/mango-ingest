@@ -159,17 +159,12 @@ class OffredFileReader(AsciiDataFileReader):
             # 2. Perform ONE single concatenation (Memory efficient)
             if data_chunks:
                 data = np.concatenate(data_chunks).view(np.recarray)
-                # #print("AAAAAAAAAA ", data.dtype.names)
-                # print("AAAAAAAAAA ", data.obt_integer[data.obt_integer == None])
-                # print("BBBBBBBB ", data.obt_fraction[data.obt_integer == None])
-                # print("AAAAAAAAAA ", data.view(np.recarray))
                 # # sort by time
                 # primary = data.obt_integer
                 # secondary = data.obt_fraction
                 # sorted_indices = np.lexsort((secondary, primary))
                 # sorted_data = data[sorted_indices]
                 #
-                # print("WWWWWW ", sorted_data)
                 # return sorted_data
                 return data
             else:
