@@ -83,24 +83,27 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with {e.__class__}: {e}')
 
-    def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
+    def set_status(self, record: FileIngestRecord, status: FileStatus, err_msg: Optional[str] = None) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
         :param record:
         :param status:
+        :param err_msg:
         :return: the up-to-date file ingest record
         """
 
+        # TODO: rename ingestion_error_msg to error_msg or add new column for pre-ingest error, as this is now used for
+        #  errors related to rejection of files for staging, too
         sql = f"""
               UPDATE {INGEST_MANAGER_TABLE_NAME}
-              SET status = %(status)s, {status.db_column_name} = NOW()
+              SET status = %(status)s, {status.db_column_name} = NOW(), ingestion_error_msg = %(err_msg)s
               WHERE id = %(id)s
               RETURNING *
               """
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'id': record.id, 'status': str(status)})
+                cur.execute(sql, {'id': record.id, 'status': str(status), 'err_msg': err_msg})
                 # TODO: sanity check that exactly one result was changed
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
