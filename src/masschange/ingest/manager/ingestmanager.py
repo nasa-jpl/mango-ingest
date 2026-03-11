@@ -43,7 +43,7 @@ class IngestManager:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
     @staticmethod
-    def set_staged(self, record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
+    def set_staged(record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
         # TODO: This does not use set_status() due to specific staged_path argument but the duplication is still not ideal...
         #  Consider reworking this sometime - edunn 20260311
 
