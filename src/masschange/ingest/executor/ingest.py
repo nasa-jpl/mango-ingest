@@ -20,7 +20,7 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
-from masschange.ingest.executor.filter import EqualsFilter, DataFilter
+from masschange.ingest.executor.datafilereaders.filter import EqualsFilter, DataFilter
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates

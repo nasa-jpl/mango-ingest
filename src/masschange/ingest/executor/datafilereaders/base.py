@@ -18,7 +18,7 @@ from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.utils.arraylikefields import append_flag_fields
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
-from  masschange.ingest.executor.filter import DataFilter
+from masschange.ingest.executor.datafilereaders.filter import DataFilter
 
 
 class DataFileReader(ABC):

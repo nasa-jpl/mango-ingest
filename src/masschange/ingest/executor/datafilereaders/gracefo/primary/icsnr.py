@@ -10,7 +10,7 @@ from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import (AsciiDataFileReaderColumn,
                                                                      DerivedAsciiDataFileReaderColumn)
 from masschange.dataproducts.datasetversion import DatasetVersion
-from  masschange.ingest.executor.filter import DataFilter
+from masschange.ingest.executor.datafilereaders.filter import DataFilter
 
 
 class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
