@@ -4,10 +4,13 @@ import os
 import re
 import numpy as np
 import pandas as pd
+from typing import Union
+
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import (AsciiDataFileReaderColumn,
                                                                      DerivedAsciiDataFileReaderColumn)
 from masschange.dataproducts.datasetversion import DatasetVersion
+from  masschange.ingest.executor.filter import DataFilter
 
 
 class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
@@ -64,9 +67,9 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
         return np.uint16(re.search(pattern, filename).group('subset_version'))
 
     @classmethod
-    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+    def load_data_from_file(cls, filepath: str, filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         # Overwrite the parent's method to add 'subset_version' column
-        df = super().load_data_from_file(filepath)
+        df = super().load_data_from_file(filepath, filters = filters)
 
         # insert column before the last column (timestamp)
         insertion_index = len(df.columns) - 1
