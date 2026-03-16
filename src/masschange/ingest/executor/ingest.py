@@ -8,7 +8,7 @@ import tempfile
 from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
-from typing import Iterable, Union
+from typing import Iterable, Union, List
 
 import pandas
 import pandas as pd
@@ -20,6 +20,7 @@ from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
+from masschange.ingest.executor.datafilereaders.filter import EqualsFilter, DataFilter
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
@@ -166,6 +167,27 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
             except (Exception, psycopg2.DatabaseError) as error:
                 print("Error: %s" % error)
 
+def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
+    """
+    Create a list of data filters that the reader will apply to the raw data.
+    Filters are different for different datasets
+
+    Parameters
+    ----------
+    dataset : Dataset.
+
+    Returns
+    -------
+    List of data filters that implements DataFilter interface, or None
+    """
+    filters = None
+    # So far, only one filter was requested by sci team:
+    # for Level 1B products, remove rows where 'time_ref' is not equals 'G'
+    if dataset.product.processing_level:
+        if dataset.product.processing_level.upper() == '1B':
+            filters = [EqualsFilter('time_ref', 'G')]
+    return filters
+
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     if log.isEnabledFor(logging.DEBUG):
@@ -180,8 +202,9 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
                                     reader.extract_instrument_id(src_filepath))
 
+    filters = get_data_filters(dataset)
 
-    pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath)
+    pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath, filters=filters)
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc))
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
