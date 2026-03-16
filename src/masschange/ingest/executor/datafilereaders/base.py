@@ -18,6 +18,7 @@ from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.utils.arraylikefields import append_flag_fields
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
+from  masschange.ingest.executor.filter import DataFilter
 
 
 class DataFileReader(ABC):
@@ -100,7 +101,7 @@ class DataFileReader(ABC):
 
     @classmethod
     @abstractmethod
-    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+    def load_data_from_file(cls, filepath: str, filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         """Given a path to a source file, return a pandas dataframe containing fully-prepared/transformed data, ready
         for insertion to the database."""
         # TODO: if rcvtime/timestamp columns are consistent across data products, it may be appropriate to provide a
@@ -150,23 +151,28 @@ class AsciiDataFileReader(DataFileReader):
         raise ValueError(f'Can not find the end of header in {filename}')
 
     @classmethod
-    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+    def load_data_from_file(cls, filepath: str,  filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most dataproducts.
         # If this is not the case, refactoring will be necessary.
         raw_data = cls._load_raw_data_from_file(filepath)
+
         if raw_data.size == 0:
             raise EmptyProductException(f'{filepath} seems to have no data...')
-
-        try:
-            constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
-            for column in constant_columns:
-                cls._ensure_constant_column_value(column.name, column.const_value, raw_data)
-        except ValueError as err:
-            raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
 
         # TODO: investigate whether dropping/excluding const columns prior to pd df construction improves performance
         #  at all
         df = pd.DataFrame(raw_data)
+
+        # Apply filters to data, if needed
+        if filters:
+            for f in filters:
+                df = f.apply(df)
+        try:
+            constant_columns = [column for column in cls.get_input_column_defs() if column.is_constant]
+            for column in constant_columns:
+                cls._ensure_constant_column_value(column.name, column.const_value, df)
+        except ValueError as err:
+            raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
 
         # Append custom fields to the dataframe, if needed
         cls.append_derived_fields(df)
@@ -218,7 +224,7 @@ class AsciiDataFileReader(DataFileReader):
         return data
 
     @classmethod
-    def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: np.ndarray):
+    def _ensure_constant_column_value(cls, column_name: str, expected_value: Any, data: pd.DataFrame):
         """Ensure that a constant-valued column only contains the expected value, raising ValueError on failure"""
         column_data = data[column_name]
         cls._ensure_constant_array_value(column_name, expected_value, column_data)
@@ -241,7 +247,7 @@ class AsciiDataFileReader(DataFileReader):
 class DataFileWithProdFlagReader(AsciiDataFileReader):
 
     @classmethod
-    def load_data_from_file(cls, filepath: str) -> pd.DataFrame:
+    def load_data_from_file(cls, filepath: str,  filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
 
         # get raw data as 2D array of strings
         raw_data_as_str = cls._load_raw_data_from_file(filepath)
@@ -264,9 +270,16 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
                     raise ValueError(f'Const-valued column check failed for {filepath}: {err}')
             else:
                 df[column.name] = values
-        # add timestamp
+
+        # Apply filters to data, if needed
+        if filters:
+            for f in filters:
+                df = f.apply(df)
+
         # Append custom fields to the dataframe, if needed
         cls.append_derived_fields(df)
+
+        # add timestamp
         df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # append variable schema data at the end of the frame
