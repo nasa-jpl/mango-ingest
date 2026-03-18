@@ -309,7 +309,7 @@ class OffredFileReader(AsciiDataFileReader):
     @classmethod
     def _get_column_type(cls, arr: np.array(str)) -> np.dtype | None:
         """
-        Look at data fron a field and try to figure out if they are int, float or string
+        Look at data from a field and try to figure out if they are int, float or string
         Parameters
         ----------
         arr : np.array(str) - chunk of data from a field represented as strings
@@ -320,27 +320,24 @@ class OffredFileReader(AsciiDataFileReader):
         n_str = 0
 
         for val in arr:
-            try:
-                num = float(val)
-            except ValueError:
-                # if can't convert to a number, assume it is a string
-                n_str += 1
-                continue
-            if '.' in val:  # check for '.' in the number
+            if val.isdigit():
+                n_int += 1
+            elif val.replace('.', '', 1).isdigit(): # check if it is a float (allowing for one '.')
                 n_float += 1
             else:
-                n_int += 1
+                n_str += 1
 
         # check that all values in the array are assigned to the same type
-        expected_cnt = arr.shape[0]
-        if max(n_int, n_float, n_str) != arr.shape[0]:
+        # TODO: consider that there might be a hierarchy - any str => field is str, else any float => field is float, else is int - edunn 20260318
+        expected_count = arr.shape[0]
+        if max(n_int, n_float, n_str) != expected_count:
             raise RuntimeError("Can't figure out data type for array: {}".format(arr))
 
-        if n_int == expected_cnt:
+        if n_int == expected_count:
             return cls.int_dtype # int type that supports None
-        elif n_float == expected_cnt:
+        elif n_float == expected_count:
             return cls.float_dtype
-        elif n_str == expected_cnt:
+        elif n_str == expected_count:
             return cls.str_dtype
         else:
             raise RuntimeError("Can't figure out data type for array: {}".format(arr))
