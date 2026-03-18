@@ -15,7 +15,7 @@ class Aggregation(ABC):
         return self._name
 
     def get_sql_expression(self, operand_column_name: str) -> str:
-        return self._sql_expr_f(operand_column_name)
+        return f'{self._sql_expr_f(operand_column_name)} FILTER (WHERE {operand_column_name} IS NOT NULL)'
 
     def get_aggregated_name(self, operand_column_name: str) -> str:
         return self._output_name_f(operand_column_name)
