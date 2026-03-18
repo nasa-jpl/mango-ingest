@@ -39,7 +39,7 @@ class OffredFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_field_met_file_location(cls):
-        env_name = 'OFFREAD_METADATA_FILE'
+        env_name = 'OFFRED_METADATA_FILEPATH'
         fpath = os.getenv(env_name)
         if fpath is not None:
             return fpath

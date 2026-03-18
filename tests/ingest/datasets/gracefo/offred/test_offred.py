@@ -22,12 +22,12 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.environ['OFFREAD_METADATA_FILE'] = './src/masschange/ingest/executor/datafilereaders/gracefo/offred/static/offred_fields_metadata.json'
+        os.environ['OFFRED_METADATA_FILEPATH'] = './src/masschange/ingest/executor/datafilereaders/gracefo/offred/static/offred_fields_metadata.json'
         super().setUpClass()
 
     @classmethod
     def tearDownClass(cls):
-        os.environ.pop('OFFREAD_METADATA_FILE', None)
+        os.environ.pop('OFFRED_METADATA_FILEPATH', None)
         super().tearDownClass()
 
     test_data_path = './tests/input_data/offred/'
