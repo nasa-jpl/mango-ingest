@@ -10,3 +10,4 @@ src/masschange/build
 **/__pycache__
 logs
 .env
+**/offred_fields_metadata.json
