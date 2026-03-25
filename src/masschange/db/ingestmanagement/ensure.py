@@ -12,10 +12,14 @@ def ensure_ingest_manager_tables_exist() -> None:
     """
 
     with get_db_cursor() as cur:
+        id_seq_name = f'{INGEST_MANAGER_TABLE_NAME}_id_seq'
         sql = f"""
+            -- sequence is necessary due to inability to apply SERIAL to a partitioned table
+            CREATE SEQUENCE IF NOT EXISTS {id_seq_name};
+        
             CREATE TABLE IF NOT EXISTS {INGEST_MANAGER_TABLE_NAME}
             (
-            id SERIAL PRIMARY KEY,
+            id INTEGER NOT NULL DEFAULT nextval('{id_seq_name}'),
             src_filepath  VARCHAR NOT NULL,
             staged_filepath  VARCHAR DEFAULT NULL,
             status  VARCHAR NOT NULL,
@@ -33,6 +37,8 @@ def ensure_ingest_manager_tables_exist() -> None:
             UNIQUE (src_filepath, product_id_str, src_file_last_modified)
             );
             
+            ALTER SEQUENCE _ingestmgr_crawled_files_id_seq
+            OWNED BY _ingestmgr_crawled_files.id;
             
             CREATE INDEX IF NOT EXISTS idx_crawled_at_is_null
             ON {INGEST_MANAGER_TABLE_NAME} (crawled_at)
