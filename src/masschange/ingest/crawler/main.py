@@ -13,6 +13,7 @@ from typing import Union, Collection
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import get_dataproducts
+from masschange.ingest.manager.filestatus import FileStatus
 from masschange.ingest.manager.ingestmanager import IngestManager
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree
 from masschange.utils.logging import configure_root_logger
@@ -79,6 +80,15 @@ class DataProductFileCrawler:
                 file_ingest_record = self.ingest_manager.register(src_filepath, product)
             except Exception as e:
                 log.error(f'Registration of {src_filepath} with ingest manager failed with {e.__class__}: {e}')
+                return
+
+            # Guard for empty (zero-byte) files, which should be cleaned up and not staged or ingested
+            file_is_empty = os.stat(src_filepath).st_size == 0
+            if file_is_empty:
+                err_msg = f'File {src_filepath} has zero bytes and will not be staged or ingested - deleting {src_filepath}'
+                log.warning(err_msg)
+                self.ingest_manager.set_status(file_ingest_record, FileStatus.REJECTED, err_msg=err_msg)
+                os.remove(src_filepath)
                 return
 
             src_filename = os.path.basename(src_filepath)

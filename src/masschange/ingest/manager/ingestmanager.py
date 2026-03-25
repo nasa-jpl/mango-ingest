@@ -42,7 +42,10 @@ class IngestManager:
             except Exception as e:
                 raise RuntimeError(f'Registration of {filepath} with ingest manager failed with {e.__class__}:{e}')
 
-    def set_staged(self, record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
+    @staticmethod
+    def set_staged(record: FileIngestRecord, staged_path: Union[Path, str]) -> FileIngestRecord:
+        # TODO: This does not use set_status() due to specific staged_path argument but the duplication is still not ideal...
+        #  Consider reworking this sometime - edunn 20260311
 
         status = FileStatus.STAGED
         sql = f"""
@@ -63,42 +66,31 @@ class IngestManager:
 
     @staticmethod
     def set_terminated(record: FileIngestRecord, success: bool, err_msg: Optional[str] = None) -> FileIngestRecord:
-
         status = FileStatus.INGEST_SUCCESS if success else FileStatus.INGEST_TERMINATED
-        sql = f"""
-                      UPDATE {INGEST_MANAGER_TABLE_NAME}
-                      SET status = '{status}', ingestion_terminated_at = NOW(), ingestion_error_msg = %(err_msg)s
-                      WHERE id = %(id)s
-                      RETURNING *
-                      """
+        IngestManager.set_status(record, status, err_msg=err_msg)
 
-        with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
-            try:
-                cur.execute(sql, {'id': record.id, 'err_msg': err_msg})
-                result = cur.fetchone()
-                return FileIngestRecord.from_postgres_dict(result)
-
-            except Exception as e:
-                raise RuntimeError(f'Updating record id "{record.id}" to status {status} failed with {e.__class__}: {e}')
-
-    def set_status(self, record: FileIngestRecord, status: FileStatus) -> FileIngestRecord:
+    @staticmethod
+    def set_status(record: FileIngestRecord, status: FileStatus, err_msg: Optional[str] = None) -> FileIngestRecord:
         """
         Update the status of the row corresponding to the given file ingest record (by id).
         :param record:
         :param status:
+        :param err_msg:
         :return: the up-to-date file ingest record
         """
 
+        # TODO: rename ingestion_error_msg to error_msg or add new column for pre-ingest error, as this is now used for
+        #  errors related to rejection of files for staging, too
         sql = f"""
               UPDATE {INGEST_MANAGER_TABLE_NAME}
-              SET status = %(status)s, {status.db_column_name} = NOW()
+              SET status = %(status)s, {status.db_column_name} = NOW(), ingestion_error_msg = %(err_msg)s
               WHERE id = %(id)s
               RETURNING *
               """
 
         with get_db_cursor(cursor_factory=psycopg2.extras.RealDictCursor, autocommit=True) as cur:
             try:
-                cur.execute(sql, {'id': record.id, 'status': str(status)})
+                cur.execute(sql, {'id': record.id, 'status': str(status), 'err_msg': err_msg})
                 # TODO: sanity check that exactly one result was changed
                 result = cur.fetchone()
                 return FileIngestRecord.from_postgres_dict(result)
