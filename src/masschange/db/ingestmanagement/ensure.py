@@ -12,10 +12,14 @@ def ensure_ingest_manager_tables_exist() -> None:
     """
 
     with get_db_cursor() as cur:
+        id_seq_name = f'{INGEST_MANAGER_TABLE_NAME}_id_seq'
         sql = f"""
+            -- sequence is necessary due to inability to apply SERIAL to a partitioned table
+            CREATE SEQUENCE IF NOT EXISTS {id_seq_name};
+        
             CREATE TABLE IF NOT EXISTS {INGEST_MANAGER_TABLE_NAME}
             (
-            id SERIAL PRIMARY KEY,
+            id INTEGER NOT NULL DEFAULT nextval('{id_seq_name}'),
             src_filepath  VARCHAR NOT NULL,
             staged_filepath  VARCHAR DEFAULT NULL,
             status  VARCHAR NOT NULL,
@@ -30,29 +34,33 @@ def ensure_ingest_manager_tables_exist() -> None:
 --             TODO: product_id_str is currently used as a proxy for the disambiguation string, though that assumes a 1:1 
 --              relationship between reader and product.  If this results in a problem, an explicit column for the 
 --              reader disambiguation string must be created and used instead
-            UNIQUE (src_filepath, product_id_str, src_file_last_modified)
-            );
+            UNIQUE (src_filepath, product_id_str, src_file_last_modified, status)
+            ) PARTITION BY LIST (status);
             
+            ALTER SEQUENCE _ingestmgr_crawled_files_id_seq
+            OWNED BY _ingestmgr_crawled_files.id;
             
-            CREATE INDEX IF NOT EXISTS idx_crawled_at_is_null
-            ON {INGEST_MANAGER_TABLE_NAME} (crawled_at)
-            WHERE crawled_at IS NULL;
-                        
-            CREATE INDEX IF NOT EXISTS idx_staged_at_is_null
-            ON {INGEST_MANAGER_TABLE_NAME} (staged_at)
-            WHERE staged_at IS NULL;
+            -- partitions prevent active-job query performance from degrading as completed jobs pile up
+            CREATE TABLE _ingestmgr_crawled_files_active
+            PARTITION OF _ingestmgr_crawled_files
+            FOR VALUES IN ('CRAWLED', 'STAGED', 'INGEST_STARTED', 'INGEST_TERMINATED');
+        
+            CREATE TABLE _ingestmgr_crawled_files_done
+            PARTITION OF _ingestmgr_crawled_files
+            FOR VALUES IN ('INGEST_SUCCESS', 'REJECTED');
             
-            CREATE INDEX IF NOT EXISTS idx_ingestion_started_at_is_null
-            ON {INGEST_MANAGER_TABLE_NAME} (ingestion_started_at)
-            WHERE ingestion_started_at IS NULL;
+            -- sparse partial indices for common query patterns
+            CREATE INDEX idx_ready_jobs
+            ON _ingestmgr_crawled_files (id, product_id_str)
+            WHERE status = 'STAGED';
             
-            CREATE INDEX IF NOT EXISTS idx_ingestion_terminated_at_is_null
-            ON {INGEST_MANAGER_TABLE_NAME} (ingestion_started_at)
-            WHERE ingestion_terminated_at IS NULL;
+            CREATE INDEX idx_inprogress_jobs
+            ON _ingestmgr_crawled_files (id, product_id_str)
+            WHERE status = 'INGEST_STARTED';
             
-            CREATE INDEX IF NOT EXISTS idx_ingestion_error_msg_not_null
-            ON {INGEST_MANAGER_TABLE_NAME} (ingestion_error_msg)
-            WHERE ingestion_error_msg IS NOT NULL;
+            CREATE INDEX idx_terminated_jobs
+            ON _ingestmgr_crawled_files (id, product_id_str)
+            WHERE status = 'INGEST_TERMINATED';
         """
         cur.execute(sql)
         log.info(f'Ensured presence of ingest manager tables!')

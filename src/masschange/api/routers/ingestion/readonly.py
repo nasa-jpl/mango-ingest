@@ -94,7 +94,9 @@ def recent_errors():
     query = """
             SELECT ingestion_error_msg as error, count(*) as count
             FROM _ingestmgr_crawled_files
-            WHERE ingestion_terminated_at >= %(since)s
+            WHERE
+              status = 'INGEST_TERMINATED'
+              AND ingestion_terminated_at >= %(since)s
               AND ingestion_error_msg IS NOT NULL 
             GROUP BY ingestion_error_msg
             """
