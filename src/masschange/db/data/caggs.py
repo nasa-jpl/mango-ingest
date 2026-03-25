@@ -184,6 +184,8 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 
 def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
+    # TODO: replace this condition with a property of TimeSeriesDataset/TimeSeriesProduct so the condition is only
+    #  defined once across the codebase
     if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
         return _refresh_offred_continuous_aggregate(dataset, aggregation_level, requested_refresh_span)
 
