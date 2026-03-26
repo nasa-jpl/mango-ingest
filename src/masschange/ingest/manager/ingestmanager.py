@@ -117,7 +117,7 @@ class IngestManager:
             )
         
             UPDATE {INGEST_MANAGER_TABLE_NAME}
-            SET status = '{FileStatus.INGEST_STARTED}', ingestion_started_at = NOW()
+            SET status = '{FileStatus.INGEST_STARTED}', ingest_started_at = NOW()
             FROM successfully_locked_valid_job_rows
             WHERE {INGEST_MANAGER_TABLE_NAME}.id = successfully_locked_valid_job_rows.id
             RETURNING *
