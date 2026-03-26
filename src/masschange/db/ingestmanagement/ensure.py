@@ -42,24 +42,24 @@ def ensure_ingest_manager_tables_exist() -> None:
             OWNED BY _ingestmgr_crawled_files.id;
             
             -- partitions prevent active-job query performance from degrading as completed jobs pile up
-            CREATE TABLE _ingestmgr_crawled_files_active
+            CREATE TABLE IF NOT EXISTS _ingestmgr_crawled_files_active
             PARTITION OF _ingestmgr_crawled_files
             FOR VALUES IN ('CRAWLED', 'STAGED', 'INGEST_STARTED', 'INGEST_TERMINATED', 'REJECTED');
         
-            CREATE TABLE _ingestmgr_crawled_files_completed
+            CREATE TABLE IF NOT EXISTS _ingestmgr_crawled_files_completed
             PARTITION OF _ingestmgr_crawled_files
             FOR VALUES IN ('INGEST_SUCCESS');
             
             -- sparse partial indices for common query patterns
-            CREATE INDEX idx_ready_jobs
+            CREATE INDEX IF NOT EXISTS idx_ready_jobs
             ON _ingestmgr_crawled_files (id, product_id_str)
             WHERE status = 'STAGED';
             
-            CREATE INDEX idx_inprogress_jobs
+            CREATE INDEX IF NOT EXISTS idx_inprogress_jobs
             ON _ingestmgr_crawled_files (id, product_id_str)
             WHERE status = 'INGEST_STARTED';
             
-            CREATE INDEX idx_terminated_jobs
+            CREATE INDEX IF NOT EXISTS idx_terminated_jobs
             ON _ingestmgr_crawled_files (id, product_id_str)
             WHERE status = 'INGEST_TERMINATED';
         """
