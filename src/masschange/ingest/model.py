@@ -13,7 +13,7 @@ class JobManagerEntry:
     id: int
     src_filepath: Path
     crawled_at: Union[datetime, None]
-    ingestion_started_at: Union[datetime, None]
+    ingest_started_at: Union[datetime, None]
     ingestion_terminated_at: Union[datetime, None]
     ingestion_error_msg: Union[str, None]
 
