@@ -49,10 +49,6 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
     expected_dataset_caggs = {dataset.get_table_or_view_name(level) for level in
                               dataset.product.get_available_aggregation_levels()}
 
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        extra_caggs = set(f'{base_cagg}{type_ext}' for base_cagg in expected_dataset_caggs for type_ext in ['float', 'int'])
-        expected_dataset_caggs.update(extra_caggs)
-
     extant_dataset_caggs = get_extant_continuous_aggregates(dataset)
 
     if expected_dataset_caggs != extant_dataset_caggs:
