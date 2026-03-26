@@ -18,7 +18,7 @@ class FileIngestRecord:
             crawled_at: datetime,
             staged_at: Optional[datetime] = None,
             ingest_started_at: Optional[datetime] = None,
-            ingestion_terminated_at: Optional[datetime] = None,
+            ingest_terminated_at: Optional[datetime] = None,
             ingestion_succeeded_at: Optional[datetime] = None,
             ingestion_error_message: Optional[str] = None,
     ):
@@ -29,7 +29,7 @@ class FileIngestRecord:
         self.crawled_at = crawled_at
         self.staged_at = staged_at
         self.ingest_started_at = ingest_started_at
-        self.ingestion_terminated_at = ingestion_terminated_at
+        self.ingest_terminated_at = ingest_terminated_at
         self.ingestion_succeeded_at = ingestion_succeeded_at
         self.ingestion_error_message = ingestion_error_message
 
@@ -43,7 +43,7 @@ class FileIngestRecord:
             "crawled_at": self.crawled_at,
             "staged_at": self.staged_at,
             "ingest_started_at": self.ingest_started_at,
-            "ingestion_terminated_at": self.ingestion_terminated_at,
+            "ingest_terminated_at": self.ingest_terminated_at,
             "ingestion_succeeded_at": self.ingestion_succeeded_at,
             "ingestion_error_message": self.ingestion_error_message,
         }
@@ -59,7 +59,7 @@ class FileIngestRecord:
             crawled_at=row["crawled_at"],
             staged_at=row.get("staged_at"),
             ingest_started_at=row.get("ingest_started_at"),
-            ingestion_terminated_at=row.get("ingestion_terminated_at"),
+            ingest_terminated_at=row.get("ingest_terminated_at"),
             ingestion_succeeded_at=row.get("ingestion_succeeded_at"),
             ingestion_error_message=row.get("ingestion_error_message"),
         )

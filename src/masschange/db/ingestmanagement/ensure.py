@@ -29,7 +29,7 @@ def ensure_ingest_manager_tables_exist() -> None:
             rejected_at TIMESTAMP DEFAULT NULL,
             staged_at TIMESTAMP DEFAULT NULL,
             ingest_started_at TIMESTAMP DEFAULT NULL,
-            ingestion_terminated_at TIMESTAMP DEFAULT NULL,
+            ingest_terminated_at TIMESTAMP DEFAULT NULL,
             ingestion_error_msg TEXT DEFAULT NULL,
             
 --             TODO: product_id_str is currently used as a proxy for the disambiguation string, though that assumes a 1:1 
