@@ -96,7 +96,7 @@ def recent_errors():
             FROM _ingestmgr_crawled_files
             WHERE
               status = 'INGEST_TERMINATED'
-              AND ingestion_terminated_at >= %(since)s
+              AND ingest_terminated_at >= %(since)s
               AND ingestion_error_msg IS NOT NULL 
             GROUP BY ingestion_error_msg
             """
