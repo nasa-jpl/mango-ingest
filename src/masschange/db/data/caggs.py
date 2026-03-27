@@ -77,7 +77,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
             ALTER MATERIALIZED VIEW {new_view_name} SET (
                 timescaledb.compress,
                 timescaledb.compress_segmentby = '{segment_by_column}',
-                timescaledb.compress_orderby   = 'bucket DESC'
+                timescaledb.compress_orderby   = '{dataset.product.TIMESTAMP_COLUMN_NAME} DESC'
             );
             
             SELECT add_compression_policy('{new_view_name}',
