@@ -50,7 +50,7 @@ class Dataset:
                 f'instrument_id {self.instrument_id} not in {self.product.__name__}.instrument_ids - expected one of {self.product.instrument_ids}')
 
         sql = f"""
-            create table public.{self.get_table_name()}
+            CREATE TABLE IF NOT EXISTS public.{self.get_table_name()}
             (
                 {self.product.get_sql_table_schema()}
             );
