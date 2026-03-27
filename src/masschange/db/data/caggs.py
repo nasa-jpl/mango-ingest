@@ -80,6 +80,16 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
                 timescaledb.compress_orderby   = '{dataset.product.TIMESTAMP_COLUMN_NAME} DESC'
             );
             
+            -- dummy cagg refresh policy - this is required before adding a compression policy, but we are handling our 
+            --  cagg refreshes manually.  It's currently unclear whether this is a viable approach.
+            --  configured so as to never touch any extant data
+            SELECT add_continuous_aggregate_policy('{new_view_name}',
+                start_offset => interval '51 years',
+                end_offset   => interval '50 years',
+                schedule_interval => interval '1 year'
+            );
+            
+            
             SELECT add_compression_policy('{new_view_name}',
                 compress_after => interval '{compression_interval_hours} hours'
             );
