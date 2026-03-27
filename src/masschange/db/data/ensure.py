@@ -22,13 +22,11 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
     timestamp_column_name = dataset.product.TIMESTAMP_COLUMN_NAME
     with get_db_cursor() as cur:
         try:
-            sql = f"""
-            {dataset.get_sql_table_create_statement()}
-            
-            select create_hypertable('{table_name}','{timestamp_column_name}');
-            """
-            cur.execute(sql)
+            cur.execute(dataset.get_sql_table_create_statement())
             log.info(f'Created new table: "{table_name}"')
+
+            sql = f"""select create_hypertable('{table_name}','{timestamp_column_name}');"""
+            cur.execute(sql)
         except psycopg2.errors.DuplicateTable:
             # Short-circuit to avoid errors from non-idempotent configuration operations
             return
