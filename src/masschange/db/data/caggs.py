@@ -214,10 +214,6 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 
 def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
-    # TODO: replace this condition with a property of TimeSeriesDataset/TimeSeriesProduct so the condition is only
-    #  defined once across the codebase
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        return _refresh_offred_continuous_aggregate(dataset, aggregation_level, requested_refresh_span)
 
     materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
     bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
@@ -228,22 +224,3 @@ def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level:
         sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
         cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
-
-def _refresh_offred_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
-    # Development prototype of special case behaviour to test performance impact - edunn 20260318
-    materialized_view_base_name = dataset.get_table_or_view_name(aggregation_level)
-    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
-    refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
-    log.debug(f'refreshing cagg {materialized_view_base_name} over {refresh_span}')
-
-    with get_db_cursor(autocommit=True) as cur:
-        sql = (f"""
-            CALL refresh_continuous_aggregate('{materialized_view_base_name}int', %(from_dt)s, %(to_dt)s);
-        """)
-        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
-    with get_db_cursor(autocommit=True) as cur:
-        sql = (f"""
-            CALL refresh_continuous_aggregate('{materialized_view_base_name}float', %(from_dt)s, %(to_dt)s);
-        """)
-        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
-    log.debug(f'refreshed cont. aggs based on {materialized_view_base_name} for buckets spanning {refresh_span}')
