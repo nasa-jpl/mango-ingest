@@ -32,9 +32,6 @@ def delete_caggs(table_names: Collection[str]):
 
 
 def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        return get_offred_continuous_aggregate_create_statements(dataset, aggregation_level)
-
     aggregation_interval_seconds = dataset.product.get_nominal_data_interval(aggregation_level).total_seconds()
     source_name = dataset.get_table_or_view_name(aggregation_level - 1)
     new_view_name = dataset.get_table_or_view_name(aggregation_level)
@@ -54,7 +51,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     group_by_expr =', '.join([bucket_expr] + channel_id_columns)
     agg_columns_block = ',\n'.join(agg_column_exprs)
 
-    return f"""
+    create_statement_block = f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
@@ -69,6 +66,29 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
          -- aggregation refresh policy
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
     """
+
+    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
+        segment_by_column = 'pcf_name'
+        # TODO: tune this value - it may be way off
+        #  should tune to the longest span back which is expected to be queryable "quickly" - need to benchmark what
+        #   the actual decompression overhead is
+        compression_interval_hours = 2 * dataset.product.get_downsampling_factor(aggregation_level)
+        compression_extra_content = f"""
+            ALTER MATERIALIZED VIEW {new_view_name} SET (
+                timescaledb.compress,
+                timescaledb.compress_segmentby = '{segment_by_column}',
+                timescaledb.compress_orderby   = 'bucket DESC'
+            );
+            
+            SELECT add_compression_policy('{new_view_name}',
+                compress_after => interval '{compression_interval_hours} hours'
+            );
+        """
+
+        create_statement_block = '\n'.join([create_statement_block, compression_extra_content])
+
+    return create_statement_block
+
 
 
 def get_offred_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
