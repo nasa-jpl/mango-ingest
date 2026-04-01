@@ -182,7 +182,8 @@ class AsciiDataFileReader(DataFileReader):
         # Drop extraneous columns
         df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
 
-        return df
+        sorted_df = df.sort_values(by=['timestamp'])
+        return sorted_df
 
     @classmethod
     @abstractmethod

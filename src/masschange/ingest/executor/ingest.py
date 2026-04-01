@@ -14,6 +14,8 @@ import pandas
 import pandas as pd
 import psycopg2
 
+import time
+
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
@@ -190,6 +192,7 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
 
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
+    ingest_start_time = time.time()
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
     else:
@@ -202,9 +205,14 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
                                     reader.extract_instrument_id(src_filepath))
 
-    filters = get_data_filters(dataset)
+    start_time = time.time()
 
+    filters = get_data_filters(dataset)
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath, filters=filters)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    log.info(f"QQQQQQ reading time: {elapsed_time} seconds")
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc))
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
@@ -223,6 +231,10 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
         log.debug(f'ingested file: {src_filepath}')
     else:
         log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
+    ingest_end_time = time.time()
+    ingest_elapsed_time = ingest_end_time - ingest_start_time
+    log.info(f"Ingest time: {ingest_elapsed_time} seconds")
+
 
 
 def get_args() -> argparse.Namespace:

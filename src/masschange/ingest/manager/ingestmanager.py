@@ -28,7 +28,7 @@ class IngestManager:
         sql = f"""
               INSERT INTO {INGEST_MANAGER_TABLE_NAME} (id, src_filepath, product_id_str, status, src_file_last_modified)
               VALUES (DEFAULT, %(filepath)s, %(product_full_id_str)s, %(status)s, %(last_modified)s)
-              ON CONFLICT (src_filepath, product_id_str, src_file_last_modified) DO UPDATE SET status = excluded.status, crawled_at = excluded.crawled_at
+              ON CONFLICT (src_filepath, product_id_str, src_file_last_modified, status) DO UPDATE SET status = excluded.status, crawled_at = excluded.crawled_at
               RETURNING *
               """
 
@@ -117,7 +117,7 @@ class IngestManager:
             )
         
             UPDATE {INGEST_MANAGER_TABLE_NAME}
-            SET status = '{FileStatus.INGEST_STARTED}', ingestion_started_at = NOW()
+            SET status = '{FileStatus.INGEST_STARTED}', ingest_started_at = NOW()
             FROM successfully_locked_valid_job_rows
             WHERE {INGEST_MANAGER_TABLE_NAME}.id = successfully_locked_valid_job_rows.id
             RETURNING *

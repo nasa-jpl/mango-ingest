@@ -31,7 +31,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     expected_record_count = 84 # 6 lines, 7 variables, 2 files
     def setUp(self):
         self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
-        os.environ['OFFREAD_METADATA_FILE'] = './tests/input_data/offred/fake_fields_metadata.json'
+        os.environ['OFFRED_METADATA_FILEPATH'] = './tests/input_data/offred/fake_fields_metadata.json'
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
