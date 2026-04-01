@@ -15,25 +15,25 @@ class StubGraceFOOffredDataFileReader(GraceFOOffredDataFileReader):
         return super()._get_current_input_file_column_def(data_fpath, check_time_col_names = False)
 
 class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
-    class StubGraceFOOffredDataProduct(GraceFOOffredDataProduct):
-        @classmethod
-        def get_reader(cls):
-            return StubGraceFOOffredDataFileReader()
+    # class StubGraceFOOffredDataProduct(GraceFOOffredDataProduct):
+    #     @classmethod
+    #     def get_reader(cls):
+    #         return StubGraceFOOffredDataFileReader()
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.environ['OFFREAD_METADATA_FILE'] = './tests/input_data/offred/fake_fields_metadata.json'
+        os.environ['OFFRED_METADATA_FILEPATH'] = './src/masschange/ingest/executor/datafilereaders/gracefo/offred/static/offred_fields_metadata.json'
         super().setUpClass()
 
     @classmethod
     def tearDownClass(cls):
-        os.environ.pop('OFFREAD_METADATA_FILE', None)
+        os.environ.pop('OFFRED_METADATA_FILEPATH', None)
         super().tearDownClass()
 
     test_data_path = './tests/input_data/offred/'
     data_is_zipped = False
     maxDiff = None
-    dataset_cls = StubGraceFOOffredDataProduct
+    dataset_cls = GraceFOOffredDataProduct
     expected_table_names = ['gracefo_offred_00_gf1', 'gracefo_offred_00_gf2']
     expected_field_types = [str, int, int, str, str, str, Union[str, None], Union[int, None], Union[float, None],
                             Union[str, None], datetime]

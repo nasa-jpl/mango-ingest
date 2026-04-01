@@ -32,6 +32,9 @@ def delete_caggs(table_names: Collection[str]):
 
 
 def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
+    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
+        return get_offred_continuous_aggregate_create_statements(dataset, aggregation_level)
+
     aggregation_interval_seconds = dataset.product.get_nominal_data_interval(aggregation_level).total_seconds()
     source_name = dataset.get_table_or_view_name(aggregation_level - 1)
     new_view_name = dataset.get_table_or_view_name(aggregation_level)
@@ -66,6 +69,63 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
          -- aggregation refresh policy
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
     """
+
+
+def get_offred_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
+    # Development prototype of special case behaviour to test performance impact - edunn 20260318
+    aggregation_interval_seconds = dataset.product.get_nominal_data_interval(aggregation_level).total_seconds()
+    source_base_name = dataset.get_table_or_view_name(aggregation_level - 1)
+    new_view_base_name = dataset.get_table_or_view_name(aggregation_level)
+    new_int_view_name = f'{new_view_base_name}int'
+    new_float_view_name = f'{new_view_base_name}float'
+
+    bucket_expr = f"time_bucket(INTERVAL '{aggregation_interval_seconds} SECOND', src.{dataset.product.TIMESTAMP_COLUMN_NAME})"
+    channel_id_columns = sorted(
+        field.name for field in dataset.product.get_available_fields() if field.is_channel_id_column)
+    channel_id_select_block = ''.join(f'{column}, ' for column in channel_id_columns)
+    group_by_expr = ', '.join([bucket_expr] + channel_id_columns)
+    int_source_name = f'{source_base_name}int' if aggregation_level > 1 else source_base_name
+    value_int_min_src = 'value_int_min' if aggregation_level > 1 else 'value_int'
+    value_int_max_src = 'value_int_max' if aggregation_level > 1 else 'value_int'
+    float_source_name = f'{source_base_name}float' if aggregation_level > 1 else source_base_name
+    value_float_min_src = 'value_float_min' if aggregation_level > 1 else 'value_float'
+    value_float_max_src = 'value_float_max' if aggregation_level > 1 else 'value_float'
+
+    return f"""
+             ---- create int matviews
+            CREATE MATERIALIZED VIEW {new_int_view_name}
+            WITH (timescaledb.continuous) AS
+            SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME}, {channel_id_select_block}
+            MIN({value_int_min_src}) FILTER (WHERE {value_int_min_src} IS NOT NULL) as value_int_min ,
+            MAX({value_int_max_src}) FILTER (WHERE {value_int_max_src} IS NOT NULL) as value_int_max
+            FROM {int_source_name} as src
+            GROUP BY {group_by_expr}
+            WITH NO DATA;
+
+             ---- create float matviews
+            CREATE MATERIALIZED VIEW {new_float_view_name}
+            WITH (timescaledb.continuous) AS
+            SELECT {bucket_expr} AS {dataset.product.TIMESTAMP_COLUMN_NAME}, {channel_id_select_block}
+            MIN({value_float_min_src}) FILTER (WHERE {value_float_min_src} IS NOT NULL) as value_float_min,
+            MAX({value_float_max_src}) FILTER (WHERE {value_float_max_src} IS NOT NULL) as value_float_max
+            FROM {float_source_name} as src
+            GROUP BY {group_by_expr}
+            WITH NO DATA;
+
+             ---- disable realtime aggregation
+             -- RTA is prohibitively expensive, so data availability will be determined by the values used in the continuous
+             -- aggregation refresh policy
+            ALTER MATERIALIZED VIEW {new_int_view_name} set (timescaledb.materialized_only = true);
+            ALTER MATERIALIZED VIEW {new_float_view_name} set (timescaledb.materialized_only = true);
+            
+             ---- create union view as base name
+            CREATE VIEW {new_view_base_name} AS
+              SELECT {dataset.product.TIMESTAMP_COLUMN_NAME}, {channel_id_select_block} value_int_min, value_int_max, NULL as value_float_min, NULL as value_float_max from {new_int_view_name}
+              UNION ALL
+              SELECT {dataset.product.TIMESTAMP_COLUMN_NAME}, {channel_id_select_block} NULL as value_int_min, NULL as value_int_max, value_float_min, value_float_max from {new_float_view_name}
+              ;
+              
+        """
 
 
 def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limit: TimeSpan = None, enable_chunking: bool = False):
@@ -124,6 +184,11 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 
 def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
+    # TODO: replace this condition with a property of TimeSeriesDataset/TimeSeriesProduct so the condition is only
+    #  defined once across the codebase
+    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
+        return _refresh_offred_continuous_aggregate(dataset, aggregation_level, requested_refresh_span)
+
     materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
     bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
     refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
@@ -133,3 +198,22 @@ def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level:
         sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
         cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
+
+def _refresh_offred_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
+    # Development prototype of special case behaviour to test performance impact - edunn 20260318
+    materialized_view_base_name = dataset.get_table_or_view_name(aggregation_level)
+    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
+    refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
+    log.debug(f'refreshing cagg {materialized_view_base_name} over {refresh_span}')
+
+    with get_db_cursor(autocommit=True) as cur:
+        sql = (f"""
+            CALL refresh_continuous_aggregate('{materialized_view_base_name}int', %(from_dt)s, %(to_dt)s);
+        """)
+        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
+    with get_db_cursor(autocommit=True) as cur:
+        sql = (f"""
+            CALL refresh_continuous_aggregate('{materialized_view_base_name}float', %(from_dt)s, %(to_dt)s);
+        """)
+        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
+    log.debug(f'refreshed cont. aggs based on {materialized_view_base_name} for buckets spanning {refresh_span}')
