@@ -205,14 +205,9 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
                                     reader.extract_instrument_id(src_filepath))
 
-    start_time = time.time()
-
     filters = get_data_filters(dataset)
     pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath, filters=filters)
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    log.info(f"QQQQQQ reading time: {elapsed_time} seconds")
     data_temporal_span = TimeSpan(begin=min(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc),
                                   end=max(pd_df[product.TIMESTAMP_COLUMN_NAME]).replace(tzinfo=timezone.utc))
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
@@ -234,7 +229,6 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_end_time = time.time()
     ingest_elapsed_time = ingest_end_time - ingest_start_time
     log.info(f"Ingest time: {ingest_elapsed_time} seconds")
-
 
 
 def get_args() -> argparse.Namespace:
