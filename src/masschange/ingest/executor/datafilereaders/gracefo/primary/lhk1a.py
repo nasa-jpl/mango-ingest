@@ -1,11 +1,16 @@
 from collections.abc import Collection
 from datetime import datetime, timedelta
 
+from typing import Union
+
 import numpy as np
+import pandas as pd
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
-    ArrayLikeAsciiDataFileReaderColumn
+    ArrayLikeAsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn
+from masschange.ingest.executor.datafilereaders.filter import DataFilter
+from masschange.ingest.utils.populate_dynamic_unit import populate_dynamic_unit
 
 
 class GraceFOLhk1ADataFileReader(AsciiDataFileReader):
@@ -33,7 +38,8 @@ class GraceFOLhk1ADataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.ulonglong, unit=None,
                                       aggregations=['min', 'max']),
-            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U1000', unit=None, is_channel_id_column=True)
+            AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U1000', unit=None, is_channel_id_column=True),
+            DerivedAsciiDataFileReaderColumn(name='unit', np_type='U4', unit=None)
         ]
 
     @classmethod
@@ -42,3 +48,12 @@ class GraceFOLhk1ADataFileReader(AsciiDataFileReader):
         # Postgres does not supports nanoseconds timestamp, so the timestamps will have microseconds precision
         return cls.get_reference_epoch() + timedelta(seconds=row.time_intg, microseconds=row.time_frac/1000)
 
+    @classmethod
+    def load_data_from_file(cls, filepath: str, filters: Union[list[DataFilter], None] = None) -> pd.DataFrame:
+        # Overwrite the parent's method to add 'unit' column
+        df = super().load_data_from_file(filepath, filters=filters)
+
+        # insert unit column after "sensorname" column
+        df.insert(loc=df.columns.get_loc("sensorname") + 1, column="unit",
+                  value=df.apply(populate_dynamic_unit, axis=1))
+        return df
