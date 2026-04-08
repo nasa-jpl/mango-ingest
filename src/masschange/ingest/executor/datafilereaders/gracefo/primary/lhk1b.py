@@ -31,7 +31,8 @@ class GraceFOLhk1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             ArrayLikeAsciiDataFileReaderColumn(index=4, name='qualflg', np_type='U8', array_size=8),
             AsciiDataFileReaderColumn(index=5, name='sensortype', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.ulonglong, unit=None),
+            AsciiDataFileReaderColumn(index=6, name='sensorvalue', np_type=np.ulonglong, unit=None,
+                                      aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=7, name='sensorname', np_type='U1000', unit=None, is_channel_id_column=True)
         ]
 
