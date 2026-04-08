@@ -30,6 +30,7 @@ class GraceFOIhk1ADataProduct(TimeSeriesDataProduct):
             sensortype CHAR not null,
             sensorvalue double precision not null,
             sensorname VARCHAR(2) not null,
+            unit VARCHAR(4),
 
             {get_schema_updates_for_flag_fields("qualflg", 8)}
             

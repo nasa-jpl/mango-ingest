@@ -34,6 +34,7 @@ class GraceFOLhk1BDataProduct(TimeSeriesDataProduct):
             sensortype CHAR not null,
             sensorvalue bigint not null,
             sensorname VARCHAR(1000) not null,
+            unit VARCHAR(4),
             
             {get_schema_updates_for_flag_fields("qualflg", 8)}
             
