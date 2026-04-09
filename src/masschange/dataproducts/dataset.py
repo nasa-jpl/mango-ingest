@@ -20,7 +20,7 @@ from masschange.dataproducts.db.utils import list_table_columns as list_db_table
     prepare_where_clause_conditions, prepare_where_clause_parameters
 from masschange.dataproducts.dataproductfield import DataProductField, \
     TimeSeriesDataProductLocationLookupField
-from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.api.utils.misc import KeyValueFilterSet
 
 log = logging.getLogger()
 
@@ -177,9 +177,9 @@ class Dataset:
     def select(self, from_dt: datetime, to_dt: datetime,
                fields: Collection[DataProductField] = None, aggregation_level: int = None,
                limit_data_span: bool = True, resolve_location: bool = False,
-               filters: List[KeyValueQueryParameter] = None) -> List[Dict]:
+               filters: KeyValueFilterSet = None) -> List[Dict]:
 
-        filters = filters or []
+        filters = filters or KeyValueFilterSet([])
         requested_aggregation_level = aggregation_level or 0
 
         # validate aggregation level if limit_data_span is True
