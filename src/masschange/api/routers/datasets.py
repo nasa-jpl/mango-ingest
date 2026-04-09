@@ -10,7 +10,7 @@ from psycopg2.sql import Identifier, SQL
 from strenum import StrEnum  # only supported in stdlib from Python 3.11 onward
 
 from masschange.api.errors import TooMuchDataRequestedError
-from masschange.api.utils.misc import KeyValueQueryParameter
+from masschange.api.utils.misc import KeyValueQueryParameter, KeyValueFilterSet
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.db.conn import get_db_cursor
 from masschange.dataproducts.db.utils import list_table_columns as list_db_table_columns, prepare_where_clause_conditions, prepare_where_clause_parameters
@@ -49,19 +49,24 @@ def dataset_parameters(mission_id: str, product_id_suffix: str, version_id: str,
 
 
 def instantiate_filters(product: TimeSeriesDataProduct,
-                        filter_qparam_strs: Union[List[str], None]) -> List[KeyValueQueryParameter]:
+                        filter_qparam_strs: Union[List[str], None]) -> KeyValueFilterSet:
     if filter_qparam_strs is not None:
         filters = [KeyValueQueryParameter(s) for s in filter_qparam_strs]
     else:
         filters = []
 
-    extant_filter_keys = {f.key for f in filters}
-    expected_filter_keys = {field.name for field in product.get_available_fields() if field.is_channel_id_column}
-    if not expected_filter_keys.issubset(extant_filter_keys):
-        raise HTTPException(status_code=400,
-                            detail=f'One or more required fields missing as "filter" qparam (expected {expected_filter_keys} with syntax "filter={{field}}={{value}}")')
+    filter_set = KeyValueFilterSet(filters)
 
-    return filters
+    time_series_id_filter_keys = {field.name for field in product.get_available_fields() if field.is_channel_id_column}
+    for key in time_series_id_filter_keys:
+        defined_value_count = len(filter_set.as_dict().get(key))
+        if defined_value_count < 1:
+            raise HTTPException(status_code=400,
+                                detail=f'One or more required fields missing as "filter" qparam (expected {time_series_id_filter_keys} with syntax "filter={{field}}={{value}}")')
+        elif defined_value_count > 1:
+            raise HTTPException(status_code=400,detail=f'Timeseries id column "{key}"is defined with "filter" qparam multiple times with different values - fetching multiple time-series simultaneously is not supported')
+
+    return filter_set
 
 @router.get('/versions/{version_id}/instruments/{instrument_id}', tags=['metadata'])
 async def describe_dataset_instance(dataset: Annotated[Dataset, Depends(dataset_parameters)]):
