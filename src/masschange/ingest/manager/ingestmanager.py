@@ -101,7 +101,7 @@ class IngestManager:
 
     @staticmethod
     def fetch_next_valid_job(exclude_offred: bool = True) -> Union[FileIngestRecord, None]:
-        offred_exclusion_condition = "product_id_str!='GRACEFO_OFFRED"
+        offred_exclusion_condition = "product_id_str!='GRACEFO_OFFRED'"
         sql = f"""
             WITH successfully_locked_valid_job_rows AS (
                 SELECT *
