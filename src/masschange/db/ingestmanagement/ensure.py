@@ -1,7 +1,8 @@
 import logging
 
 from masschange.db.conn import get_db_cursor
-from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME
+from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME, INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME, \
+    INGEST_MANAGER_COMPLETED_PARTITION_TABLE_NAME
 
 log = logging.getLogger()
 
@@ -38,29 +39,29 @@ def ensure_ingest_manager_tables_exist() -> None:
             UNIQUE (src_filepath, product_id_str, src_file_last_modified, status)
             ) PARTITION BY LIST (status);
             
-            ALTER SEQUENCE _ingestmgr_crawled_files_id_seq
-            OWNED BY _ingestmgr_crawled_files.id;
+            ALTER SEQUENCE {INGEST_MANAGER_TABLE_NAME}_id_seq
+            OWNED BY {INGEST_MANAGER_TABLE_NAME}.id;
             
             -- partitions prevent active-job query performance from degrading as completed jobs pile up
-            CREATE TABLE IF NOT EXISTS _ingestmgr_crawled_files_active
-            PARTITION OF _ingestmgr_crawled_files
+            CREATE TABLE IF NOT EXISTS {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}
+            PARTITION OF {INGEST_MANAGER_TABLE_NAME}
             FOR VALUES IN ('CRAWLED', 'STAGED', 'INGEST_STARTED', 'INGEST_TERMINATED', 'REJECTED');
         
-            CREATE TABLE IF NOT EXISTS _ingestmgr_crawled_files_completed
-            PARTITION OF _ingestmgr_crawled_files
+            CREATE TABLE IF NOT EXISTS {INGEST_MANAGER_COMPLETED_PARTITION_TABLE_NAME}
+            PARTITION OF {INGEST_MANAGER_TABLE_NAME}
             FOR VALUES IN ('INGEST_SUCCESS');
             
             -- sparse partial indices for common query patterns
             CREATE INDEX IF NOT EXISTS idx_ready_jobs
-            ON _ingestmgr_crawled_files (id, product_id_str)
+            ON {INGEST_MANAGER_TABLE_NAME} (id, product_id_str)
             WHERE status = 'STAGED';
             
             CREATE INDEX IF NOT EXISTS idx_inprogress_jobs
-            ON _ingestmgr_crawled_files (id, product_id_str)
+            ON {INGEST_MANAGER_TABLE_NAME} (id, product_id_str)
             WHERE status = 'INGEST_STARTED';
             
             CREATE INDEX IF NOT EXISTS idx_terminated_jobs
-            ON _ingestmgr_crawled_files (id, product_id_str)
+            ON {INGEST_MANAGER_TABLE_NAME} (id, product_id_str)
             WHERE status = 'INGEST_TERMINATED';
         """
         cur.execute(sql)
