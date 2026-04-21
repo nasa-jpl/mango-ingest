@@ -112,8 +112,8 @@ class IngestManager:
                         SELECT DISTINCT src_filepath
                         FROM {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}
                         WHERE status = '{FileStatus.INGEST_STARTED}'
-                    AND {offred_exclusion_condition if exclude_offred else 'TRUE'}
                     )
+                    AND {offred_exclusion_condition if exclude_offred else 'TRUE'}
                 LIMIT 1
                 FOR UPDATE
             )
