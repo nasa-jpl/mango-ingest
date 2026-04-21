@@ -4,6 +4,13 @@ version: '3'
 #  simultaneous offred ingestion processes, which have exceptionally-high memory requirements
 #  these workers use a common base configuration and are differentiated by an environment variable that controls whether
 #  they will pick up offred ingestion tasks or not
+x-mango-ingest-worker-common-env: &mango-ingest-worker-common-env
+  SOURCE_DATA_ROOT:
+  TSDB_HOST:
+  TSDB_PORT:
+  TSDB_PASSWORD: ${DB_PASSWORD}
+  OFFRED_METADATA_FILEPATH: /sensitive/offred_fields_metadata.json
+
 x-mango-ingest-worker-base: &mango-ingest-worker-base
     build: .
     depends_on:
@@ -14,12 +21,6 @@ x-mango-ingest-worker-base: &mango-ingest-worker-base
     networks:
       - mango-backend
     restart: 'always'
-    environment:
-      - SOURCE_DATA_ROOT
-      - TSDB_HOST
-      - TSDB_PORT
-      - TSDB_PASSWORD=${DB_PASSWORD}
-      - OFFRED_METADATA_FILEPATH=/sensitive/offred_fields_metadata.json
     volumes:
       - $SOURCE_DATA_ROOT:/input
       - $INGEST_STAGING_ROOT:/staging
@@ -93,6 +94,8 @@ services:
     command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
     <<: *mango-ingest-worker-base
+    environment:
+      <<: *mango-ingest-worker-common-env
     deploy:
       mode: replicated
       replicas: 4
@@ -103,7 +106,8 @@ services:
 #      offred ingest workers are exceptionally memory-intensive, so we limit the number of replicas to avoid overwhelming the host system
       replicas: 4
     environment:
-      - MAY_INGEST_OFFRED=1
+      <<: *mango-ingest-worker-common-env
+      MAY_INGEST_OFFRED: 1
   mango-ensure:
     build: .
     depends_on:
