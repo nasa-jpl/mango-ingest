@@ -1,4 +1,32 @@
 version: '3'
+
+# workers must be split into two services to allow an optimal number of overall workers while limiting the number of
+#  simultaneous offred ingestion processes, which have exceptionally-high memory requirements
+#  these workers use a common base configuration and are differentiated by an environment variable that controls whether
+#  they will pick up offred ingestion tasks or not
+x-mango-ingest-worker-base: &mango-ingest-worker-base
+    build: .
+    depends_on:
+      mango-db:
+        condition: service_healthy
+      mango-ensure:
+        condition: service_completed_successfully
+    networks:
+      - mango-backend
+    restart: 'always'
+    environment:
+      - SOURCE_DATA_ROOT
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+      - OFFRED_METADATA_FILEPATH=/sensitive/offred_fields_metadata.json
+    volumes:
+      - $SOURCE_DATA_ROOT:/input
+      - $INGEST_STAGING_ROOT:/staging
+      - ${OFFRED_METADATA_FILEPATH}:/sensitive/offred_fields_metadata.json:ro
+    user: root
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+
 services:
   mango-api:
     build: .
@@ -64,30 +92,18 @@ services:
     user: root
     command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
-    build: .
-    depends_on:
-      mango-db:
-        condition: service_healthy
-      mango-ensure:
-        condition: service_completed_successfully
-    networks:
-      - mango-backend
-    restart: 'always'
+    <<: *mango-ingest-worker-base
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 4
+  mango-ingest-worker-offred:
+    <<: *mango-ingest-worker-base
+    deploy:
+      mode: replicated
+#      offred ingest workers are exceptionally memory-intensive, so we limit the number of replicas to avoid overwhelming the host system
+      replicas: 4
     environment:
-      - SOURCE_DATA_ROOT
-      - TSDB_HOST
-      - TSDB_PORT
-      - TSDB_PASSWORD=${DB_PASSWORD}
-      - OFFRED_METADATA_FILEPATH=/sensitive/offred_fields_metadata.json
-    volumes:
-      - $SOURCE_DATA_ROOT:/input
-      - $INGEST_STAGING_ROOT:/staging
-      - ${OFFRED_METADATA_FILEPATH}:/sensitive/offred_fields_metadata.json:ro
-    user: root
-    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+      - MAY_INGEST_OFFRED=1
   mango-ensure:
     build: .
     depends_on:
