@@ -14,7 +14,7 @@ from masschange.utils.logging import configure_root_logger
 
 class IngestExecutor:
     poll_sleep_delay = timedelta(seconds=1)  # todo: parametrise
-    exclude_offred = os.environ.get('MAY_INGEST_OFFRED', '').lower not in ['true', '1', 'yes']
+    exclude_offred = os.environ.get('MAY_INGEST_OFFRED', '').lower() not in ['true', '1', 'yes']
 
     def run(self, loop_forever: bool = False):
         ingest_manager = IngestManager()
