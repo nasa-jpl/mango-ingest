@@ -100,7 +100,8 @@ class IngestManager:
 
 
     @staticmethod
-    def fetch_next_valid_job() -> Union[FileIngestRecord, None]:
+    def fetch_next_valid_job(exclude_offred: bool = True) -> Union[FileIngestRecord, None]:
+        offred_exclusion_condition = "product_id_str!='GRACEFO_OFFRED"
         sql = f"""
             WITH successfully_locked_valid_job_rows AS (
                 SELECT *
@@ -111,6 +112,7 @@ class IngestManager:
                         SELECT DISTINCT src_filepath
                         FROM {INGEST_MANAGER_TABLE_NAME}
                         WHERE status = '{FileStatus.INGEST_STARTED}'
+                    AND {offred_exclusion_condition if exclude_offred else 'TRUE'}
                     )
                 LIMIT 1
                 FOR UPDATE
