@@ -39,6 +39,9 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
             cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
             log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
 
+
+# TODO: DETERMINE WHETHER THIS CODE SHOULD BE HERE OR NOT - ERR ON REVERTING AND RE-BENCHING ONCE FEASIBLE INGEST SOLUTION
+#     HAS BEEN DETERMINED
 #   Perform OFFRED-specific table configuration
 #     BEGIN PROTOTYPE DEVELOPMENT CODE
     if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
