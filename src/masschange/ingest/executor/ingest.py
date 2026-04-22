@@ -5,7 +5,7 @@ import shutil
 import tarfile
 import zipfile
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from io import StringIO
 from pathlib import Path
 from typing import Iterable, Union, List
@@ -107,7 +107,13 @@ def get_zipped_input_iterable(root_dir: str,
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
 
     if dataset.product.get_reader().OVERWRITE_BEHAVIOR ==  ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
-        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath))
+        # TODO: generalise this, instead of hardcoding for OFFRED
+        maximum_expected_file_temporal_duration = timedelta(hours=4)
+        # the beginning and end of the data span should be padded equally to produce a deletion span of at least
+        # maximum_expected_file_temporal_duration
+        end_padding = max(maximum_expected_file_temporal_duration - data_temporal_span.duration, timedelta(0)) / 2
+        deletion_constraint_span = TimeSpan(begin=data_temporal_span.begin - end_padding, end=data_temporal_span.end + end_padding)
+        delete_overlapping_data_by_source_fname(dataset, os.path.basename(src_filepath), limit_to_temporal_span=deletion_constraint_span)
     else:
         delete_overlapping_data_by_temporal_bounds(dataset, data_temporal_span)
 
@@ -123,12 +129,15 @@ def delete_overlapping_data_by_temporal_bounds(dataset: Dataset, data_temporal_s
         cur.execute(sql, {'from_dt': data_temporal_span.begin, 'to_dt': data_temporal_span.end})
         log.debug(f'purged data from {table_name} for span {data_temporal_span}')
 
-def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str):
+
+def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: str, limit_to_temporal_span: TimeSpan):
     '''
     This function is designed for inputs where data of the same product type are distributed across multiple files,
     all covering approximately the same time range. In such scenarios, it is not possible to rely on data span
     for removing duplicated entries, so the name of the source file is used instead to prevent ingesting
     the same file multiple times.
+
+    limit_to_temporal_span is necessary to avoid scanning irrelevant chunks, which causes linear-time blowout
 
     This method is particularly useful for sources like OFFRED data, which includes entries of the same product type
     across overlapping files.
@@ -148,8 +157,10 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
             DELETE 
             FROM {table_name}
                 WHERE   {source_file_column_name} = '{source_file_name}'
+                    AND {dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
+                    AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
-        cur.execute(sql)
+        cur.execute(sql, {'from_dt': limit_to_temporal_span.begin, 'to_dt': limit_to_temporal_span.end})
         log.debug(f'purged data from {table_name} for source file name {source_file_name}')
 
 def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
