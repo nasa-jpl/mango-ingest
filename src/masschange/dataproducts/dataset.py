@@ -55,6 +55,16 @@ class Dataset:
                 {self.product.get_sql_table_schema()}
             );
         """
+
+        # TODO: validate this for non-OFFRED products - should be fine but need to confirm
+        indexable_fields = [f for f in self.product.get_available_fields() if f.is_channel_id_column]
+        for field in indexable_fields:
+            sql += f"""
+             create index {self.get_table_name()}_{field.name}_idx
+                on {self.get_table_name()};
+            """
+
+
         return sql
 
     def get_data_span(self, use_cache: bool = False) -> Union[TimeSpan, None]:
