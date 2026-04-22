@@ -66,7 +66,7 @@ class Dataset:
         for column in indexable_field_names:
             sql += f"""
              create index {self.get_table_name()}_{column}_idx
-                on {self.get_table_name()};
+                on {self.get_table_name()} ({column});
             """
 
 
