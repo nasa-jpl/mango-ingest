@@ -8,7 +8,7 @@ from psycopg2 import extras
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.db.conn import get_db_cursor
-from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME
+from masschange.db.constants.tablenames import INGEST_MANAGER_TABLE_NAME, INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME
 from masschange.db.ingestmanagement.ensure import ensure_ingest_manager_tables_exist
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
 from masschange.ingest.manager.filestatus import FileStatus
@@ -100,26 +100,28 @@ class IngestManager:
 
 
     @staticmethod
-    def fetch_next_valid_job() -> Union[FileIngestRecord, None]:
+    def fetch_next_valid_job(exclude_offred: bool = True) -> Union[FileIngestRecord, None]:
+        offred_exclusion_condition = "product_id_str!='GRACEFO_OFFRED'"
         sql = f"""
             WITH successfully_locked_valid_job_rows AS (
                 SELECT *
-                FROM {INGEST_MANAGER_TABLE_NAME}
+                FROM {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}
                 WHERE status = 'STAGED'
                     AND src_filepath NOT IN (
         --             The set of all src_filepaths with a job currently ingesting
                         SELECT DISTINCT src_filepath
-                        FROM {INGEST_MANAGER_TABLE_NAME}
+                        FROM {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}
                         WHERE status = '{FileStatus.INGEST_STARTED}'
                     )
+                    AND {offred_exclusion_condition if exclude_offred else 'TRUE'}
                 LIMIT 1
                 FOR UPDATE
             )
         
-            UPDATE {INGEST_MANAGER_TABLE_NAME}
+            UPDATE {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}
             SET status = '{FileStatus.INGEST_STARTED}', ingest_started_at = NOW()
             FROM successfully_locked_valid_job_rows
-            WHERE {INGEST_MANAGER_TABLE_NAME}.id = successfully_locked_valid_job_rows.id
+            WHERE {INGEST_MANAGER_ACTIVE_PARTITION_TABLE_NAME}.id = successfully_locked_valid_job_rows.id
             RETURNING *
         """
 

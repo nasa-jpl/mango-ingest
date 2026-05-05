@@ -9,6 +9,7 @@ from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.implementations.gracefo.primary.gnv1a import GraceFOGnv1ADataProduct
 from masschange.dataproducts.datasetversion import DatasetVersion
+from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.utils.timespan import TimeSpan
 from typing import Union
 from datetime import datetime
@@ -55,6 +56,20 @@ class Dataset:
                 {self.product.get_sql_table_schema()}
             );
         """
+
+        # TODO: validate this for non-OFFRED products - should be fine but need to confirm
+        indexable_field_names = [f.name for f in self.product.get_available_fields() if f.is_channel_id_column]
+
+        if self.product.get_reader().OVERWRITE_BEHAVIOR is ReaderOverwriteBehavior.OVERWRITE_ROWS_WITH_MATCHING_SRC_FNAME:
+            indexable_field_names.append(self.product.get_reader().SOURCE_FILE_COLUMN_NAME)
+
+        for column in indexable_field_names:
+            sql += f"""
+             create index {self.get_table_name()}_{column}_idx
+                on {self.get_table_name()} ({column});
+            """
+
+
         return sql
 
     def get_data_span(self, use_cache: bool = False) -> Union[TimeSpan, None]:

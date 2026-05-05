@@ -32,9 +32,6 @@ def delete_caggs(table_names: Collection[str]):
 
 
 def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        return get_offred_continuous_aggregate_create_statements(dataset, aggregation_level)
-
     aggregation_interval_seconds = dataset.product.get_nominal_data_interval(aggregation_level).total_seconds()
     source_name = dataset.get_table_or_view_name(aggregation_level - 1)
     new_view_name = dataset.get_table_or_view_name(aggregation_level)
@@ -54,7 +51,7 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
     group_by_expr =', '.join([bucket_expr] + channel_id_columns)
     agg_columns_block = ',\n'.join(agg_column_exprs)
 
-    return f"""
+    create_statement_block = f"""
          -- create materialized view without data
         CREATE MATERIALIZED VIEW {new_view_name}
         WITH (timescaledb.continuous) AS
@@ -69,6 +66,39 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
          -- aggregation refresh policy
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
     """
+
+    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
+        segment_by_column = 'pcf_name'
+        # TODO: tune this value - it may be way off
+        #  should tune to the longest span back which is expected to be queryable "quickly" - need to benchmark what
+        #   the actual decompression overhead is
+        compression_interval_hours = 2 * dataset.product.get_downsampling_factor(aggregation_level)
+        compression_extra_content = f"""
+            ALTER MATERIALIZED VIEW {new_view_name} SET (
+                timescaledb.compress,
+                timescaledb.compress_segmentby = '{segment_by_column}',
+                timescaledb.compress_orderby   = '{dataset.product.TIMESTAMP_COLUMN_NAME} DESC'
+            );
+            
+            -- dummy cagg refresh policy - this is required before adding a compression policy, but we are handling our 
+            --  cagg refreshes manually.  It's currently unclear whether this is a viable approach.
+            --  configured so as to never touch any extant data
+            SELECT add_continuous_aggregate_policy('{new_view_name}',
+                start_offset => interval '51 years',
+                end_offset   => interval '50 years',
+                schedule_interval => interval '1 year'
+            );
+            
+            
+            SELECT add_compression_policy('{new_view_name}',
+                compress_after => interval '{compression_interval_hours} hours'
+            );
+        """
+
+        create_statement_block = '\n'.join([create_statement_block, compression_extra_content])
+
+    return create_statement_block
+
 
 
 def get_offred_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggregation_level: int) -> str:
@@ -184,10 +214,6 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 
 def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
     """Refresh a single cagg over a given span"""
-    # TODO: replace this condition with a property of TimeSeriesDataset/TimeSeriesProduct so the condition is only
-    #  defined once across the codebase
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        return _refresh_offred_continuous_aggregate(dataset, aggregation_level, requested_refresh_span)
 
     materialized_view_name = dataset.get_table_or_view_name(aggregation_level)
     bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
@@ -198,22 +224,3 @@ def _refresh_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level:
         sql = f"CALL refresh_continuous_aggregate('{materialized_view_name}', %(from_dt)s, %(to_dt)s);"
         cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
         log.debug(f'refreshed cont. agg. {materialized_view_name} for buckets spanning {refresh_span}')
-
-def _refresh_offred_continuous_aggregate(dataset: TimeSeriesDataset, aggregation_level: int, requested_refresh_span: TimeSpan):
-    # Development prototype of special case behaviour to test performance impact - edunn 20260318
-    materialized_view_base_name = dataset.get_table_or_view_name(aggregation_level)
-    bucket_interval = dataset.product.get_cagg_bucket_interval(aggregation_level)
-    refresh_span = TimeSpan(requested_refresh_span.begin - bucket_interval, requested_refresh_span.end + bucket_interval)
-    log.debug(f'refreshing cagg {materialized_view_base_name} over {refresh_span}')
-
-    with get_db_cursor(autocommit=True) as cur:
-        sql = (f"""
-            CALL refresh_continuous_aggregate('{materialized_view_base_name}int', %(from_dt)s, %(to_dt)s);
-        """)
-        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
-    with get_db_cursor(autocommit=True) as cur:
-        sql = (f"""
-            CALL refresh_continuous_aggregate('{materialized_view_base_name}float', %(from_dt)s, %(to_dt)s);
-        """)
-        cur.execute(sql, {'from_dt': refresh_span.begin, 'to_dt': refresh_span.end})
-    log.debug(f'refreshed cont. aggs based on {materialized_view_base_name} for buckets spanning {refresh_span}')

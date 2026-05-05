@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import shutil
 import time
 from datetime import timedelta
@@ -13,12 +14,13 @@ from masschange.utils.logging import configure_root_logger
 
 class IngestExecutor:
     poll_sleep_delay = timedelta(seconds=1)  # todo: parametrise
+    exclude_offred = os.environ.get('MAY_INGEST_OFFRED', '').lower() not in ['true', '1', 'yes']
 
     def run(self, loop_forever: bool = False):
         ingest_manager = IngestManager()
 
         while True:
-            available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job()
+            available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job(exclude_offred=self.exclude_offred)
             if available_job is None and loop_forever:
                 time.sleep(self.poll_sleep_delay.total_seconds())
                 # logging.debug(f'No jobs available - sleeping {self.poll_sleep_delay.total_seconds()}sec')
