@@ -153,7 +153,6 @@ class OffredFileReader(AsciiDataFileReader):
 
 
                 for each_file in files:
-                    print("QQQQQQQ ", each_file)
                     data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
 
             # 2. Perform ONE single concatenation (Memory efficient)
@@ -259,7 +258,6 @@ class OffredFileReader(AsciiDataFileReader):
         # sorted_indices = np.lexsort((secondary, primary))
         # sorted_data_rec = data_rec[sorted_indices]
 
-        print("WWWWWWWWWW ", data_rec.dtype.names, data_rec.dtype)
         return data_rec
 
     @classmethod
