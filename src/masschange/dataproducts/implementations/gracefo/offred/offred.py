@@ -19,6 +19,12 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     time_series_interval = timedelta(seconds=30)
     processing_level = '0' # TODO: confirm it. May be it is 'None'
 
+    # testing hypothesis that aligned_bucket_span < time_series_interval is causing performance issues
+    # aligned_bucket_span = timedelta(minutes=10)
+
+    def get_chunk_time_interval(cls) -> timedelta:
+        return timedelta(hours=3)
+
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""

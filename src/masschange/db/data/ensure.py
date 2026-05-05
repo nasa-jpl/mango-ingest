@@ -22,22 +22,42 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
     timestamp_column_name = dataset.product.TIMESTAMP_COLUMN_NAME
     with get_db_cursor() as cur:
         try:
-            sql = f"""
-            {dataset.get_sql_table_create_statement()}
-            
-            select create_hypertable('{table_name}','{timestamp_column_name}');
-            """
-            cur.execute(sql)
+            cur.execute(dataset.get_sql_table_create_statement())
             log.info(f'Created new table: "{table_name}"')
-        except psycopg2.errors.DuplicateTable:
-            pass
 
+            sql = f"""select create_hypertable('{table_name}','{timestamp_column_name}');"""
+            cur.execute(sql)
+        except psycopg2.errors.DuplicateTable:
+            # Short-circuit to avoid errors from non-idempotent configuration operations
+            return
+
+    # Perform standard time-series product table configuration
     if dataset.is_time_series_dataset():
         chunk_time_interval_hours = math.ceil(dataset.product.get_chunk_time_interval().total_seconds() / 3600)
 
         with get_db_cursor() as cur:
             cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
             log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
+
+#   Perform OFFRED-specific table configuration
+#     BEGIN PROTOTYPE DEVELOPMENT CODE
+    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
+        segment_by_column = 'pcf_name'
+        sql = f"""
+        ALTER TABLE {table_name} SET (
+            timescaledb.compress,
+            timescaledb.compress_segmentby = '{segment_by_column}',
+            timescaledb.compress_orderby   = '{timestamp_column_name} DESC'
+        );
+        
+        SELECT add_compression_policy('{table_name}',
+            compress_after => interval '2 days'
+        );
+        """
+        with get_db_cursor() as cur:
+            cur.execute(sql)
+            log.info(f'Ensured compression configuration for hypertable "{table_name}" (segmenting by {segment_by_column})')
+
 
 def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
     """
@@ -48,10 +68,6 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
 
     expected_dataset_caggs = {dataset.get_table_or_view_name(level) for level in
                               dataset.product.get_available_aggregation_levels()}
-
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        extra_caggs = set(f'{base_cagg}{type_ext}' for base_cagg in expected_dataset_caggs for type_ext in ['float', 'int'])
-        expected_dataset_caggs.update(extra_caggs)
 
     extant_dataset_caggs = get_extant_continuous_aggregates(dataset)
 
