@@ -15,6 +15,8 @@ from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFil
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
+from memory_profiler import profile
+
 
 class OffredFileReader(AsciiDataFileReader):
     """
@@ -133,7 +135,9 @@ class OffredFileReader(AsciiDataFileReader):
 
         ]
 
+
     @classmethod
+    @profile
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
         # unzip files to temp directory
 
@@ -157,7 +161,7 @@ class OffredFileReader(AsciiDataFileReader):
 
             # 2. Perform ONE single concatenation (Memory efficient)
             if data_chunks:
-                data = np.concatenate(data_chunks).view(np.recarray)
+                return np.concatenate(data_chunks).view(np.recarray)
                 # # sort by time
                 # primary = data.obt_integer
                 # secondary = data.obt_fraction
@@ -165,13 +169,14 @@ class OffredFileReader(AsciiDataFileReader):
                 # sorted_data = data[sorted_indices]
                 #
                 # return sorted_data
-                return data
+                # del data_chunks
+                # return data
             else:
                 return None
 
 
-
     @classmethod
+
     def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
