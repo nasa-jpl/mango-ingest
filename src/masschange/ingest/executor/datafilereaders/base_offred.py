@@ -35,7 +35,6 @@ class OffredFileReader(AsciiDataFileReader):
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
 
-
     @classmethod
     def get_field_met_file_location(cls):
         env_name = 'OFFRED_METADATA_FILEPATH'
@@ -169,7 +168,6 @@ class OffredFileReader(AsciiDataFileReader):
 
 
     @classmethod
-
     def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
