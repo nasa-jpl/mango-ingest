@@ -39,25 +39,6 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
             cur.execute(f"""select set_chunk_time_interval('{table_name}', interval '{chunk_time_interval_hours} hours');""")
             log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
 
-#   Perform OFFRED-specific table configuration
-#     BEGIN PROTOTYPE DEVELOPMENT CODE
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        segment_by_column = 'pcf_name'
-        sql = f"""
-        ALTER TABLE {table_name} SET (
-            timescaledb.compress,
-            timescaledb.compress_segmentby = '{segment_by_column}',
-            timescaledb.compress_orderby   = '{timestamp_column_name} DESC'
-        );
-        
-        SELECT add_compression_policy('{table_name}',
-            compress_after => interval '2 days'
-        );
-        """
-        with get_db_cursor() as cur:
-            cur.execute(sql)
-            log.info(f'Ensured compression configuration for hypertable "{table_name}" (segmenting by {segment_by_column})')
-
 
 def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
     """
@@ -96,4 +77,5 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
             try:
                 refresh_continuous_aggregates(dataset, enable_chunking=True)
             except Exception as err:
-                log.error(f'Failed to refresh continuous aggregates for dataset {dataset.get_table_name()}: {err.__class__}: {err}')
+                log.error(
+                    f'Failed to refresh continuous aggregates for dataset {dataset.get_table_name()}: {err.__class__}: {err}')
