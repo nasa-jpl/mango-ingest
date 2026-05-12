@@ -67,36 +67,6 @@ def get_continuous_aggregate_create_statements(dataset: TimeSeriesDataset, aggre
         ALTER MATERIALIZED VIEW {new_view_name} set (timescaledb.materialized_only = true);
     """
 
-    if dataset.product.get_full_id() == 'GRACEFO_OFFRED':
-        segment_by_column = 'pcf_name'
-        # TODO: tune this value - it may be way off
-        #  should tune to the longest span back which is expected to be queryable "quickly" - need to benchmark what
-        #   the actual decompression overhead is
-        compression_interval_hours = 2 * dataset.product.get_downsampling_factor(aggregation_level)
-        compression_extra_content = f"""
-            ALTER MATERIALIZED VIEW {new_view_name} SET (
-                timescaledb.compress,
-                timescaledb.compress_segmentby = '{segment_by_column}',
-                timescaledb.compress_orderby   = '{dataset.product.TIMESTAMP_COLUMN_NAME} DESC'
-            );
-            
-            -- dummy cagg refresh policy - this is required before adding a compression policy, but we are handling our 
-            --  cagg refreshes manually.  It's currently unclear whether this is a viable approach.
-            --  configured so as to never touch any extant data
-            SELECT add_continuous_aggregate_policy('{new_view_name}',
-                start_offset => interval '51 years',
-                end_offset   => interval '50 years',
-                schedule_interval => interval '1 year'
-            );
-            
-            
-            SELECT add_compression_policy('{new_view_name}',
-                compress_after => interval '{compression_interval_hours} hours'
-            );
-        """
-
-        create_statement_block = '\n'.join([create_statement_block, compression_extra_content])
-
     return create_statement_block
 
 
