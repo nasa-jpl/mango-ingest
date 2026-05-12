@@ -15,7 +15,6 @@ from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFil
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
-
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
@@ -35,7 +34,6 @@ class OffredFileReader(AsciiDataFileReader):
     str_dtype = 'U100' # TODO: may me could be smaller
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
-
 
     @classmethod
     def get_field_met_file_location(cls):
@@ -135,10 +133,10 @@ class OffredFileReader(AsciiDataFileReader):
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-        # unzip files to temp directory
 
         # 1. Initialize a list to hold the data chunks (much lighter than a growing array)
         data_chunks = []
+        # unzip files to temp directory
         with tempfile.TemporaryDirectory() as temp_dir:
             print(f"Created temporary directory at: {temp_dir}")
 
@@ -151,25 +149,22 @@ class OffredFileReader(AsciiDataFileReader):
                 files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
                 print(f"Files extracted: {files}")
 
-
                 for each_file in files:
-                    print("QQQQQQQ ", each_file)
                     data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
 
             # 2. Perform ONE single concatenation (Memory efficient)
             if data_chunks:
                 data = np.concatenate(data_chunks).view(np.recarray)
-                # # sort by time
-                # primary = data.obt_integer
-                # secondary = data.obt_fraction
-                # sorted_indices = np.lexsort((secondary, primary))
-                # sorted_data = data[sorted_indices]
-                #
-                # return sorted_data
-                return data
+
+                # sort by time
+                primary = data.obt_integer
+                secondary = data.obt_fraction
+
+                sorted_indices = np.lexsort((secondary, primary))
+                return data[sorted_indices]
+
             else:
                 return None
-
 
 
     @classmethod
@@ -259,7 +254,6 @@ class OffredFileReader(AsciiDataFileReader):
         # sorted_indices = np.lexsort((secondary, primary))
         # sorted_data_rec = data_rec[sorted_indices]
 
-        print("WWWWWWWWWW ", data_rec.dtype.names, data_rec.dtype)
         return data_rec
 
     @classmethod
