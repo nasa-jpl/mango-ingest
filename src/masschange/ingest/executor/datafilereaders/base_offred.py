@@ -15,9 +15,6 @@ from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFil
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
-from memory_profiler import profile
-
-
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
@@ -135,14 +132,12 @@ class OffredFileReader(AsciiDataFileReader):
 
         ]
 
-
     @classmethod
-    @profile
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-        # unzip files to temp directory
 
         # 1. Initialize a list to hold the data chunks (much lighter than a growing array)
         data_chunks = []
+        # unzip files to temp directory
         with tempfile.TemporaryDirectory() as temp_dir:
             print(f"Created temporary directory at: {temp_dir}")
 
@@ -155,22 +150,20 @@ class OffredFileReader(AsciiDataFileReader):
                 files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
                 print(f"Files extracted: {files}")
 
-
                 for each_file in files:
                     data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
 
             # 2. Perform ONE single concatenation (Memory efficient)
             if data_chunks:
-                return np.concatenate(data_chunks).view(np.recarray)
-                # # sort by time
-                # primary = data.obt_integer
-                # secondary = data.obt_fraction
-                # sorted_indices = np.lexsort((secondary, primary))
-                # sorted_data = data[sorted_indices]
-                #
-                # return sorted_data
-                # del data_chunks
-                # return data
+                data = np.concatenate(data_chunks).view(np.recarray)
+
+                # sort by time
+                primary = data.obt_integer
+                secondary = data.obt_fraction
+
+                sorted_indices = np.lexsort((secondary, primary))
+                return data[sorted_indices]
+
             else:
                 return None
 
