@@ -153,20 +153,11 @@ class OffredFileReader(AsciiDataFileReader):
                 for each_file in files:
                     data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
 
-            # 2. Perform ONE single concatenation (Memory efficient)
+            # 2. Perform ONE single concatenation
             if data_chunks:
-                data = np.concatenate(data_chunks).view(np.recarray)
-
-                # sort by time
-                primary = data.obt_integer
-                secondary = data.obt_fraction
-
-                sorted_indices = np.lexsort((secondary, primary))
-                return data[sorted_indices]
-
+                return np.concatenate(data_chunks).view(np.recarray)
             else:
                 return None
-
 
     @classmethod
 
