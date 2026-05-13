@@ -21,6 +21,10 @@ from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.ingest.executor.datafilereaders.filter import DataFilter
 
 
+# from memory_profiler import profile
+# from pympler import asizeof
+
+
 class DataFileReader(ABC):
     OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_SPAN_EXTRACTED_FROM_FNAME
     SOURCE_FILE_COLUMN_NAME = None
@@ -151,6 +155,7 @@ class AsciiDataFileReader(DataFileReader):
         raise ValueError(f'Can not find the end of header in {filename}')
 
     @classmethod
+    #@profile
     def load_data_from_file(cls, filepath: str,  filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most dataproducts.
         # If this is not the case, refactoring will be necessary.
