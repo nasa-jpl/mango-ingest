@@ -40,8 +40,8 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
     expected_table_row_counts = [42, 42]
     # Diff between UTC and GPS is 18 sec on June 1st, 2022
     expected_table_first_rows = [
-        ('value5', 1333333332, 555, 'YYY', 'GF1_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out',
-          'AAA.en', 'aaa_unit', 5, None, None, datetime(2022, 4, 7, 2, 22, 12, 555000, tzinfo=timezone.utc)),
+        ('value5', 1333333332, 555, 'YYY',  'GF1_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out',
+         'GGG.ff', None, None, None, 'TTTTT', datetime(2022, 4, 7, 2, 22, 12, 555000, tzinfo=timezone.utc)),
         ('value1', 1333333333, 777, 'SSS', 'GF2_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out',
          'DDD.en', 'ddd_unit', None, None, 'ZZZZ',
          datetime(2022, 4, 7, 2, 22, 13, 777000, tzinfo=timezone.utc))
