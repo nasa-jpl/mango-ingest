@@ -26,8 +26,8 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     ingest_repetitions = 3
     product = StabGraceFOOffredDataProduct()
     version = DatasetVersion('04')
-    data_file1 = './tests/input_data/offred/GF1_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out'
-    data_file2 = './tests/input_data/GF1_CX_888888_XXX_7_777777777_7777_77777777777_77777777777.out'
+    data_file1 = './tests/input_data/offred/GF1_CX_XXX_4_221520919_0001.zip'
+    data_file2 = './tests/input_data/GF1_CX_YYY_4_221520919_0001.zip'
     expected_record_count = 84 # 6 lines, 7 variables, 2 files
     def setUp(self):
         self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
