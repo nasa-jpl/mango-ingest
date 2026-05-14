@@ -151,12 +151,14 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
                            f" should set SOURCE_FILE_COLUMN_NAME to a valid column name for the source files...")
 
     table_name = dataset.get_table_name()
+    # TODO: this is hardcoded for OFFRED case. Make it generic!
+    source_file_name_id = os.path.basename(source_file_name)[7:22]
 
     with get_db_cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
-                WHERE   {source_file_column_name} = '{source_file_name}'
+                WHERE   {source_file_column_name} = '{source_file_name_id}'
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
