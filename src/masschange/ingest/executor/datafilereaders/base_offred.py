@@ -162,7 +162,6 @@ class OffredFileReader(AsciiDataFileReader):
                 concatenated_data = np.concatenate(data_chunks).view(np.recarray)
                 # add source file name to the  array
                 fname_id = os.path.basename(filename)[7:22]
-                print("AAAAAAAA ", fname_id)
                 concatenated_data[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
                 return concatenated_data
                 #raise RuntimeError(f"Finished loading one file")
