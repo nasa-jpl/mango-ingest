@@ -35,7 +35,8 @@ def ensure_database_exists(db_name: str) -> None:
 
 def ensure_dataset(dataset: Dataset) -> None:
     ensure_dataset_table_exists(dataset)
-    ensure_dataset_caggs_exist(dataset)
+    if dataset.is_time_series_dataset():
+        ensure_dataset_caggs_exist(dataset)
 
 
 def initialize_dataset(dataset: Dataset, populate_dataproducts_versions):
