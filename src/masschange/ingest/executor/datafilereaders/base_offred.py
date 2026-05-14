@@ -15,6 +15,9 @@ from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFil
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
+# from memory_profiler import profile
+# from pympler import asizeof
+
 class OffredFileReader(AsciiDataFileReader):
     """
     Data reader for offred file.
@@ -31,7 +34,8 @@ class OffredFileReader(AsciiDataFileReader):
     col_name_float = 'value_float'  # column with float data
     col_name_str = 'value_str'  # column with string data
 
-    str_dtype = 'U100' # TODO: may me could be smaller
+    # TOdo: May be use Byte Strings (S instead of U): S dtypes use 1 byte per character instead of 4.
+    str_dtype = 'U15' # TODO: may me could be smaller
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
 
@@ -118,7 +122,7 @@ class OffredFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name='obt_fraction', np_type=np.uint, unit='millisecond'),
             AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
-            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U100', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U15', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
@@ -132,6 +136,7 @@ class OffredFileReader(AsciiDataFileReader):
         ]
 
     @classmethod
+    #@profile
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
 
         # 1. Initialize a list to hold the data chunks (much lighter than a growing array)
@@ -151,23 +156,24 @@ class OffredFileReader(AsciiDataFileReader):
 
                 for each_file in files:
                     data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
-
+                    #raise RuntimeError(f"Finished loading one file: {each_file}")
             # 2. Perform ONE single concatenation (Memory efficient)
             if data_chunks:
-                data = np.concatenate(data_chunks).view(np.recarray)
+                concatenated_data = np.concatenate(data_chunks).view(np.recarray)
+                # add source file name to the  array
+                fname_id = os.path.basename(filename)[7:22]
+                print("AAAAAAAA ", fname_id)
+                concatenated_data[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
+                return concatenated_data
+                #raise RuntimeError(f"Finished loading one file")
 
-                # sort by time
-                primary = data.obt_integer
-                secondary = data.obt_fraction
-
-                sorted_indices = np.lexsort((secondary, primary))
-                return data[sorted_indices]
 
             else:
                 return None
 
 
     @classmethod
+    #@profile
     def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
@@ -188,6 +194,7 @@ class OffredFileReader(AsciiDataFileReader):
 
         try:  # Try UTF-8 (default) first
             data = _loadtxt_wrapper()
+            #print("QQQQQQQQQQ  data size:",  asizeof.asizeof(data))
         except UnicodeDecodeError:
             print(f"UTF-8 decoding failed for {filename}. Trying cp1252...")
             data =  _loadtxt_wrapper(encoding='cp1252')
@@ -203,18 +210,19 @@ class OffredFileReader(AsciiDataFileReader):
         # create recaray to hold output data
         data_rec = np.recarray(nrows_out, dtype=np.dtype([(col.name, col.np_dtype)
                                                           for col in cls.get_input_column_defs()]))
+        #print("QQQQQQQQQQ1  data_rec size:", asizeof.asizeof(data_rec))
         # repeat time-related fields for each data field
         for name in [col.name for col in datafile_column_defs[:4]]:
             data_rec[name] = np.tile(data[name], num_data_columns)
 
-        # add source file name to the  array
-        data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
+        # # add source file name to the  array
+        # data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
         data_rec[cls.col_name_float] = None
         data_rec[cls.col_name_str] = ''
         data_rec[cls.col_name_unit] = ''
-
+        #print("QQQQQQQQQQ2  data_rec size:", asizeof.asizeof(data_rec))
         # read into memory metadata (unit and description) associated with the fields
         met_dict = cls.get_fields_metadata_dict()
 
@@ -233,7 +241,7 @@ class OffredFileReader(AsciiDataFileReader):
                 raise RuntimeError(f"Unsupported dtype {col_def.np_dtype}")
 
             data_rec[out_col_name][start_row:end_row] = np.array(data[col_def.name])
-
+            #print("QQQQQQQQQQ3  data_rec size:", asizeof.asizeof(data_rec))
             # we don't use input_col_name directly for pcf_name because
             # AsciiDataFileReaderColumn constructor converts names to lower case
             # pcf_name prefix should be upper case
@@ -243,16 +251,7 @@ class OffredFileReader(AsciiDataFileReader):
             # units are only make sense for .en fields
             if '.en' in col_def.name:
                 data_rec[cls.col_name_unit][start_row:end_row] = met_dict[col_name_parts[0].upper()]['UNIT']
-
-        # # sorted_indices = data_rec[:, 0].argsort()
-        # # sorted_data_rec = data_rec[sorted_indices]
-        # #
-        # # #data_rec.sort(order=['utc'])
-        #
-        # primary = data_rec.obt_integer
-        # secondary = data_rec.obt_fraction
-        # sorted_indices = np.lexsort((secondary, primary))
-        # sorted_data_rec = data_rec[sorted_indices]
+            #print("QQQQQQQQQQ4  data_rec size:", asizeof.asizeof(data_rec))
 
         return data_rec
 
