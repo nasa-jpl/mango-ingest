@@ -226,13 +226,15 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
 
     ensure_dataset_table_exists(dataset)
-    ensure_dataset_caggs_exist(dataset)
+    if dataset.is_time_series_dataset():
+        ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
 
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset, data_temporal_span)
+    if dataset.is_time_series_dataset():
+        refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
