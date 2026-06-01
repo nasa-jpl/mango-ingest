@@ -12,21 +12,21 @@ x-mango-ingest-worker-common-env: &mango-ingest-worker-common-env
   OFFRED_METADATA_FILEPATH: /sensitive/offred_fields_metadata.json
 
 x-mango-ingest-worker-base: &mango-ingest-worker-base
-    build: .
-    depends_on:
-      mango-db:
-        condition: service_healthy
-      mango-ensure:
-        condition: service_completed_successfully
-    networks:
-      - mango-backend
-    restart: 'always'
-    volumes:
-      - $SOURCE_DATA_ROOT:/input
-      - $INGEST_STAGING_ROOT:/staging
-      - ${OFFRED_METADATA_FILEPATH}:/sensitive/offred_fields_metadata.json:ro
-    user: root
-    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+  build: .
+  depends_on:
+    mango-db:
+      condition: service_healthy
+    mango-ensure:
+      condition: service_completed_successfully
+  networks:
+    - mango-backend
+  restart: 'always'
+  volumes:
+    - $SOURCE_DATA_ROOT:/input
+    - $INGEST_STAGING_ROOT:/staging
+    - ${OFFRED_METADATA_FILEPATH}:/sensitive/offred_fields_metadata.json:ro
+  user: root
+  command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
 
 services:
   mango-api:
@@ -103,7 +103,7 @@ services:
     <<: *mango-ingest-worker-base
     deploy:
       mode: replicated
-#      offred ingest workers are exceptionally memory-intensive, so we limit the number of replicas to avoid overwhelming the host system
+      #      offred ingest workers are exceptionally memory-intensive, so we limit the number of replicas to avoid overwhelming the host system
       replicas: 4
     environment:
       <<: *mango-ingest-worker-common-env
@@ -121,6 +121,22 @@ services:
       - TSDB_PASSWORD=${DB_PASSWORD}
     user: root
     command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/ensure.py
+
+  mango-regenerate-metadata:
+    profiles:
+      - regenerate-metadata
+    build: .
+    depends_on:
+      mango-ensure:
+        condition: service_completed_successfully
+    networks:
+      - mango-backend
+    environment:
+      - TSDB_HOST
+      - TSDB_PORT
+      - TSDB_PASSWORD=${DB_PASSWORD}
+    user: root
+    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/metadata/regenerate.py
 
 networks:
   mango-backend:
