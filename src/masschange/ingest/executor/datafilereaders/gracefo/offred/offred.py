@@ -9,17 +9,27 @@ class GraceFOOffredDataFileReader(OffredFileReader):
         # 00:00 UTC on January 6, 1980
         return datetime(1980, 1, 6, 0)
 
+    # @classmethod
+    # def get_input_file_default_regex(cls) -> str:
+    #     return '^(?P<instrument_id>GF[12])_CX_[A-Z]{3}_[4D]_\d{9}_\d{4}.zip'
+    #
+    # @classmethod
+    # def get_zipped_input_file_default_regex(cls) -> str:
+    #     # no-match pattern
+    #     # Currently we consider OFFRED zip file as a single input file.
+    #     # The OFFRED zip files are not treated the same as the rest
+    #     # of zipped product files
+    #     return '$^'
+
+
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^(?P<instrument_id>GF[12])_CX_[A-Z]{3}_[4D]_\d{9}_\d{4}.zip'
+        return '^(?P<instrument_id>GF[12])_CX_[A-Z0-9]+_[A-Z]{3}_\d{1}_\d+_\d{4}_\d{11}_\d{11}.out'
+
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        # no-match pattern
-        # Currently we consider OFFRED zip file as a single input file.
-        # The OFFRED zip files are not treated the same as the rest
-        # of zipped product files
-        return '$^'
+        return '^(?P<instrument_id>GF[12])_CX_[A-Z]{3}_[4D]_\d{9}_\d{4}.zip'
 
 
 

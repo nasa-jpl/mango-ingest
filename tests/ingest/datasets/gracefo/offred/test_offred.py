@@ -31,7 +31,8 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
         super().tearDownClass()
 
     test_data_path = './tests/input_data/offred/'
-    data_is_zipped = False
+    #data_is_zipped = False
+    data_is_zipped = True
     maxDiff = None
     dataset_cls = StubGraceFOOffredDataProduct
     expected_table_names = ['gracefo_offred_00_gf1', 'gracefo_offred_00_gf2']
@@ -39,9 +40,9 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             Union[str, None], datetime]
     expected_table_row_counts = [42, 42]
     expected_table_first_rows = [
-        ('YYY',  'XXX_4_221520919',
+        ('YYY',  '777777XXX7777777777',
          'GGG.ff', None, None, None, 'TTTTT', datetime(2022, 4, 7, 2, 22, 12, 555000, tzinfo=timezone.utc)),
-        ('SSS', 'XXX_D_221520919',
+        ('SSS', '777777XXX7777777777',
          'DDD.en', 'ddd_unit', None, None, 'ZZZZ',
          datetime(2022, 4, 7, 2, 22, 13, 777000, tzinfo=timezone.utc))
 
