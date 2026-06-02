@@ -182,7 +182,8 @@ class AsciiDataFileReader(DataFileReader):
         # Append custom fields to the dataframe, if needed
         cls.append_derived_fields(df)
 
-        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
+        if 'timestamp' not in df.columns:
+            df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
         df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
