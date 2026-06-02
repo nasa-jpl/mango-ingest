@@ -7,8 +7,8 @@ from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import Gra
 from masschange.missions import Missions
 
 
-#class GraceFOOffredDataProduct(TimeSeriesDataProduct):
-class GraceFOOffredDataProduct(DataProduct):
+class GraceFOOffredDataProduct(TimeSeriesDataProduct):
+#class GraceFOOffredDataProduct(DataProduct):
 
     @classmethod
     def get_reader(cls) -> DataFileReader:
@@ -31,13 +31,13 @@ class GraceFOOffredDataProduct(DataProduct):
     def get_sql_table_schema(cls) -> str:
         return f"""
             obt_type VARCHAR(3),
-            source_file_name VARCHAR(100),
+            source_file_name VARCHAR(19),
             
-            pcf_name VARCHAR(15),
-            unit VARCHAR(15),
+            pcf_name VARCHAR(11),
+            unit VARCHAR(4),
             value_int bigint ,
             value_float float,
-            value_str VARCHAR(15),
+            value_str VARCHAR(21),
             
             
             timestamp timestamptz not null 
