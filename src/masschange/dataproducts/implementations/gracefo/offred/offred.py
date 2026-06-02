@@ -30,9 +30,6 @@ class GraceFOOffredDataProduct(DataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            utc VARCHAR(21) not null,  
-            obt_integer bigint not null, 
-            obt_fraction int not null, 
             obt_type VARCHAR(3),
             source_file_name VARCHAR(100),
             
