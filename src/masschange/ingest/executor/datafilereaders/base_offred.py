@@ -36,7 +36,7 @@ class OffredFileReader(AsciiDataFileReader):
     col_name_str = 'value_str'  # column with string data
 
     # TOdo: May be use Byte Strings (S instead of U): S dtypes use 1 byte per character instead of 4.
-    str_dtype = 'U15' # TODO: may me could be smaller
+    str_dtype = 'U21' # TODO: may me need to be bigger
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
 
@@ -127,10 +127,10 @@ class OffredFileReader(AsciiDataFileReader):
         """
         return [
             AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
-            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U15', unit=None),
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
+            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U19', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U11', unit=None, is_channel_id_column=True),
 
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U4', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_int, np_type=cls.int_dtype, unit=None,
                                              aggregations=['min', 'max']),
 
@@ -139,43 +139,45 @@ class OffredFileReader(AsciiDataFileReader):
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None),
         ]
 
+    # @classmethod
+    # #@profile
+    # def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
+    #
+    #     # Initialize a list to hold the data chunks (much lighter than a growing array)
+    #     data_chunks = []
+    #     # unzip files to temp directory
+    #     with tempfile.TemporaryDirectory() as temp_dir:
+    #         print(f"Created temporary directory at: {temp_dir}")
+    #
+    #         # Open and extract the zip file
+    #         with zipfile.ZipFile(filename, 'r') as zip_ref:
+    #             zip_ref.extractall(temp_dir)
+    #             print(f"Successfully unzipped {filename} to temporary storage.")
+    #
+    #             # List files to verify
+    #             files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
+    #             print(f"Files extracted: {files}")
+    #
+    #             for each_file in files:
+    #                 data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
+    #
+    #         # Perform ONE single concatenation
+    #         if data_chunks:
+    #             concatenated_data = np.concatenate(data_chunks).view(np.recarray)
+    #             # add source file name to the  array
+    #             fname_id = os.path.basename(filename)[7:22]
+    #             concatenated_data[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
+    #             return concatenated_data
+    #
+    #         else:
+    #             return None
+    #
+
     @classmethod
     #@profile
+
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-
-        # Initialize a list to hold the data chunks (much lighter than a growing array)
-        data_chunks = []
-        # unzip files to temp directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            print(f"Created temporary directory at: {temp_dir}")
-
-            # Open and extract the zip file
-            with zipfile.ZipFile(filename, 'r') as zip_ref:
-                zip_ref.extractall(temp_dir)
-                print(f"Successfully unzipped {filename} to temporary storage.")
-
-                # List files to verify
-                files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
-                print(f"Files extracted: {files}")
-
-                for each_file in files:
-                    data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
-
-            # Perform ONE single concatenation
-            if data_chunks:
-                concatenated_data = np.concatenate(data_chunks).view(np.recarray)
-                # add source file name to the  array
-                fname_id = os.path.basename(filename)[7:22]
-                concatenated_data[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
-                return concatenated_data
-
-            else:
-                return None
-
-
-    @classmethod
-    #@profile
-    def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
+    #def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
         def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
@@ -258,6 +260,8 @@ class OffredFileReader(AsciiDataFileReader):
             if pcf_prefix in en_fields:
                 data_rec[cls.col_name_unit][start_row:end_row] = unit_dict[pcf_prefix.upper()]
 
+        fname_id = os.path.basename(filename)[7:29].replace('_','')
+        data_rec[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
         return data_rec
 
     @classmethod
