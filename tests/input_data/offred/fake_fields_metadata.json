@@ -25,10 +25,10 @@
     },
     "GGG": {
         "DESCR": "GGG_descriprion",
-        "UNIT": NaN
+        "UNIT": "NaN"
     },
     "HHH": {
         "DESCR": "HHH_descriprion",
-        "UNIT": NaN
+        "UNIT": "NaN"
     }
 }
