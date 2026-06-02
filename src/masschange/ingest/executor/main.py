@@ -5,6 +5,8 @@ import shutil
 import time
 from datetime import timedelta
 
+import psycopg2
+
 from masschange.ingest.executor import ingest
 from masschange.ingest.executor.errors import EmptyProductException
 from masschange.ingest.manager.fileingestrecord import FileIngestRecord
@@ -13,14 +15,22 @@ from masschange.utils.logging import configure_root_logger
 
 
 class IngestExecutor:
-    poll_sleep_delay = timedelta(seconds=1)  # todo: parametrise
     exclude_offred = os.environ.get('MAY_INGEST_OFFRED', '').lower() not in ['true', '1', 'yes']
+    poll_sleep_delay = timedelta(seconds=1)  # todo: parametrise
+    db_error_sleep_delay = timedelta(seconds=60)
 
     def run(self, loop_forever: bool = False):
-        ingest_manager = IngestManager()
+        ingest_manager = self._create_ingest_manager()
 
         while True:
-            available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job(exclude_offred=self.exclude_offred)
+            try:
+                available_job: FileIngestRecord = ingest_manager.fetch_next_valid_job(exclude_offred=self.exclude_offred)
+            except psycopg2.OperationalError as e:
+                logging.warning(
+                    f'Database unavailable, retrying in {self.db_error_sleep_delay.total_seconds():.0f}s: {e}'
+                )
+                continue
+
             if available_job is None and loop_forever:
                 time.sleep(self.poll_sleep_delay.total_seconds())
                 # logging.debug(f'No jobs available - sleeping {self.poll_sleep_delay.total_seconds()}sec')
@@ -46,7 +56,21 @@ class IngestExecutor:
                 logging.debug(f'cleaning up {available_job.staged_filepath.parent}')
                 shutil.rmtree(available_job.staged_filepath.parent)
             except Exception as e:
-                logging.error(f'Failed to register ingest success and clean up staging for file {available_job.staged_filepath}: {e}')
+                logging.error(
+                    f'Failed to register ingest success and clean up staging for file {available_job.staged_filepath}: {e}')
+
+    def _create_ingest_manager(self) -> IngestManager:
+        ingest_manager = None
+        while ingest_manager is None:
+            try:
+                return IngestManager()
+            except psycopg2.OperationalError as e:
+                logging.warning(
+                    f'Database unavailable, retrying in {self.db_error_sleep_delay.total_seconds():.0f}s: {e}'
+                )
+                time.sleep(self.db_error_sleep_delay.total_seconds())
+        return ingest_manager
+
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(
