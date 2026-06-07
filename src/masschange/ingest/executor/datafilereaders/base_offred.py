@@ -260,7 +260,7 @@ class OffredFileReader(AsciiDataFileReader):
             if pcf_prefix in en_fields:
                 data_rec[cls.col_name_unit][start_row:end_row] = unit_dict[pcf_prefix.upper()]
 
-        fname_id = os.path.basename(filename)[7:29].replace('_','')
+        fname_id = cls.get_source_file_id(filename)
         data_rec[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
         return data_rec
 
@@ -390,3 +390,10 @@ class OffredFileReader(AsciiDataFileReader):
         # no versions for OFFREAD
         return DatasetVersion("00")
 
+    @classmethod
+    def get_source_file_id(cls, source_file_name: str) -> str:
+        """
+        Returns string to be stored in the DB table that identifies source file.
+        Child class could overwrite this method to make the string shorter to save space.
+        """
+        return os.path.basename(source_file_name)[7:29].replace('_','')
