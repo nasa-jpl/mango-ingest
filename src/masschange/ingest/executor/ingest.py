@@ -152,7 +152,7 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
 
     table_name = dataset.get_table_name()
     # TODO: this is hardcoded for OFFRED case. Make it generic!
-    source_file_name_id = os.path.basename(source_file_name)[7:22]
+    source_file_name_id = dataset.product.get_reader().get_source_file_id(source_file_name)
 
     with get_db_cursor() as cur:
         sql = f"""
