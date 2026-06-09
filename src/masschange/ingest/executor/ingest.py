@@ -16,6 +16,8 @@ import psycopg2
 
 import time
 
+from collections.abc import Generator
+
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
@@ -57,13 +59,22 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
     reader = product.get_reader()
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
-    target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
-        else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
-    for fp in target_filepaths:
-        try:
-            ingest_file_to_db(product, fp)
-        except EmptyProductException as e:
-            log.warning(f'{e} Skipping ingestion of the file...')
+    # Special case for OFFRED
+    if "OFFRED" in product.get_full_id():
+        for fp, do_agg in get_zipped_input_iterable_for_offred(src, zipped_regex, unzipped_regex):
+
+            try:
+                ingest_file_to_db(product, fp, do_agg)
+            except EmptyProductException as e:
+                log.warning(f'{e} Skipping ingestion of the file...')
+    else:
+        target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
+            else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
+        for fp in target_filepaths:
+            try:
+                ingest_file_to_db(product, fp)
+            except EmptyProductException as e:
+                log.warning(f'{e} Skipping ingestion of the file...')
 
 
 def get_zipped_input_iterable(root_dir: str,
@@ -100,6 +111,56 @@ def get_zipped_input_iterable(root_dir: str,
         for fp in order_filepaths_by_filename(
                 enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)):
             yield fp
+
+        log.debug(f'cleaning up {temp_dir}')
+        shutil.rmtree(temp_dir)
+
+def get_zipped_input_iterable_for_offred(root_dir: str,
+                              enclosing_filename_match_regex: str,
+                              filename_match_regex: str) -> Generator[tuple[str, bool], None, None]:
+    """
+    Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
+    filename_match_regex.
+    For OFFRED, iterator returns a tuple: path to unzipped file and flag that indicates if this file is a last file
+    in the zip file. We wnt to treat the last file differently and run aggregation on this file.
+    TODO: add dataset time span!!!!
+
+    N.B. THIS APPROACH MINIMIZES ADDITIONAL DISK USE BUT CANNOT BE USED WITH CONCURRENCY
+
+    Parameters
+    ----------
+    root_dir
+    enclosing_filename_match_regex
+    filename_match_regex
+
+    Returns
+    -------
+
+    """
+
+    for tar_fp in order_filepaths_by_filename(
+            enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
+        temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
+
+        log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
+        if tar_fp.endswith('.zip'):
+            with zipfile.ZipFile(tar_fp, 'r') as zf:
+                zf.extractall(temp_dir)
+        else:
+            with tarfile.open(tar_fp) as tf:
+                tf.extractall(temp_dir)
+
+        # Evaluate the inner iterator into a list
+        extracted_files = list(order_filepaths_by_filename(
+            enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)))
+
+        total_files = len(extracted_files)
+
+        # Iterate through the list and flag the last item
+        for i, fp in enumerate(extracted_files):
+            is_last = (i == total_files - 1)
+            print("QQQQQQQQ ", fp, is_last)
+            yield fp, is_last  # Yield as a tuple
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
@@ -204,7 +265,8 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     return filters
 
 
-def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
+
+def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path], do_aggregate = None):
     ingest_start_time = time.time()
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
@@ -227,14 +289,23 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
 
     ensure_dataset_table_exists(dataset)
     if dataset.is_time_series_dataset():
-        ensure_dataset_caggs_exist(dataset)
+        if do_aggregate is None or do_aggregate is True:
+            ensure_dataset_caggs_exist(dataset)
+        else:
+            # Do not aggregate if do_aggregate is False
+            pass
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
 
     ingest_df(pd_df, table_name)
     if dataset.is_time_series_dataset():
-        refresh_continuous_aggregates(dataset, data_temporal_span)
+        if do_aggregate is None or do_aggregate is True:
+            refresh_continuous_aggregates(dataset, data_temporal_span)
+        else:
+            # Do not aggregate if do_aggregate is False
+            pass
+
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
