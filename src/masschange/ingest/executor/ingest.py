@@ -8,7 +8,7 @@ import tempfile
 from datetime import datetime, timezone, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Iterable, Union, List
+from typing import Iterable, Union, List, Generator
 
 import pandas
 import pandas as pd
@@ -56,18 +56,14 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
 
     log.info(f'ingesting {product.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    reader = product.get_reader()
-    zipped_regex = reader.get_zipped_input_file_default_regex()
-    unzipped_regex = reader.get_input_file_default_regex()
+
     # Special case for OFFRED
     if "OFFRED" in product.get_full_id():
-        for fp, do_agg in get_zipped_input_iterable_for_offred(src, zipped_regex, unzipped_regex):
-
-            try:
-                ingest_file_to_db(product, fp, do_agg)
-            except EmptyProductException as e:
-                log.warning(f'{e} Skipping ingestion of the file...')
+        ingest_offred(product, src)
     else:
+        reader = product.get_reader()
+        zipped_regex = reader.get_zipped_input_file_default_regex()
+        unzipped_regex = reader.get_input_file_default_regex()
         target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
             else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
         for fp in target_filepaths:
@@ -76,6 +72,19 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
             except EmptyProductException as e:
                 log.warning(f'{e} Skipping ingestion of the file...')
 
+def ingest_offred(product: DataProduct, src: Union[str, Path]):
+    reader = product.get_reader()
+    zipped_regex = reader.get_zipped_input_file_default_regex()
+    unzipped_regex = reader.get_input_file_default_regex()
+    ref_epoch = reader.get_reference_epoch()
+    for fp, do_agg, zip_start_time_sec, zip_end_time_sec in get_zipped_input_iterable_for_offred(src, zipped_regex,
+                                                                                                 unzipped_regex):
+        temp_span = TimeSpan(begin=(ref_epoch + timedelta(seconds=zip_start_time_sec)).replace(tzinfo=timezone.utc),
+                             end=(ref_epoch + timedelta(seconds=zip_end_time_sec)).replace(tzinfo=timezone.utc))
+        try:
+            ingest_offred_to_db(product, fp, do_aggregate=do_agg, data_temporal_span=temp_span)
+        except EmptyProductException as e:
+            log.warning(f'{e} Skipping ingestion of the file...')
 
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,
@@ -117,12 +126,15 @@ def get_zipped_input_iterable(root_dir: str,
 
 def get_zipped_input_iterable_for_offred(root_dir: str,
                               enclosing_filename_match_regex: str,
-                              filename_match_regex: str) -> Generator[tuple[str, bool], None, None]:
+                              filename_match_regex: str) -> Generator[
+    tuple[str, bool, str | None | int, str | None | int], None, None]:
     """
     Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
     filename_match_regex.
-    For OFFRED, iterator returns a tuple: path to unzipped file and flag that indicates if this file is a last file
-    in the zip file. We wnt to treat the last file differently and run aggregation on this file.
+    For OFFRED, iterator returns a tuple: path to unzipped file, flag that indicates if this file is a last file
+    in the zip file, earlies and latest time for the data in the zip file.
+    We wnt to treat the last file differently and run aggregation on this file.
+    The earliest and latest times will be used as a dataset time range for the aggregation.
     TODO: add dataset time span!!!!
 
     N.B. THIS APPROACH MINIMIZES ADDITIONAL DISK USE BUT CANNOT BE USED WITH CONCURRENCY
@@ -157,13 +169,46 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
         total_files = len(extracted_files)
 
         # Iterate through the list and flag the last item
+        zip_start_time = 0
+        zip_end_time = 0
         for i, fp in enumerate(extracted_files):
             is_last = (i == total_files - 1)
-            print("QQQQQQQQ ", fp, is_last)
-            yield fp, is_last  # Yield as a tuple
+
+            start_time = time.perf_counter()
+
+            file_start_time, file_end_time = _get_start_end_tai_sec(fp)
+            end_time = time.perf_counter()
+            print(f"Execution time for '_get_start_end_tai_sec': {end_time - start_time:.4f} seconds")
+            if  zip_start_time == 0 or file_start_time < zip_start_time:
+                zip_start_time = file_start_time
+            if zip_end_time == 0 or file_end_time > zip_end_time:
+                zip_end_time = file_end_time
+
+            # add one second padding to start/end time because we don't read the fractional time
+            yield fp, is_last, int(zip_start_time) - 1, int(zip_end_time) + 1   # Yield as a tuple
 
         log.debug(f'cleaning up {temp_dir}')
         shutil.rmtree(temp_dir)
+
+
+def _get_start_end_tai_sec(file_path):
+    # TODO: consider use os.SEEK_END to search last line from the end if
+    # this implementation takes too long.
+    # It takes 0.02 sec to process 4MB file
+
+    first_line = None
+    last_line = None
+
+    # Open the file efficiently using a context manager
+    with open(file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            # Check if the line starts with '20'
+            if line.startswith("20"):
+                if first_line is None:
+                    first_line = line.strip().split()[1]
+                last_line = line.strip().split()[1]  # Continuously updates to the latest match
+
+    return first_line, last_line
 
 def delete_overlapping_data(dataset: Dataset, data_temporal_span: TimeSpan, src_filepath:str =None):
 
@@ -231,7 +276,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
     log.info(f'writing data to table {table_name}')
-
+    start_time = time.perf_counter()
     with get_db_connection() as conn:
         buffer = StringIO()
         df.to_csv(buffer, header=False, index=False)
@@ -242,6 +287,8 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 conn.commit()
             except (Exception, psycopg2.DatabaseError) as error:
                 print("Error: %s" % error)
+    end_time = time.perf_counter()
+    print(f"Execution time 'ingest_df()': {end_time - start_time:.4f} seconds")
 
 def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     """
@@ -264,9 +311,7 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
             filters = [EqualsFilter('time_ref', 'G')]
     return filters
 
-
-
-def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path], do_aggregate = None):
+def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_start_time = time.time()
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingesting file: {src_filepath}')
@@ -288,25 +333,69 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path], do_a
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
 
     ensure_dataset_table_exists(dataset)
-    if dataset.is_time_series_dataset():
-        if do_aggregate is None or do_aggregate is True:
-            ensure_dataset_caggs_exist(dataset)
-        else:
-            # Do not aggregate if do_aggregate is False
-            pass
+    ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
 
     ingest_df(pd_df, table_name)
-    if dataset.is_time_series_dataset():
-        if do_aggregate is None or do_aggregate is True:
-            refresh_continuous_aggregates(dataset, data_temporal_span)
-        else:
-            # Do not aggregate if do_aggregate is False
-            pass
-
+    refresh_continuous_aggregates(dataset, data_temporal_span)
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
+
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(f'ingested file: {src_filepath}')
+    else:
+        log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
+    ingest_end_time = time.time()
+    ingest_elapsed_time = ingest_end_time - ingest_start_time
+    log.info(f"Ingest time: {ingest_elapsed_time} seconds")
+
+
+def ingest_offred_to_db(product: DataProduct, src_filepath: Union[str, Path], do_aggregate, data_temporal_span) -> None:
+    ingest_start_time = time.time()
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(f'ingesting file: {src_filepath}')
+    else:
+        log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
+
+    src_filepath = str(src_filepath)
+
+    reader = product.get_reader()
+
+    dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
+                                    reader.extract_instrument_id(src_filepath))
+
+    filters = get_data_filters(dataset)
+    start_time = time.perf_counter()
+    pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath, filters=filters)
+    end_time = time.perf_counter()
+    print(f"Execution time 'load_data_from_file()': {end_time - start_time:.4f} seconds")
+
+    channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
+
+    ensure_dataset_table_exists(dataset)
+
+    if do_aggregate:
+        start_time = time.perf_counter()
+        ensure_dataset_caggs_exist(dataset)
+        end_time = time.perf_counter()
+        print(f"Execution time for ensure_dataset_caggs_exist: {end_time - start_time:.4f} seconds")
+
+    table_name = dataset.get_table_name()
+    delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
+
+    ingest_df(pd_df, table_name)
+
+    if do_aggregate:
+        start_time = time.perf_counter()
+        refresh_continuous_aggregates(dataset, data_temporal_span)
+        end_time = time.perf_counter()
+        print(f"Execution time for 'refresh_continuous_aggregates': {end_time - start_time:.4f} seconds")
+
+    start_time = time.perf_counter()
+    update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
+    end_time = time.perf_counter()
+    print(f"Execution time for 'update_metadata': {end_time - start_time:.4f} seconds")
 
     if log.isEnabledFor(logging.DEBUG):
         log.debug(f'ingested file: {src_filepath}')
