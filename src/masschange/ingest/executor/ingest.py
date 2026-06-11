@@ -74,8 +74,9 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
 
 def ingest_offred(product: DataProduct, src: Union[str, Path]):
     reader = product.get_reader()
-    zipped_regex = reader.get_zipped_input_file_default_regex()
-    unzipped_regex = reader.get_input_file_default_regex()
+    #zipped_regex = reader.get_zipped_input_file_default_regex()
+    zipped_regex = reader.get_input_file_default_regex() # default is a zipped file
+    unzipped_regex = '^(?P<instrument_id>GF[12])_CX_[A-Z0-9]+_[A-Z]{3}_[4D]_\d+_\d{4}_\d{11}_\d{11}.out'
     ref_epoch = reader.get_reference_epoch()
     for fp, do_agg, zip_start_time_sec, zip_end_time_sec in get_zipped_input_iterable_for_offred(src, zipped_regex,
                                                                                                  unzipped_regex):
@@ -155,12 +156,9 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
 
         log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
-        if tar_fp.endswith('.zip'):
-            with zipfile.ZipFile(tar_fp, 'r') as zf:
-                zf.extractall(temp_dir)
-        else:
-            with tarfile.open(tar_fp) as tf:
-                tf.extractall(temp_dir)
+
+        with zipfile.ZipFile(tar_fp, 'r') as zf:
+            zf.extractall(temp_dir)
 
         # Evaluate the inner iterator into a list
         extracted_files = list(order_filepaths_by_filename(
