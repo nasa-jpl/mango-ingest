@@ -151,7 +151,16 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
     -------
 
     """
-    log.info(f'Entering get_zipped_input_iterable_for_offred')
+    log.info(f'Entering get_zipped_input_iterable_for_offred, root dir: {root_dir}')
+    log.debug(f'enclosing_filename_match_regex: {enclosing_filename_match_regex}')
+    log.debug(f'filename_match_regex: {filename_match_regex}')
+
+
+
+    # List everything, then keep only the files
+    files = [f for f in os.listdir(root_dir) if os.path.isfile(os.path.join(root_dir, f))]
+    log.debug(f'files in root dir: {files}')
+
     for tar_fp in order_filepaths_by_filename(
             enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
