@@ -114,7 +114,7 @@ class OffredFileReader(AsciiDataFileReader):
         # combine time-related column definition with dynamic column definitions
 
         time_column = [
-            AsciiDataFileReaderColumn(index=0, name=field_names[0], np_type='U21', unit=None),
+            AsciiDataFileReaderColumn(index=0, name=field_names[0], np_type='U23', unit=None),
             AsciiDataFileReaderColumn(index=1, name=field_names[1], np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name=field_names[2], np_type=np.uint, unit='millisecond')
         ]
