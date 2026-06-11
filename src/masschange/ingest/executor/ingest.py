@@ -37,7 +37,7 @@ from masschange.utils.logging import configure_root_logger
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
 
-
+logging.root.setLevel(logging.DEBUG)
 log = logging.getLogger()
 
 
@@ -80,6 +80,7 @@ def ingest_offred(product: DataProduct, src: Union[str, Path]):
     ref_epoch = reader.get_reference_epoch()
     for fp, do_agg, zip_start_time_sec, zip_end_time_sec in get_zipped_input_iterable_for_offred(src, zipped_regex,
                                                                                                  unzipped_regex):
+        log.debug(f'Now processing unzipped file {fp}')
         temp_span = TimeSpan(begin=(ref_epoch + timedelta(seconds=zip_start_time_sec)).replace(tzinfo=timezone.utc),
                              end=(ref_epoch + timedelta(seconds=zip_end_time_sec)).replace(tzinfo=timezone.utc))
         try:
@@ -150,7 +151,7 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
     -------
 
     """
-
+    log.info(f'Entering get_zipped_input_iterable_for_offred')
     for tar_fp in order_filepaths_by_filename(
             enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
         temp_dir = tempfile.mkdtemp(prefix='masschange-gracefo-ingest-')
