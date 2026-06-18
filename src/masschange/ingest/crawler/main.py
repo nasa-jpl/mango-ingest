@@ -54,7 +54,7 @@ class DataProductFileCrawler:
 
     def process(self, src_filepath: Union[Path, str]):
         # TODO: confirm whether or not zipped-file support is actually part of the production requirements, or if it should be excised
-        matching_products = [product for product in self.products_cache if product.get_reader().accepts(src_filepath, exclude_zips=True)]
+        matching_products = [product for product in self.products_cache if product.get_reader().accepts(src_filepath, exclude_zips=False)]
         matching_product_count = len(matching_products)
 
         if matching_product_count == 0:

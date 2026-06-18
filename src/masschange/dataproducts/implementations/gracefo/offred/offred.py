@@ -36,7 +36,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
             unit VARCHAR(4),
             value_int bigint ,
             value_float float,
-            value_str TEXT,
+            value_str VARCHAR(23),
         
             timestamp timestamptz not null 
         """
