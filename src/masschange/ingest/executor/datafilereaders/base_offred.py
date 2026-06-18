@@ -37,7 +37,7 @@ class OffredFileReader(AsciiDataFileReader):
     col_name_str = 'value_str'  # column with string data
 
     # TOdo: May be use Byte Strings (S instead of U): S dtypes use 1 byte per character instead of 4.
-    str_dtype = 'U21' # TODO: may me need to be bigger
+    str_dtype = 'U23' # TODO: may be needs to be bigger
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
 
