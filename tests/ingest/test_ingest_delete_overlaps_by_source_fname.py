@@ -1,13 +1,14 @@
 import os
 import unittest
 from tests.ingest.base import IngestTestCaseBase
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from masschange.dataproducts.implementations.gracefo.offred.offred import GraceFOOffredDataProduct
 from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import GraceFOOffredDataFileReader
-from masschange.ingest.executor.ingest import ingest_file_to_db
+from masschange.ingest.executor.ingest import ingest_offred_to_db
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.dataproducts.datasetfactory import DatasetFactory
+from masschange.utils.timespan import TimeSpan
 
 
 class StubGraceFOOffredDataFileReader(GraceFOOffredDataFileReader):
@@ -26,20 +27,24 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     ingest_repetitions = 3
     product = StabGraceFOOffredDataProduct()
     version = DatasetVersion('04')
-    data_file1 = './tests/input_data/offred/GF1_CX_XXX_4_221520919_0001.zip'
-    data_file2 = './tests/input_data/GF1_CX_YYY_4_221520919_0001.zip'
+    data_file1 = './tests/input_data/offred_unzipped/GF1_CX_777777_YYY_4_777777777_7777_77777777777_77777777777.out'
+    data_file2 = './tests/input_data/offred_unzipped/GF1_CX_777777_ZZZ_4_777777777_7777_77777777777_77777777777.out'
     expected_record_count = 84 # 6 lines, 7 variables, 2 files
     def setUp(self):
         self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
         os.environ['OFFRED_METADATA_FILEPATH'] = './tests/input_data/offred/fake_fields_metadata.json'
+        epoch = self.product.get_reader().get_reference_epoch()
+        self.fake_temp_span = TimeSpan(begin=(epoch + timedelta(seconds=1333333331)).replace(tzinfo=timezone.utc),
+                                 end=(epoch + timedelta(seconds=1333333334)).replace(tzinfo=timezone.utc))
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
         previous_record_count = None
 
-
         for _ in range(self.ingest_repetitions):
-            ingest_file_to_db(self.product, self.data_file1)
+
+            ingest_offred_to_db(self.product, self.data_file1, do_aggregate=False, data_temporal_span=self.fake_temp_span)
+
             current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                            datetime(2999, 1, 1, tzinfo=timezone.utc),
                                                            aggregation_level=0,
@@ -57,7 +62,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
 
         # ingest from file1
         for _ in range(self.ingest_repetitions):
-            ingest_file_to_db(self.product, self.data_file1)
+            ingest_offred_to_db(self.product, self.data_file1, do_aggregate=False, data_temporal_span=self.fake_temp_span)
 
         previous_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                        datetime(2999, 1, 1, tzinfo=timezone.utc),
@@ -65,7 +70,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
                                                        limit_data_span=False))
         # ingest from file 2 (same data, but different file name)
         for _ in range(self.ingest_repetitions):
-            ingest_file_to_db(self.product, self.data_file2)
+            ingest_offred_to_db(self.product, self.data_file2, do_aggregate=False, data_temporal_span=self.fake_temp_span)
 
         current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                         datetime(2999, 1, 1, tzinfo=timezone.utc),
