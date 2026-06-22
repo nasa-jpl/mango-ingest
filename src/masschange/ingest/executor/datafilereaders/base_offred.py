@@ -17,8 +17,6 @@ from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFil
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 
-# from memory_profiler import profile
-# from pympler import asizeof
 
 class OffredFileReader(AsciiDataFileReader):
     """
@@ -113,13 +111,13 @@ class OffredFileReader(AsciiDataFileReader):
 
         # combine time-related column definition with dynamic column definitions
 
-        time_column = [
+        time_columns = [
             AsciiDataFileReaderColumn(index=0, name=field_names[0], np_type='U23', unit=None),
             AsciiDataFileReaderColumn(index=1, name=field_names[1], np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=2, name=field_names[2], np_type=np.uint, unit='millisecond')
         ]
 
-        return time_column + cls.get_input_column_defs()[0:1] + dyn_col_defs
+        return time_columns + cls.get_input_column_defs()[0:1] + dyn_col_defs
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
@@ -140,45 +138,8 @@ class OffredFileReader(AsciiDataFileReader):
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None),
         ]
 
-    # @classmethod
-    # #@profile
-    # def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-    #
-    #     # Initialize a list to hold the data chunks (much lighter than a growing array)
-    #     data_chunks = []
-    #     # unzip files to temp directory
-    #     with tempfile.TemporaryDirectory() as temp_dir:
-    #         print(f"Created temporary directory at: {temp_dir}")
-    #
-    #         # Open and extract the zip file
-    #         with zipfile.ZipFile(filename, 'r') as zip_ref:
-    #             zip_ref.extractall(temp_dir)
-    #             print(f"Successfully unzipped {filename} to temporary storage.")
-    #
-    #             # List files to verify
-    #             files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
-    #             print(f"Files extracted: {files}")
-    #
-    #             for each_file in files:
-    #                 data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
-    #
-    #         # Perform ONE single concatenation
-    #         if data_chunks:
-    #             concatenated_data = np.concatenate(data_chunks).view(np.recarray)
-    #             # add source file name to the  array
-    #             fname_id = os.path.basename(filename)[7:22]
-    #             concatenated_data[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
-    #             return concatenated_data
-    #
-    #         else:
-    #             return None
-    #
-
     @classmethod
-    #@profile
-
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-    #def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
         def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
@@ -266,7 +227,20 @@ class OffredFileReader(AsciiDataFileReader):
         return data_rec
 
     @classmethod
-    def get_units_dict(cls, pcf_basenames):
+    def get_units_dict(cls, pcf_basenames:List[str]) -> dict:
+        '''
+        Parses OFFRED metadata file and extract units associated with fields present in
+        the current OFFRED input file, without loading the whole metadata file into memory
+
+        Parameters
+        ----------
+        pcf_basenames: List of pcf names (without extension)
+
+        Returns
+        -------
+        Dictionary of units associated with pcf names
+        '''
+
         # Convert pcf names to a set of uppercase strings.
         target_names = {name.upper() for name in pcf_basenames}
         units_dict = {}
@@ -287,7 +261,23 @@ class OffredFileReader(AsciiDataFileReader):
 
     @classmethod
     def _create_timestamp(cls, obt_integer_arr: np.array, obt_fraction_name: np.array) -> np.array:
-        # calculate timestamp
+        '''
+        Normally, time stamp is calculated in load_data_from_file method, by calling the class's
+        cls.populate_timestamp() method.
+        To reduce memory footprint during the OFFRED ingestion, we don't pass  time-related columns to
+        load_data_from_file data frame. Because of this, we need to calculate time stamp earlier,
+        before we drop time-related data.
+
+        Parameters
+        ----------
+        obt_integer_arr: np.array of integer observation times from input OFFRED file
+        obt_fraction_name: np.array of fraction observation times from input OFFRED file
+
+        Returns: datetime array to use as timestamp
+        -------
+
+        '''
+
         # use np.datetime64 that works with arrays
         reference_epoch = np.datetime64(cls.get_reference_epoch())
 
