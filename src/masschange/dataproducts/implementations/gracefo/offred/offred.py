@@ -7,8 +7,7 @@ from masschange.missions import Missions
 
 
 class GraceFOOffredDataProduct(TimeSeriesDataProduct):
-    # make aligned_bucket_span bigger than time_series_interval
-    #aligned_bucket_span: timedelta = timedelta(seconds=50)
+
     @classmethod
     def get_reader(cls) -> DataFileReader:
         return GraceFOOffredDataFileReader()

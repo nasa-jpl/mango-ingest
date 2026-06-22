@@ -1,27 +1,27 @@
 {
     "AAA": {
         "DESCR": "AAA_descriprion",
-        "UNIT": "aaa_unit"
+        "UNIT": "un_a"
     },
     "BBB": {
         "DESCR": "BBB_descriprion",
-        "UNIT": "bbb_unit"
+        "UNIT": "un_b"
     },
     "CCC": {
         "DESCR": "CCC_descriprion",
-        "UNIT": "ccc_unit"
+        "UNIT": "un_c"
     },
     "EEE": {
         "DESCR": "EEE_descriprion",
-        "UNIT": "eee_unit"
+        "UNIT": "un_e"
     },
     "DDD": {
         "DESCR": "DDD_descriprion",
-        "UNIT": "ddd_unit"
+        "UNIT": "un_d"
     },
     "FFF": {
         "DESCR": "FFF_descriprion",
-        "UNIT": "fff_unit"
+        "UNIT": "un_f"
     },
     "GGG": {
         "DESCR": "GGG_descriprion",

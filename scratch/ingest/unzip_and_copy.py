@@ -1,3 +1,15 @@
+################################################################################################
+#
+# This script recursively searches directory for zip files, unzip them and copies the extracted
+# products to an output directory.
+#
+# The intention is to use with OFFRED ingestion if we want to ingest unzipped files.
+#
+# Usage:
+# python unzip_and_copy.py [-h] input_dir output_dir
+#
+################################################################################################
+
 import argparse
 import zipfile
 from pathlib import Path
