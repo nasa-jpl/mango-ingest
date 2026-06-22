@@ -40,10 +40,10 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             Union[str, None], datetime]
     expected_table_row_counts = [42, 42]
     expected_table_first_rows = [
-        ('YYY',  '777777XXX7777777777',
+        ('YYY',  '777777XXX4777777777',
          'GGG.ff', None, None, None, 'TTTTT', datetime(2022, 4, 7, 2, 22, 12, 555000, tzinfo=timezone.utc)),
-        ('SSS', '777777XXX7777777777',
-         'DDD.en', 'ddd_unit', None, None, 'ZZZZ',
+        ('SSS', '777777XXXD777777777',
+         'DDD.en', 'un_d', None, None, 'ZZZZ',
          datetime(2022, 4, 7, 2, 22, 13, 777000, tzinfo=timezone.utc))
 
     ]
