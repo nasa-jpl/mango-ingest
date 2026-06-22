@@ -388,11 +388,3 @@ class OffredFileReader(AsciiDataFileReader):
         Child class could overwrite this method to make the string shorter to save space.
         """
         return os.path.basename(source_file_name)[7:29].replace('_','')
-
-    @classmethod
-    def extract_instrument_id(cls, filepath: str) -> str:
-        """Extract instruments id from unzipped input file"""
-        filename = os.path.split(filepath)[-1]
-        pattern = '^(?P<instrument_id>GF[12])_CX_[A-Z0-9]+_[A-Z]{3}_[4D]_\d+_\d{4}_\d{11}_\d{11}.out'
-        satellite_id_char = re.search(pattern, filename).group('instrument_id')
-        return satellite_id_char
