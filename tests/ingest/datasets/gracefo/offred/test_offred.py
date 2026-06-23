@@ -31,7 +31,6 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
         super().tearDownClass()
 
     test_data_path = './tests/input_data/offred/'
-    #data_is_zipped = False
     data_is_zipped = True
     maxDiff = None
     dataset_cls = StubGraceFOOffredDataProduct
@@ -45,7 +44,6 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
         ('SSS', '777777XXXD777777777',
          'DDD.en', 'un_d', None, None, 'ZZZZ',
          datetime(2022, 4, 7, 2, 22, 13, 777000, tzinfo=timezone.utc))
-
     ]
 
 if __name__ == '__main__':
