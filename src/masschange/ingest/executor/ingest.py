@@ -27,13 +27,11 @@ from masschange.ingest.utils.offred_aggregation_strategy import OffredAggregatio
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
-
 from masschange.db.data.ensure import ensure_dataset_table_exists, ensure_dataset_caggs_exist
 from masschange.db.metadata.ensure import ensure_metadata_tables_exist
 from masschange.ingest.utils.enumeration import enumerate_files_in_dir_tree, order_filepaths_by_filename
 from masschange.db.metadata.update import update_metadata
 from masschange.utils.logging import configure_root_logger
-
 from masschange.utils.timespan import TimeSpan
 from masschange.ingest.executor.errors import EmptyProductException
 
@@ -249,8 +247,6 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_end_time = time.time()
     ingest_elapsed_time = ingest_end_time - ingest_start_time
     log.info(f"Ingest time: {ingest_elapsed_time} seconds")
-
-
 
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
