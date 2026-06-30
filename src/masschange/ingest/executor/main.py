@@ -42,10 +42,7 @@ class IngestExecutor:
 
             try:
                 logging.debug(f'Ingesting job {available_job.id}: {available_job.staged_filepath}')
-                if "OFFRED" in available_job.product.get_full_id():
-                    ingest.ingest_offred(available_job.product, os.path.dirname(available_job.staged_filepath))
-                else:
-                    ingest.ingest_file_to_db(available_job.product, available_job.staged_filepath)
+                ingest.ingest_file_to_db(available_job.product, available_job.staged_filepath)
 
             except EmptyProductException:
                 logging.debug(f'Valid file had zero records {available_job.id}: {available_job.staged_filepath}')
