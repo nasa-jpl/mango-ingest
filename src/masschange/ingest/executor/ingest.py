@@ -281,6 +281,7 @@ def ingest_offred(product: DataProduct, src: Union[str, Path]):
         try:
             do_agg = offred_resolve_do_aggregation(is_last)
             ingest_offred_to_db(product, fp, do_aggregate=do_agg, data_temporal_span=temp_span)
+
         except EmptyProductException as e:
             log.warning(f'{e} Skipping ingestion of the file...')
 
@@ -351,8 +352,8 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
             total_files = len(extracted_files)
 
             # Iterate through the list and flag the last item
-            zip_start_time = 0
-            zip_end_time = 0
+            zip_start_time = -1
+            zip_end_time = -1
             for i, fp in enumerate(extracted_files):
                 is_last = (i == total_files - 1)
 
@@ -361,9 +362,9 @@ def get_zipped_input_iterable_for_offred(root_dir: str,
                 file_start_time, file_end_time = _get_start_end_tai_sec(fp)
                 end_time = time.perf_counter()
                 log.debug(f"Execution time for '_get_start_end_tai_sec': {end_time - start_time:.4f} seconds")
-                if  zip_start_time == 0 or file_start_time < zip_start_time:
+                if  zip_start_time == -1 or file_start_time < zip_start_time:
                     zip_start_time = file_start_time
-                if zip_end_time == 0 or file_end_time > zip_end_time:
+                if zip_end_time == -1 or file_end_time > zip_end_time:
                     zip_end_time = file_end_time
 
                 # add one second padding to start/end time because we don't read the fractional time
@@ -381,7 +382,8 @@ def _get_start_end_tai_sec(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
         for line in file:
             # Check if the line starts with '20'
-            if line.startswith("20"):
+            # Some (corrupted?) files have time in 1980
+            if line.startswith("20") or line.startswith("19"):
                 if first_line is None:
                     first_line = line.strip().split()[1]
                 last_line = line.strip().split()[1]  # Continuously updates to the latest match
