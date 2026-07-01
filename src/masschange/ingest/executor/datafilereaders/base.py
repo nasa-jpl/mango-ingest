@@ -20,8 +20,8 @@ from masschange.ingest.utils.arraylikefields import append_flag_fields
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.ingest.executor.datafilereaders.filter import DataFilter
 
-
 class DataFileReader(ABC):
+    TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
     OVERWRITE_BEHAVIOR = ReaderOverwriteBehavior.OVERWRITE_SPAN_EXTRACTED_FROM_FNAME
     SOURCE_FILE_COLUMN_NAME = None
 
@@ -184,13 +184,13 @@ class AsciiDataFileReader(DataFileReader):
         # Append custom fields to the dataframe, if needed
         cls.append_derived_fields(df)
 
-        if 'timestamp' not in df.columns:
-            df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
+        if cls.TIMESTAMP_COLUMN_NAME not in df.columns:
+            df[cls.TIMESTAMP_COLUMN_NAME] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
         df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
 
-        sorted_df = df.sort_values(by=['timestamp'])
+        sorted_df = df.sort_values(by=[cls.TIMESTAMP_COLUMN_NAME])
         return sorted_df
 
     @classmethod
@@ -289,7 +289,7 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
         cls.append_derived_fields(df)
 
         # add timestamp
-        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
+        df[cls.TIMESTAMP_COLUMN_NAME] = df.apply(cls.populate_timestamp, axis=1)
 
         # append variable schema data at the end of the frame
         cls.append_variable_schema_data(raw_data_as_str, df)
