@@ -28,7 +28,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            obt_type VARCHAR(3),
+            obt_type VARCHAR(4),
             source_file_name VARCHAR(19),
             
             pcf_name VARCHAR(11),
