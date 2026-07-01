@@ -8,8 +8,8 @@ import tempfile
 from datetime import datetime, timezone, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Iterable, Union, List, Generator
-import pandas
+from typing import Iterable, Union, List
+
 import pandas as pd
 import psycopg2
 
@@ -54,8 +54,6 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
 
     log.info(f'ingesting {product.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-
-
     reader = product.get_reader()
     zipped_regex = reader.get_zipped_input_file_default_regex()
     unzipped_regex = reader.get_input_file_default_regex()
@@ -166,7 +164,7 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
         cur.execute(sql, {'from_dt': limit_to_temporal_span.begin, 'to_dt': limit_to_temporal_span.end})
         log.debug(f'purged data from {table_name} for source file name {source_file_name}')
 
-def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
+def ingest_df(df: pd.DataFrame, table_name: str) -> None:
     """
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """

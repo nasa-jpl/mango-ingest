@@ -33,18 +33,13 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     def setUp(self):
         self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
         os.environ['OFFRED_METADATA_FILEPATH'] = './tests/input_data/offred/fake_fields_metadata.json'
-        epoch = self.product.get_reader().get_reference_epoch()
-        self.fake_temp_span = TimeSpan(begin=(epoch + timedelta(seconds=1333333331)).replace(tzinfo=timezone.utc),
-                                 end=(epoch + timedelta(seconds=1333333334)).replace(tzinfo=timezone.utc))
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
         previous_record_count = None
 
         for _ in range(self.ingest_repetitions):
-
             ingest_file_to_db(self.product, self.data_file1)
-
             current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                            datetime(2999, 1, 1, tzinfo=timezone.utc),
                                                            aggregation_level=0,
