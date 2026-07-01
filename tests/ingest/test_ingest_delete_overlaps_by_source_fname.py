@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from masschange.dataproducts.implementations.gracefo.offred.offred import GraceFOOffredDataProduct
 from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import GraceFOOffredDataFileReader
-from masschange.ingest.executor.ingest import ingest_offred_to_db
+from masschange.ingest.executor.ingest import ingest_file_to_db
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.utils.timespan import TimeSpan
@@ -43,7 +43,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
 
         for _ in range(self.ingest_repetitions):
 
-            ingest_offred_to_db(self.product, self.data_file1, do_aggregate=False, data_temporal_span=self.fake_temp_span)
+            ingest_file_to_db(self.product, self.data_file1)
 
             current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                            datetime(2999, 1, 1, tzinfo=timezone.utc),
@@ -62,7 +62,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
 
         # ingest from file1
         for _ in range(self.ingest_repetitions):
-            ingest_offred_to_db(self.product, self.data_file1, do_aggregate=False, data_temporal_span=self.fake_temp_span)
+            ingest_file_to_db(self.product, self.data_file1)
 
         previous_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                        datetime(2999, 1, 1, tzinfo=timezone.utc),
@@ -70,7 +70,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
                                                        limit_data_span=False))
         # ingest from file 2 (same data, but different file name)
         for _ in range(self.ingest_repetitions):
-            ingest_offred_to_db(self.product, self.data_file2, do_aggregate=False, data_temporal_span=self.fake_temp_span)
+            ingest_file_to_db(self.product, self.data_file2)
 
         current_record_count = len(self.dataset.select(datetime(2000, 1, 1, tzinfo=timezone.utc),
                                                         datetime(2999, 1, 1, tzinfo=timezone.utc),
