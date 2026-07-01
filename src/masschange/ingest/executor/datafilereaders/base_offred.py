@@ -125,7 +125,7 @@ class OffredFileReader(AsciiDataFileReader):
         So far, we have a single OFFFRED reader, so define the output columns here
         """
         return [
-            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
+            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U4', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U19', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U11', unit=None, is_channel_id_column=True),
 
