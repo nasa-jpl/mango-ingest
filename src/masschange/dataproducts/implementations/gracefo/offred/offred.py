@@ -29,13 +29,13 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     def get_sql_table_schema(cls) -> str:
         return f"""
             obt_type VARCHAR(4),
-            source_file_name VARCHAR(19),
+            source_file_name VARCHAR(100),
             
-            pcf_name VARCHAR(11),
-            unit VARCHAR(4),
+            pcf_name VARCHAR(15),
+            unit VARCHAR(15),
             value_int bigint ,
             value_float float,
-            value_str VARCHAR(23),
+            value_str VARCHAR(100),
         
             timestamp timestamptz not null 
         """
