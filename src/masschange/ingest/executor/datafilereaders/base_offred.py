@@ -172,17 +172,14 @@ class OffredFileReader(AsciiDataFileReader):
 
         # create recaray to hold output data
         data_rec = np.recarray(nrows_out, dtype=np.dtype([(col.name, col.np_dtype)
-                    for col in cls.get_input_column_defs()] + [('timestamp',  'datetime64[ms]')]))
+                    for col in cls.get_input_column_defs()] + [(cls.TIMESTAMP_COLUMN_NAME,  'datetime64[ms]')]))
 
         # calculate timestamps
         timestamp =cls._create_timestamp(data[datafile_column_defs[1].name], data[datafile_column_defs[2].name])
 
         # repeat time-related fields for each data field
         data_rec[datafile_column_defs[3].name] = np.tile(data[datafile_column_defs[3].name], num_data_columns)
-        data_rec['timestamp'] = np.tile(timestamp, num_data_columns)
-
-        # add source file name to the  array
-        # data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
+        data_rec[cls.TIMESTAMP_COLUMN_NAME] = np.tile(timestamp, num_data_columns)
 
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
