@@ -1,4 +1,5 @@
 import importlib
+import logging
 import pkgutil
 
 
@@ -16,7 +17,8 @@ def import_submodules(package, recursive=True):
         full_name = package.__name__ + '.' + name
         try:
             results[full_name] = importlib.import_module(full_name)
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as err:
+            logging.error(f'Failed to import module {full_name} from {package.__name__} due to {err}')
             continue
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
