@@ -95,6 +95,7 @@ class OffredFileReader(AsciiDataFileReader):
         field_names = cls._get_field_names(data_fpath)
 
         if check_time_col_names:
+            # TODO: check this code - presumably the first three should be removed or clarified? edunn 20260707
             # sanity check for assumption that first 4 column names are always the same
             static_field_names = ['UTC', 'OBT_Integer', 'OBT_Fraction', 'OBT_Type']
             if field_names[0:4] != static_field_names:
