@@ -63,19 +63,29 @@ def fetch_bulk_channel_id_enums() -> Dict[DataProduct, Dict[DataProductField, Co
             raise err
 
     results = {}
+    products_by_id = {p.get_full_id(): {
+        'product': p,
+        'fields': p.get_available_fields()
+    } for p in get_dataproducts()}
+
+
     # Initialise the results structure - this is necessary to ensure null-sets are created for products with no ingested
     # data (and thus, no enum value rows in the metadata table)
-    for product in get_dataproducts():
-        channel_id_fields = [f for f in product.get_available_fields() if f.is_channel_id_column]
+    for product_info in products_by_id.values():
+        product = product_info['product']
+        product_fields = product_info['fields']
+        channel_id_fields = [f for f in product_fields if f.is_channel_id_column]
         results[product] = {}
         for field in channel_id_fields:
             results[product][field] = set()
 
     for row in result_rows:
         product_id = row['product_id']
-        product = next(product for product in get_dataproducts() if product.get_full_id() == product_id)
+        product_info = products_by_id[product_id]
+        product = product_info['product']
+        product_fields = product_info['fields']
         field_name = row['field_name']
-        field = next(f for f in product.get_available_fields() if f.name == field_name)
+        field = next(f for f in product_fields if f.name == field_name)
         value = row['value']
 
         channel_id_enums: Dict[DataProductField, Set[str]] = results[product]
