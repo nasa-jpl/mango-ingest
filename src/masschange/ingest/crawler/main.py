@@ -4,12 +4,13 @@ Implements a filesystem crawler which, for each file which matches any data-prod
 - moves the file to the staging directory
 """
 import argparse
+import errno
 import logging
 import os
 import shutil
 import time
 from pathlib import Path
-from typing import Union, Collection
+from typing import Union, Collection, Callable
 
 from masschange.dataproducts.dataproduct import DataProduct
 from masschange.dataproducts.utils import get_dataproducts
@@ -28,7 +29,7 @@ class DataProductFileCrawler:
     src_root_path: Path
     staging_root_path: Path
 
-    _remove_src_files_on_stage: bool
+    _staging_function: Callable[[Union[Path, str], Union[Path,str]], None]
 
     def __init__(self, src_root_path: Union[Path, str], staging_root_path: Union[Path, str], remove_src_files_on_stage: bool):
         self.src_root_path = Path(src_root_path)
@@ -36,17 +37,17 @@ class DataProductFileCrawler:
         self.skipped_files_root_path = self.staging_root_path / "skipped"
         os.makedirs(self.skipped_files_root_path, exist_ok=True)
         self.ingest_manager = IngestManager()
-        self._remove_src_files_on_stage = remove_src_files_on_stage
 
-        if not self._remove_src_files_on_stage:
-            log.warning('Files are not being removed upon staging - this should only happen during development and '
-                        'should be addressed if crawler is being run as a service rather than a single job.')
+        self._staging_function = self._move_safely if remove_src_files_on_stage else shutil.copy
+        if not remove_src_files_on_stage:
+            log.warning('Files are being copied upon staging, rather than atomically moved - this should only happen'
+                        'during development and should be addressed if crawler is being run as a service rather than a'
+                        'single job.')
 
     def run(self, silence_start_log: bool = False):
         if not silence_start_log:
             log.info(f'File-system crawl started for src root path {self.src_root_path}, staging files at '
-                     f'{self.staging_root_path}, {"removing" if self._remove_src_files_on_stage else "not removing"} source '
-                     f'files when staged')
+                     f'{self.staging_root_path}')
 
         filepaths = map(Path, enumerate_files_in_dir_tree(str(self.src_root_path)))
         for filepath in filepaths:
@@ -54,17 +55,18 @@ class DataProductFileCrawler:
 
     def process(self, src_filepath: Union[Path, str]):
         # TODO: confirm whether or not zipped-file support is actually part of the production requirements, or if it should be excised
-        matching_products = [product for product in self.products_cache if product.get_reader().accepts(src_filepath, exclude_zips=True)]
+        matching_products = [product for product in self.products_cache if
+                             product.get_reader().accepts(src_filepath, exclude_zips=True)]
         matching_product_count = len(matching_products)
 
         if matching_product_count == 0:
             src_filepath = Path(src_filepath)
-            archived_filepath =  self.skipped_files_root_path / Path(src_filepath).name
+            archived_filepath = self.skipped_files_root_path / Path(src_filepath).name
             log.warning(f'Unrecognised file in staging area: {src_filepath} - moving to {archived_filepath}')
             if src_filepath.is_symlink():
                 src_filepath.unlink()
             else:
-                shutil.move(src_filepath, archived_filepath)
+                self._move_safely(src_filepath, archived_filepath)
             return
 
         disambiguation_required = matching_product_count > 1
@@ -77,6 +79,7 @@ class DataProductFileCrawler:
 
             try:
                 log.debug(f'Registering file for ingestion: {src_filepath}')
+
                 file_ingest_record = self.ingest_manager.register(src_filepath, product)
             except Exception as e:
                 log.error(f'Registration of {src_filepath} with ingest manager failed with {e.__class__}: {e}')
@@ -92,32 +95,51 @@ class DataProductFileCrawler:
                 return
 
             src_filename = os.path.basename(src_filepath)
-            staging_filename = src_filename if not disambiguation_required else encode_product_into_filename(product, src_filename)
+            staging_filename = src_filename if not disambiguation_required else encode_product_into_filename(product,
+                                                                                                             src_filename)
             file_subdir_name = str(file_ingest_record.id)
             staging_dest_dirpath = os.path.join(self.staging_root_path, file_subdir_name)
             staging_dest_filepath = os.path.join(staging_dest_dirpath, staging_filename)
 
+            # move file to staging location
+            #  failure of the mkdir/move represents a critical failure which should bubble up rather than being caught
+            #  locally and gracefully handled
             try:
-                # copy file to staging location
                 log.debug(f'Staging {src_filepath} into {staging_dest_filepath}')
                 os.makedirs(os.path.dirname(staging_dest_filepath), exist_ok=True)
-                shutil.copyfile(src_filepath, staging_dest_filepath)
-
-                # set file staged
-                self.ingest_manager.set_staged(file_ingest_record, staging_dest_filepath)
-
+                self._move_safely(src_filepath, staging_dest_filepath)
             except Exception as e:
-                log.error(f'Staging of file {src_filepath} failed with {e.__class__}: "{e}"')
-                shutil.rmtree(staging_dest_dirpath, ignore_errors=True)
+                raise RuntimeError(f'Failed to move file {src_filepath} into {staging_dest_filepath} with {e.__class__}: "{e}"')
 
-        if self._remove_src_files_on_stage:
-            log.debug(f'Removing source file: {src_filepath}')
-            # remove source file, having successfully executed the copy/update
-            os.remove(src_filepath)
+            # register file as staged
+            try:
+                self.ingest_manager.set_staged(file_ingest_record, staging_dest_filepath)
+            except Exception as e:
+                # if the status registration fails for any reason, we need to move the file back to its original location so that it can be
+                #  reprocessed later.
+                log.error(f'Registration of file {src_filepath} as staged failed with {e.__class__}: "{e}"')
+                log.info(f'Moving file {src_filepath} back to {staging_dest_filepath}')
+                self._move_safely(staging_dest_filepath, src_filepath)
+
+    @staticmethod
+    def _move_safely(src_filepath: Union[Path, str], dest_filepath: Union[Path, str]):
+        # shutil.copy() is not atomic across filesystems, which allows for the possibility (however unlikely) of
+        #  moving a file which is still being written to the src_filepath.
+        #  direct use of os.rename() avoids this risk by throwing an OSError if invoked across filesystems.
+        # If this ever becomes a problem, there are workarounds to avoid this race condition. - edunn
+        try:
+            os.rename(src_filepath, dest_filepath)
+        except OSError as err:
+            if err.errno == errno.EXDEV:
+                log.critical(
+                    f'Attempted to move file {src_filepath} across filesystems to {dest_filepath}, which is not currently supported')
+            raise err
+
 
 def encode_product_into_filename(product: DataProduct, filename: str) -> str:
     disambiguation_suffix = product.get_reader().get_disambiguation_suffix()
     return f'{filename}{disambiguation_suffix}'
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(
