@@ -1,14 +1,27 @@
 import os
+import threading
 
 import psycopg2.pool
 from contextlib import contextmanager
 
-def get_conn_pool():
-    default_database = os.environ['TSDB_DATABASE']
+_pool: psycopg2.pool.ThreadedConnectionPool | None = None
+_pool_lock = threading.Lock()
+
+
+def get_conn_pool() -> psycopg2.pool.ThreadedConnectionPool:
+    """ Obtain a connection pool as a singleton"""
+    global _pool
+    if _pool is None:
+        with _pool_lock:
+            if _pool is None:
+                _pool = _instantiate_conn_pool()
+    return _pool
+
+def _instantiate_conn_pool() -> psycopg2.pool.ThreadedConnectionPool:
     return psycopg2.pool.ThreadedConnectionPool(
         host=os.environ['TSDB_HOST'],
         port=int(os.environ['TSDB_PORT']),
-        dbname=default_database,
+        dbname=os.environ['TSDB_DATABASE'],
         user=os.environ['TSDB_USER'],
         password=os.environ['TSDB_PASSWORD'],
         minconn=4,  # arbitrarily chosen for the time being
