@@ -9,6 +9,7 @@ import logging
 import os
 import shutil
 import time
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, as_completed, wait
 from pathlib import Path
 from typing import Union, Collection, Callable
 
@@ -49,9 +50,24 @@ class DataProductFileCrawler:
             log.info(f'File-system crawl started for src root path {self.src_root_path}, staging files at '
                      f'{self.staging_root_path}')
 
+        max_workers = 8
         filepaths = map(Path, enumerate_files_in_dir_tree(str(self.src_root_path)))
-        for filepath in filepaths:
-            self.process(filepath)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            in_flight: dict[Future, Path] = {}
+            for filepath in filepaths:
+                if len(in_flight) >= max_workers:
+                    done, _ = wait(in_flight, return_when=FIRST_COMPLETED)
+                    for future in done:
+                        self._log_if_failed(future, in_flight.pop(future))
+                in_flight[executor.submit(self.process, filepath)] = filepath
+
+            for future in as_completed(in_flight):
+                self._log_if_failed(future, in_flight[future])
+
+    @staticmethod
+    def _log_if_failed(future: Future, filepath: Path):
+        if exc := future.exception():
+            log.error(f'Unhandled exception processing {filepath}: {exc}')
 
     def process(self, src_filepath: Union[Path, str]):
         # TODO: confirm whether or not zipped-file support is actually part of the production requirements, or if it should be excised
