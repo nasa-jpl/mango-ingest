@@ -4,6 +4,8 @@ import threading
 import psycopg2.pool
 from contextlib import contextmanager
 
+from retry import retry
+
 _pool: psycopg2.pool.ThreadedConnectionPool | None = None
 _pool_lock = threading.Lock()
 
@@ -29,6 +31,31 @@ def _instantiate_conn_pool() -> psycopg2.pool.ThreadedConnectionPool:
     )
 
 
+def _is_transient_connection_error(exc: Exception) -> bool:
+    """True only for server-side connection saturation — not auth/config errors."""
+    if not isinstance(exc, psycopg2.OperationalError):
+        return False
+    msg = str(exc).lower()
+    return "too many clients" in msg or "remaining connection slots" in msg
+
+
+@retry(
+    exceptions=psycopg2.OperationalError,
+    tries=10,
+    delay=0.5,
+    max_delay=16,
+    backoff=2,
+    jitter=(0, 0.5),
+)
+def _getconn_with_backoff(pool):
+    try:
+        return pool.getconn()
+    except psycopg2.OperationalError as e:
+        if _is_transient_connection_error(e):
+            raise  # let @retry catch and retry this one
+        raise RuntimeError(f"Non-transient connection failure, not retrying: {e}") from e
+
+
 def get_db_connection(without_db: bool = False):
     if without_db:
         host = os.environ['TSDB_HOST']
@@ -38,8 +65,7 @@ def get_db_connection(without_db: bool = False):
 
         return psycopg2.connect(database=None, user=user, password=password, host=host, port=port)
     else:
-        return get_conn_pool().getconn()
-
+        return _getconn_with_backoff(get_conn_pool())
 
 @contextmanager
 def get_db_cursor(autocommit: bool = False, **kwargs):
