@@ -78,7 +78,7 @@ def get_db_cursor(autocommit: bool = False, **kwargs):
     :return:
     """
     pool = get_conn_pool()
-    conn = pool.getconn()
+    conn = get_db_connection()
     try:
         with conn.cursor(**kwargs) as cur:
             if autocommit:
