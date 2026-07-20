@@ -40,7 +40,7 @@ def ensure_dataset_table_exists(dataset: Dataset) -> None:
             log.info(f'Set hypertable "{table_name}" chunk_time_interval to {chunk_time_interval_hours}hrs')
 
 
-def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
+def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset, do_refresh_caggs=True) -> None:
     """
     Ensure that the table for this dataset and instrument_id's data exists, creating the table and all necessary views if
     the table doesn't exist.  Does not check for or fix partial existence (i.e. table exists but views do not).
@@ -73,9 +73,9 @@ def ensure_dataset_caggs_exist(dataset: TimeSeriesDataset) -> None:
                 cur.execute(sql)
                 log.info(
                     f'Created continous aggregates for dataset "{dataset.product.get_full_id()}", version "{str(dataset.version)}", instruments "{dataset.instrument_id}"')
-
-            try:
-                refresh_continuous_aggregates(dataset, enable_chunking=True)
-            except Exception as err:
-                log.error(
-                    f'Failed to refresh continuous aggregates for dataset {dataset.get_table_name()}: {err.__class__}: {err}')
+            if do_refresh_caggs:
+                try:
+                    refresh_continuous_aggregates(dataset, enable_chunking=True)
+                except Exception as err:
+                    log.error(
+                        f'Failed to refresh continuous aggregates for dataset {dataset.get_table_name()}: {err.__class__}: {err}')
