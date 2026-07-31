@@ -128,8 +128,7 @@ def get_offred_continuous_aggregate_create_statements(dataset: TimeSeriesDataset
         """
 
 
-def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limit: TimeSpan = None,
-                                  enable_chunking: bool = False, chunk_duration_seconds: int = None):
+def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limit: TimeSpan = None, enable_chunking: bool = False):
     """
     Refresh all continuous aggregates for a given TimeSeriesDataset.
     Optionally, split the refresh operations into chunks, for faster runtime and improved log responsiveness.
@@ -161,21 +160,15 @@ def refresh_continuous_aggregates(dataset: TimeSeriesDataset, temporal_span_limi
 
     for aggregation_level in dataset.product.get_available_aggregation_levels():
         if enable_chunking:
+            chunk_max_row_count = 10e6
+
             input_downsampling_ratio = dataset.product.get_available_downsampling_factors()[aggregation_level - 1]
-            if chunk_duration_seconds:
-                chunking_required = refresh_span.duration > timedelta(seconds=chunk_duration_seconds)
-            else:
-                chunk_max_row_count = 10e6
-                estimated_row_count = int(refresh_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
-                chunking_required = estimated_row_count > chunk_max_row_count
+            estimated_row_count = int(refresh_span.duration / dataset.product.time_series_interval / input_downsampling_ratio)
+            chunking_required = estimated_row_count > chunk_max_row_count
 
             if chunking_required:
-                if chunk_duration_seconds:
-                    chunk_duration = timedelta(seconds=chunk_duration_seconds *
-                                                       dataset.product.get_downsampling_factor(aggregation_level-1))
-                else:
-                    chunk_count = math.ceil(estimated_row_count / chunk_max_row_count)
-                    chunk_duration = refresh_span.duration / chunk_count
+                chunk_count = math.ceil(estimated_row_count / chunk_max_row_count)
+                chunk_duration = refresh_span.duration / chunk_count
 
                 chunk_span = TimeSpan(begin=refresh_span.begin, duration=chunk_duration)
                 while chunk_span.end < refresh_span.end:

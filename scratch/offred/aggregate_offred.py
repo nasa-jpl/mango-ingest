@@ -67,11 +67,6 @@ def get_args():
         type=parse_utc_datetime,
         help="End date and time in ISO format (e.g., 2026-07-16T12:00:00Z), or just a date YYYY-MM-DD."
     )
-    parser.add_argument(
-        'chunk_duration_hours',
-        type = int,
-        help="Chunk duration in seconds"
-    )
 
     parser.add_argument(
         '-n', '--num-threads',
@@ -85,12 +80,11 @@ def get_args():
 
 
 # 4. Define the worker function that each thread will execute
-def worker(span, dataset, chunk_duration_hours):
+def worker(span, dataset):
     refresh_continuous_aggregates(
         dataset,
         span,
         enable_chunking=True,
-        chunk_duration_seconds=chunk_duration_hours*3600
     )
     return span
 
@@ -127,7 +121,7 @@ def run(args):
     # 5. Execute tasks in parallel using a ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         # Submit all spans to the thread pool
-        futures = [executor.submit(worker, span, dataset, args.chunk_duration_hours) for span in time_spans]
+        futures = [executor.submit(worker, span, dataset) for span in time_spans]
 
         # Wait for completion and handle potential exceptions
         for future in as_completed(futures):
