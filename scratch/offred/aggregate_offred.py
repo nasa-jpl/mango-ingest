@@ -84,7 +84,7 @@ def worker(span, dataset):
     refresh_continuous_aggregates(
         dataset,
         span,
-        enable_chunking=True,
+        enable_chunking=False,
     )
     return span
 
