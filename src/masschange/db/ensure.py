@@ -44,6 +44,9 @@ def initialize_dataset(dataset: Dataset):
     log.info(f'Ensuring table for {dataset.get_table_name()}')
     ensure_dataset_table_exists(dataset)
     if dataset.is_time_series_dataset():
+        # TODO: revert it for normal ops. This is needed only for bulk aggregation
+        if "OFFRED" in dataset.product.get_full_id():
+            return
         log.info(f'Ensuring caggs for {dataset.get_table_name()}')
         ensure_dataset_caggs_exist(dataset)
 
