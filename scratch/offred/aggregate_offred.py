@@ -1,6 +1,6 @@
 import argparse
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from masschange.dataproducts.datasetversion import DatasetVersion
@@ -13,8 +13,7 @@ from masschange.utils.logging import configure_root_logger
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.utils.timespan import TimeSpan
 
-
-configure_root_logger(log_filepath=None, log_level = logging.DEBUG)
+configure_root_logger(log_filepath=None, log_level=logging.DEBUG)
 
 log = logging.getLogger()
 
@@ -37,11 +36,11 @@ def parse_utc_datetime(date_string: str) -> datetime:
 
         return dt
     except ValueError:
-        # Update the error message to reflect the new accepted formats
         raise argparse.ArgumentTypeError(
             f"Invalid format: '{date_string}'. Expected full ISO format (e.g., '2026-07-16T12:00:00Z') "
             f"or date only (e.g., '2026-07-16')."
         )
+
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -74,19 +73,46 @@ def get_args():
         default=1,
         help='Number of threads to use for concurrent processing (default: 1)'
     )
-    return  parser.parse_args()
 
+    parser.add_argument(
+        '-m', '--max-days-per-chunk',
+        type=float,
+        default=1.0,
+        help='Maximum number of days a thread should process in a single aggregation step (default: 1)'
+    )
 
+    return parser.parse_args()
 
 
 # 4. Define the worker function that each thread will execute
-def worker(span, dataset):
-    refresh_continuous_aggregates(
-        dataset,
-        span,
-        enable_chunking=False,
-    )
-    return span
+def worker(thread_span, dataset, max_days_per_chunk):
+    """
+    Takes the large time span allocated to this thread and processes it
+    sequentially in smaller chunks.
+    """
+    chunk_duration = timedelta(days=max_days_per_chunk)
+    current_start = thread_span.begin
+
+    processed_chunks = []
+
+    while current_start < thread_span.end:
+        current_end = min(current_start + chunk_duration, thread_span.end)
+        chunk_span = TimeSpan(begin=current_start, end=current_end)
+
+        # Log the internal chunking for visibility
+        log.debug(f"Thread aggregating chunk: {chunk_span.begin} to {chunk_span.end}")
+
+        refresh_continuous_aggregates(
+            dataset,
+            chunk_span,
+            enable_chunking=False,
+        )
+
+        processed_chunks.append(chunk_span)
+        current_start = current_end
+
+    return thread_span, processed_chunks
+
 
 def run(args):
     dataset = TimeSeriesDataset(GraceFOOffredDataProduct(), DatasetVersion("00"), args.instrument)
@@ -104,40 +130,45 @@ def run(args):
     start_utc = args.start.replace(tzinfo=timezone.utc)
     end_utc = args.end.replace(tzinfo=timezone.utc)
 
-    # 2. Calculate the time window each thread should handle
+    # 2. Divide the total time equally among the requested threads
     total_duration = end_utc - start_utc
     num_threads = args.num_threads
     thread_window = total_duration / num_threads
 
-    # 3. Build the non-overlapping time spans
-    time_spans = []
+    thread_spans = []
     current_start = start_utc
     for i in range(num_threads):
-        # For the last chunk, ensure we hit the exact end time to avoid floating point drift
+        # For the last thread, ensure we hit the exact end time to avoid floating point drift
         current_end = current_start + thread_window if i < num_threads - 1 else end_utc
-        time_spans.append(TimeSpan(begin=current_start, end=current_end))
+        thread_spans.append(TimeSpan(begin=current_start, end=current_end))
         current_start = current_end
+
+    log.info(
+        f'Allocated {num_threads} thread blocks. Threads will process chunks of up to {args.max_days_per_chunk} days internally.')
 
     # 5. Execute tasks in parallel using a ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        # Submit all spans to the thread pool
-        futures = [executor.submit(worker, span, dataset) for span in time_spans]
+        # Submit the large span and the chunking parameter to each thread
+        futures = [executor.submit(worker, span, dataset, args.max_days_per_chunk) for span in thread_spans]
 
         # Wait for completion and handle potential exceptions
         for future in as_completed(futures):
             try:
-                completed_span = future.result()
-                print(f"Successfully processed span: {completed_span.begin} to {completed_span.end}")
+                completed_span, chunks = future.result()
+                print(f"Successfully processed thread span: {completed_span.begin} to {completed_span.end} "
+                      f"({len(chunks)} chunks)")
             except Exception as e:
                 print(f"Thread execution failed with error: {e}")
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     args = get_args()
 
     print(f"Instrument: {args.instrument}")
     print(f"Start Time (UTC): {args.start.isoformat()}")
     print(f"End Time (UTC): {args.end.isoformat()}")
+    print(f"Threads: {args.num_threads}")
+    print(f"Max Days per Chunk: {args.max_days_per_chunk}")
 
     start = datetime.now()
     log.info(f'starting aggregation of OFFRED data for {args.instrument} instrument,  '
@@ -147,10 +178,3 @@ if __name__ == '__main__':
     log.info(
         f'aggregation for time range [{args.start.isoformat()} : {args.end.isoformat()}] '
         f'completed in {get_human_readable_elapsed_since(start)}')
-
-
-
-
-
-
-
