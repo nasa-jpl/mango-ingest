@@ -1,0 +1,12 @@
+[Unit]
+Description=MassChange backend network
+
+[Network]
+# Without this, the podman network would be named "systemd-mango-backend",
+# and TSDB_HOST=mango-db would not resolve.
+NetworkName=mango-backend
+Subnet=172.18.0.0/16
+Gateway=172.18.0.1
+# NOTE: the docker-compose driver_opt "com.docker.network.bridge.name" has been
+# dropped. Under rootless podman the bridge lives inside a rootless network
+# namespace and is not visible on the host, so naming it achieves nothing.

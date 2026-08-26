@@ -1,0 +1,22 @@
+[Unit]
+Description=MassChange ingest worker pool
+After=mango-ensure.service
+
+# Quadlet-generated units cannot be enabled with `systemctl enable`, and
+# [Install]/DefaultInstance= is unreliable for template units. This target is a
+# hand-written file, so it CAN be enabled normally, and it pulls in the
+# instances. To scale, edit these lists and run `systemctl --user daemon-reload`.
+#
+# 4 general workers:
+Wants=mango-ingest-worker@1.service
+Wants=mango-ingest-worker@2.service
+Wants=mango-ingest-worker@3.service
+Wants=mango-ingest-worker@4.service
+# 4 offred-capable workers (intentionally equal to the general pool):
+Wants=mango-ingest-worker-offred@1.service
+Wants=mango-ingest-worker-offred@2.service
+Wants=mango-ingest-worker-offred@3.service
+Wants=mango-ingest-worker-offred@4.service
+
+[Install]
+WantedBy=default.target

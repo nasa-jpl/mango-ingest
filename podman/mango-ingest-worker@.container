@@ -1,0 +1,30 @@
+[Unit]
+Description=MassChange ingest worker %i
+Requires=mango-ensure.service
+After=mango-ensure.service
+Wants=mango-db.service
+After=mango-db.service
+StartLimitIntervalSec=0
+
+[Container]
+# %i is the systemd instance number. Verify expansion with:
+#   /usr/libexec/podman/quadlet -user -dryrun
+ContainerName=mango-ingest-worker-%i
+Image=localhost/masschange:1.0.0
+Network=mango-backend.network
+EnvironmentFile=%h/.config/mango/mango.env
+Secret=mango-db-password,type=env,target=TSDB_PASSWORD
+
+Volume=/soft/mango:/data:rw
+# Host path on the left, container path on the right. The container path is
+# supplied separately via OFFRED_METADATA_FILEPATH in mango.env - the compose
+# file used one variable for both, which Quadlet cannot disambiguate.
+Volume=/mango/offred_fields_metadata.json:/sensitive/offred_fields_metadata.json:ro
+
+Exec=python /app/masschange/src/masschange/ingest/executor/main.py --loop
+
+[Service]
+Restart=always
+RestartSec=10
+
+# No [Install] section: template instances are pulled in by mango-workers.target.

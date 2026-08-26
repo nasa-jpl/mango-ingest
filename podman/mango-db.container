@@ -1,0 +1,47 @@
+[Unit]
+Description=MassChange TimescaleDB
+# systemd's default start-limit burst (5 starts / 10s) would drive this unit
+# permanently into "failed" during a flapping-NFS incident. Disabled so the
+# restart loop is genuinely indefinite, as docker's "restart: always" was.
+StartLimitIntervalSec=0
+
+[Container]
+# Explicit, because the default would be "systemd-mango-db" and TSDB_HOST=mango-db.
+ContainerName=mango-db
+# Fully qualified: podman does not silently assume docker.io.
+Image=docker.io/timescale/timescaledb-ha:pg16
+Network=mango-backend.network
+PublishPort=5432:5432
+
+# Replaces compose's `user: "${MANGO_UID}:${MANGO_GID}"`.
+# Maps the host service user to UID/GID 1000 inside the container, which is the
+# UID the timescaledb-ha image expects postgres to run as. Files written to the
+# NFS-backed pgdata therefore land owned by the service user.
+# VERIFY the image's postgres UID before first start:
+#   podman run --rm docker.io/timescale/timescaledb-ha:pg16 id
+# If it is not 1000, change both numbers below to match.
+UserNS=keep-id:uid=1000,gid=1000
+
+Volume=/soft/mango/tsdb-persist:/home/postgres/pgdata/data:rw
+
+Secret=mango-db-password,type=env,target=POSTGRES_PASSWORD
+
+# Replaces compose's healthcheck block. Notify=healthy makes systemd hold this
+# unit in "activating" until pg_isready succeeds, which is what dependent units
+# need in order to replicate `condition: service_healthy`.
+HealthCmd=pg_isready -U postgres
+HealthInterval=5s
+HealthTimeout=10s
+HealthRetries=120
+HealthStartPeriod=10s
+Notify=healthy
+
+[Service]
+Restart=always
+RestartSec=10
+# Notify=healthy is bounded by TimeoutStartSec. The compose retry budget was
+# 600s (600 retries x 1s); this must exceed it or a cold start fails spuriously.
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target
