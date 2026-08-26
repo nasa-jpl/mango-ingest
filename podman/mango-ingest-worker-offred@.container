@@ -1,0 +1,27 @@
+[Unit]
+Description=MassChange offred-capable ingest worker %i
+Requires=mango-ensure.service
+After=mango-ensure.service
+Wants=mango-db.service
+After=mango-db.service
+StartLimitIntervalSec=0
+
+[Container]
+ContainerName=mango-ingest-worker-offred-%i
+Image=localhost/masschange:1.0.0
+Network=mango-backend.network
+EnvironmentFile=%h/.config/mango/mango.env
+# The only difference from the non-offred worker.
+Environment=MAY_INGEST_OFFRED=1
+Secret=mango-db-password,type=env,target=TSDB_PASSWORD
+
+Volume=/soft/mango:/data:rw
+Volume=/mango/offred_fields_metadata.json:/sensitive/offred_fields_metadata.json:ro
+
+Exec=python /app/masschange/src/masschange/ingest/executor/main.py --loop
+
+[Service]
+Restart=always
+RestartSec=10
+
+# No [Install] section: template instances are pulled in by mango-workers.target.

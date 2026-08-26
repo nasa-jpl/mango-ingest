@@ -1,0 +1,26 @@
+[Unit]
+Description=MassChange schema ensure (one-shot)
+# Hard prerequisite: replicates `depends_on: mango-db: service_healthy`.
+Requires=mango-db.service
+After=mango-db.service
+
+[Container]
+ContainerName=mango-ensure
+Image=localhost/masschange:1.0.0
+Network=mango-backend.network
+EnvironmentFile=%h/.config/mango/mango.env
+Secret=mango-db-password,type=env,target=TSDB_PASSWORD
+# Maps to compose `command:`. The image ENTRYPOINT (entrypoint.sh) still runs
+# and still wraps this in `conda run --no-capture-output -n masschange`.
+Exec=python /app/masschange/src/masschange/db/ensure.py
+
+[Service]
+# Quadlet defaults to Type=notify. Overridden here so systemd treats this as a
+# run-to-completion job; RemainAfterExit lets dependents use
+# Requires=/After= to replicate `condition: service_completed_successfully`.
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

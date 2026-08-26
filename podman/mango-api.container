@@ -1,0 +1,45 @@
+[Unit]
+Description=MassChange API
+Requires=mango-ensure.service
+After=mango-ensure.service
+# Wants (not Requires) on the DB: if the database fails, the API should
+# crash-loop and self-heal when it returns, rather than latching to "failed"
+# and requiring manual intervention.
+Wants=mango-db.service
+After=mango-db.service
+StartLimitIntervalSec=0
+
+[Container]
+ContainerName=mango-api
+Image=localhost/masschange:1.0.0
+Network=mango-backend.network
+PublishPort=8000:8000
+
+EnvironmentFile=%h/.config/mango/mango.env
+# API-specific. Now expressed in container-space (/data/...), not host-space.
+# The old value resolved to the HOST path /soft/mango/input-data-dropbox, which
+# did not exist inside the container.
+Environment=SOURCE_DATA_ROOT=/data/input-data-dropbox
+Secret=mango-db-password,type=env,target=TSDB_PASSWORD
+
+# Only the input subdirectory is mounted, at its position under /data.
+# entrypoint.sh then creates the /input symlink. Change :rw to :ro if the API
+# genuinely only reads (it did have write access under compose).
+Volume=/soft/mango/input-data-dropbox:/data/input-data-dropbox:rw
+
+# PLACEHOLDER PATHS - replace both. The compose default-to-/dev/null trick
+# (${SSL_CERT_FILE:-/dev/null}) has no Quadlet equivalent; if you ever set
+# API_ENABLE_SSL=0, comment these two lines out instead.
+# These files MUST be readable by the rootless service user. The current
+# location (/etc/docker/ssl.key/...) is almost certainly root:root 0600.
+Volume=/PLACEHOLDER/ssl/pretendhost.crt:/certs/ssl.crt:ro
+Volume=/PLACEHOLDER/ssl/pretendhost.key:/certs/ssl.key:ro
+
+Exec=/app/masschange/start_api.sh
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

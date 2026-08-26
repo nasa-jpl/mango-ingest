@@ -1,0 +1,19 @@
+[Unit]
+Description=MassChange metadata regeneration (manual)
+Requires=mango-ensure.service
+After=mango-ensure.service
+
+[Container]
+ContainerName=mango-regenerate-metadata
+Image=localhost/masschange:1.0.0
+Network=mango-backend.network
+EnvironmentFile=%h/.config/mango/mango.env
+Secret=mango-db-password,type=env,target=TSDB_PASSWORD
+Exec=python /app/masschange/src/masschange/db/metadata/regenerate.py
+
+[Service]
+Type=oneshot
+# Deliberately NOT RemainAfterExit: this is re-runnable on demand.
+
+# No [Install] section - this replaces compose's `profiles: [regenerate-metadata]`.
+# Run it with:  systemctl --user start mango-regenerate-metadata.service
