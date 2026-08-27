@@ -7,6 +7,7 @@ def enumerate_files_in_dir_tree(root_dir: str, match_regex: str | None = None, m
                                 followlinks: bool = True) -> Iterable[str]:
     """
     Given a directory root and a regex match pattern, return all matching filepaths under it.
+    Streams results as they are discovered rather than buffering per-directory.
 
     Parameters
     ----------
@@ -20,13 +21,16 @@ def enumerate_files_in_dir_tree(root_dir: str, match_regex: str | None = None, m
 
     """
 
-    for path, subdirs, filenames in os.walk(root_dir, followlinks=followlinks):
-        for filename in filenames:
-            filepath = os.path.join(path, filename)
-            match_target = filename if match_filename_only else filepath
+    with os.scandir(root_dir) as it:
+        for entry in it:
+            if entry.is_dir(follow_symlinks=followlinks):
+                yield from enumerate_files_in_dir_tree(entry.path, match_regex, match_filename_only, followlinks)
+            else:
+                filepath = entry.path
+                match_target = entry.name if match_filename_only else filepath
 
-            if match_regex is None or re.match(match_regex, match_target):
-                yield filepath
+                if match_regex is None or re.match(match_regex, match_target):
+                    yield filepath
 
 
 def order_filepaths_by_filename(filepaths: Iterable[str]) -> Iterable[str]:

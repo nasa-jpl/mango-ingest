@@ -20,7 +20,7 @@ from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
-from masschange.db.conn import get_db_cursor, get_db_connection
+from masschange.db.conn import get_db_cursor, get_db_connection, get_conn_pool
 from masschange.ingest.executor.datafilereaders.filter import EqualsFilter, DataFilter
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
 from masschange.ingest.utils.offred_aggregation_strategy import OffredAggregationStrategy
@@ -170,7 +170,10 @@ def ingest_df(df: pd.DataFrame, table_name: str) -> None:
     """
     log.info(f'writing data to table {table_name}')
     start_time = time.perf_counter()
-    with get_db_connection() as conn:
+    # TODO: switch this to a context-managed version of get_db_connection()
+    pool = get_conn_pool()
+    conn = get_db_connection()
+    try:
         buffer = StringIO()
         df.to_csv(buffer, header=False, index=False)
         buffer.seek(0)
@@ -179,7 +182,11 @@ def ingest_df(df: pd.DataFrame, table_name: str) -> None:
                 cursor.copy_from(file=buffer, table=table_name, sep=",", null="")
                 conn.commit()
             except (Exception, psycopg2.DatabaseError) as error:
-                print("Error: %s" % error)
+                conn.rollback()
+                log.error(f"Error copying to {table_name}: {error}")
+                raise
+    finally:
+        pool.putconn(conn)
     end_time = time.perf_counter()
     log.debug(f"Execution time 'ingest_df()': {end_time - start_time:.4f} seconds")
 
