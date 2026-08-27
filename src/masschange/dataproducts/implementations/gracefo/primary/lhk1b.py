@@ -18,7 +18,7 @@ class GraceFOLhk1BDataProduct(TimeSeriesDataProduct):
     # TODO: This is not a time-series dataset. It has data from many different sensors,
     # reported at different rates, from 1 sec to 10 sec
     time_series_interval = timedelta(seconds=1)
-    processing_level = '1A'
+    processing_level = '1B'
 
     @classmethod
     def get_sql_table_schema(cls) -> str:
