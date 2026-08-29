@@ -8,8 +8,7 @@ import tempfile
 from datetime import datetime, timezone, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Iterable, Union, List
-
+from typing import Iterable, Union, List, Generator
 import pandas
 import pandas as pd
 import psycopg2
@@ -24,6 +23,7 @@ from masschange.dataproducts.utils import resolve_dataset
 from masschange.db.conn import get_db_cursor, get_db_connection
 from masschange.ingest.executor.datafilereaders.filter import EqualsFilter, DataFilter
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
+from masschange.ingest.utils.offred_aggregation_strategy import OffredAggregationStrategy
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -54,17 +54,21 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
 
     log.info(f'ingesting {product.get_full_id()} data from {src}')
     log.info(f'targeting {"zipped" if data_is_zipped else "non-zipped"} data')
-    reader = product.get_reader()
-    zipped_regex = reader.get_zipped_input_file_default_regex()
-    unzipped_regex = reader.get_input_file_default_regex()
-    target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
-        else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
-    for fp in target_filepaths:
-        try:
-            ingest_file_to_db(product, fp)
-        except EmptyProductException as e:
-            log.warning(f'{e} Skipping ingestion of the file...')
 
+    # Special case for OFFRED
+    if "OFFRED" in product.get_full_id():
+        ingest_offred(product, src)
+    else:
+        reader = product.get_reader()
+        zipped_regex = reader.get_zipped_input_file_default_regex()
+        unzipped_regex = reader.get_input_file_default_regex()
+        target_filepaths = get_zipped_input_iterable(src, zipped_regex, unzipped_regex) if data_is_zipped \
+            else order_filepaths_by_filename(enumerate_files_in_dir_tree(src, unzipped_regex, match_filename_only=True))
+        for fp in target_filepaths:
+            try:
+                ingest_file_to_db(product, fp)
+            except EmptyProductException as e:
+                log.warning(f'{e} Skipping ingestion of the file...')
 
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,
@@ -152,11 +156,13 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
 
     table_name = dataset.get_table_name()
 
+    source_file_name_id = dataset.product.get_reader().get_source_file_id(source_file_name)
+
     with get_db_cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
-                WHERE   {source_file_column_name} = '{source_file_name}'
+                WHERE   {source_file_column_name} = '{source_file_name_id}'
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
@@ -168,7 +174,7 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
     log.info(f'writing data to table {table_name}')
-
+    start_time = time.perf_counter()
     with get_db_connection() as conn:
         buffer = StringIO()
         df.to_csv(buffer, header=False, index=False)
@@ -179,6 +185,8 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 conn.commit()
             except (Exception, psycopg2.DatabaseError) as error:
                 print("Error: %s" % error)
+    end_time = time.perf_counter()
+    log.debug(f"Execution time 'ingest_df()': {end_time - start_time:.4f} seconds")
 
 def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     """
@@ -200,7 +208,6 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
         if dataset.product.processing_level.upper() == '1B':
             filters = [EqualsFilter('time_ref', 'G')]
     return filters
-
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_start_time = time.time()
@@ -241,7 +248,6 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_elapsed_time = ingest_end_time - ingest_start_time
     log.info(f"Ingest time: {ingest_elapsed_time} seconds")
 
-
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         prog='MassChange Data Ingester',
@@ -256,6 +262,188 @@ def get_args() -> argparse.Namespace:
                     help='look in tarballs for source data')
 
     return ap.parse_args()
+
+
+
+################# OFFRED ################
+
+def ingest_offred(product: DataProduct, src: Union[str, Path]):
+    reader = product.get_reader()
+
+    zipped_regex = reader.get_zipped_input_file_default_regex()
+    unzipped_regex = reader.get_input_file_default_regex()
+    ref_epoch = reader.get_reference_epoch()
+    for fp, is_last, zip_start_time_sec, zip_end_time_sec in get_zipped_input_iterable_for_offred(src, zipped_regex,
+                                                                                                 unzipped_regex):
+        log.debug(f'Now processing unzipped file {fp}')
+        temp_span = TimeSpan(begin=(ref_epoch + timedelta(seconds=zip_start_time_sec)).replace(tzinfo=timezone.utc),
+                             end=(ref_epoch + timedelta(seconds=zip_end_time_sec)).replace(tzinfo=timezone.utc))
+        try:
+            do_agg = offred_resolve_do_aggregation(is_last)
+            ingest_offred_to_db(product, fp, do_aggregate=do_agg, data_temporal_span=temp_span)
+
+        except EmptyProductException as e:
+            log.warning(f'{e} Skipping ingestion of the file...')
+
+def offred_resolve_do_aggregation(is_last: bool) -> bool:
+    """
+    Determines whether aggregation should be executed for the current file.
+    Evaluates the OFFRED_AGGREGATE environment variable and whether this
+    is the final file in the sequence. Defaults to False.
+    """
+    # Fetch the environment variable, default to "NONE", and force uppercase
+    strategy_str = os.getenv("OFFRED_AGGREGATE", "NONE").upper()
+
+    # Compare the environment string to the Enum's string value
+    if strategy_str == OffredAggregationStrategy.AFTER_EACH.value:
+        return True
+
+    elif strategy_str == OffredAggregationStrategy.AFTER_ALL.value:
+        # If the strategy is AFTER_ALL, we only aggregate if it is the last file
+        return is_last
+
+    # If OFFRED_AGGREGATE is NONE, missing, or invalid, do not aggregate
+    return False
+
+def get_zipped_input_iterable_for_offred(root_dir: str,
+                              enclosing_filename_match_regex: str,
+                              filename_match_regex: str) -> Generator:
+
+    """
+    Given a root_dir containing data tarballs, provide a transparently-iterable collection of data files matching
+    filename_match_regex.
+    For OFFRED, iterator returns a tuple: path to unzipped file, flag that indicates if this file is a last file
+    in the zip file, earliest and latest time for the data in the zip file (as an offset in seconds).
+    Depending on aggregation strategy, we might want to treat the last file differently and run aggregation on this file.
+    The earliest and latest times will be used as a dataset time range for the aggregation.
+
+    """
+
+    log.info(f'Entering get_zipped_input_iterable_for_offred, root dir: {root_dir}')
+    log.debug(f'enclosing_filename_match_regex: {enclosing_filename_match_regex}')
+    log.debug(f'filename_match_regex: {filename_match_regex}')
+
+    # List everything, then keep only the files
+    files = [f for f in os.listdir(root_dir) if os.path.isfile(os.path.join(root_dir, f))]
+    log.debug(f'files in root dir: {files}')
+
+    for tar_fp in order_filepaths_by_filename(
+            enumerate_files_in_dir_tree(root_dir, enclosing_filename_match_regex, match_filename_only=True)):
+        # Extract files to a temp directory located in the same directory as zip file.
+        # In case of dockerized ingest, the temp directory will be created in the mounted staging area,
+        # in the same directory as the zip file, and will be cleaned out after ingestion
+        # TODO: This assumes that the root directory is writable, which is the case for dockerized ingest,
+        # but not necessary for using ingest.py directly.
+        # Add a flag to switch between default location of tmp dir and root_dir location?
+
+        with tempfile.TemporaryDirectory(dir = root_dir) as temp_dir:
+            # create the temp dir in context, so it will be cleaned out even on failure.
+            # The original zip file will still remain
+
+            log.debug(f'extracting contents of {tar_fp} to {temp_dir}')
+
+            with zipfile.ZipFile(tar_fp, 'r') as zf:
+                zf.extractall(temp_dir)
+
+            # Evaluate the inner iterator into a list
+            extracted_files = list(order_filepaths_by_filename(
+                enumerate_files_in_dir_tree(temp_dir, filename_match_regex, match_filename_only=True)))
+
+            total_files = len(extracted_files)
+
+            # Iterate through the list and flag the last item
+            zip_start_time = -1
+            zip_end_time = -1
+            for i, fp in enumerate(extracted_files):
+                is_last = (i == total_files - 1)
+
+                start_time = time.perf_counter()
+
+                file_start_time, file_end_time = _get_start_end_tai_sec(fp)
+                end_time = time.perf_counter()
+                log.debug(f"Execution time for '_get_start_end_tai_sec': {end_time - start_time:.4f} seconds")
+                if  zip_start_time == -1 or file_start_time < zip_start_time:
+                    zip_start_time = file_start_time
+                if zip_end_time == -1 or file_end_time > zip_end_time:
+                    zip_end_time = file_end_time
+
+                # add one second padding to start/end time because we don't read the fractional time
+                yield fp, is_last, int(zip_start_time) - 1, int(zip_end_time) + 1   # Yield as a tuple
+
+def _get_start_end_tai_sec(file_path):
+    # TODO: consider use os.SEEK_END to search last line from the end if
+    # this implementation takes too long.
+    # It takes 0.02 sec to process 4MB file
+
+    first_line = None
+    last_line = None
+
+    # Open the file efficiently using a context manager
+    with open(file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            # Check if the line starts with '20'
+            # Some (corrupted?) files have time in 1980
+            if line.startswith("20") or line.startswith("19"):
+                if first_line is None:
+                    first_line = line.strip().split()[1]
+                last_line = line.strip().split()[1]  # Continuously updates to the latest match
+
+    return first_line, last_line
+
+def ingest_offred_to_db(product: DataProduct, src_filepath: Union[str, Path], do_aggregate, data_temporal_span) -> None:
+
+    ingest_start_time = time.time()
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(f'ingesting file: {src_filepath}')
+    else:
+        log.info(f'ingesting file: {os.path.split(src_filepath)[-1]}')
+
+    src_filepath = str(src_filepath)
+
+    reader = product.get_reader()
+
+    dataset = DatasetFactory.create(product, reader.extract_dataset_version(src_filepath),
+                                    reader.extract_instrument_id(src_filepath))
+
+    filters = get_data_filters(dataset)
+    start_time = time.perf_counter()
+    pd_df: pd.DataFrame = reader.load_data_from_file(src_filepath, filters=filters)
+    end_time = time.perf_counter()
+    log.debug(f"Execution time 'load_data_from_file()': {end_time - start_time:.4f} seconds")
+
+    channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
+
+    ensure_dataset_table_exists(dataset)
+
+    if do_aggregate:
+        start_time = time.perf_counter()
+        ensure_dataset_caggs_exist(dataset)
+        end_time = time.perf_counter()
+        log.debug(f"Execution time for ensure_dataset_caggs_exist: {end_time - start_time:.4f} seconds")
+
+    table_name = dataset.get_table_name()
+    delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
+
+    ingest_df(pd_df, table_name)
+
+    if do_aggregate:
+        start_time = time.perf_counter()
+        refresh_continuous_aggregates(dataset, data_temporal_span)
+        end_time = time.perf_counter()
+        log.debug(f"Execution time for 'refresh_continuous_aggregates': {end_time - start_time:.4f} seconds")
+
+    start_time = time.perf_counter()
+    update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
+    end_time = time.perf_counter()
+    log.debug(f"Execution time for 'update_metadata': {end_time - start_time:.4f} seconds")
+
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(f'ingested file: {src_filepath}')
+    else:
+        log.info(f'ingested file: {os.path.split(src_filepath)[-1]}')
+    ingest_end_time = time.time()
+    ingest_elapsed_time = ingest_end_time - ingest_start_time
+    log.info(f"Ingest time: {ingest_elapsed_time} seconds")
 
 
 if __name__ == '__main__':

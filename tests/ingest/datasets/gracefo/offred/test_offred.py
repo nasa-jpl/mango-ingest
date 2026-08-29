@@ -31,19 +31,18 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
         super().tearDownClass()
 
     test_data_path = './tests/input_data/offred/'
-    data_is_zipped = False
+    data_is_zipped = True
     maxDiff = None
     dataset_cls = StubGraceFOOffredDataProduct
     expected_table_names = ['gracefo_offred_00_gf1', 'gracefo_offred_00_gf2']
-    expected_field_types = [str, int, int, str, str, str, Union[str, None], Union[int, None], Union[float, None],
+    expected_field_types = [str, str, str, Union[str, None], Union[int, None], Union[float, None],
                             Union[str, None], datetime]
     expected_table_row_counts = [42, 42]
-    # Diff between UTC and GPS is 18 sec on June 1st, 2022
     expected_table_first_rows = [
-        ('value5', 1333333332, 555, 'YYY',  'GF1_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out',
+        ('YYY',  '777777XXX4777777777',
          'GGG.ff', None, None, None, 'TTTTT', datetime(2022, 4, 7, 2, 22, 12, 555000, tzinfo=timezone.utc)),
-        ('value1', 1333333333, 777, 'SSS', 'GF2_CX_777777_XXX_7_777777777_7777_77777777777_77777777777.out',
-         'DDD.en', 'ddd_unit', None, None, 'ZZZZ',
+        ('SSS', '777777XXXD777777777',
+         'DDD.en', 'un_d', None, None, 'ZZZZ',
          datetime(2022, 4, 7, 2, 22, 13, 777000, tzinfo=timezone.utc))
     ]
 

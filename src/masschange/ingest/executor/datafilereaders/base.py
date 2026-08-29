@@ -36,6 +36,13 @@ class DataFileReader(ABC):
         """
         pass
 
+    @classmethod
+    def get_source_file_id(cls, source_file_name: str) -> str:
+        """
+        Returns a string that identifies source file to be stored in the DB table.
+        Child class could overwrite this method to make the string shorter to save space.
+        """
+        return os.path.basename(source_file_name)
 
     @classmethod
     def get_disambiguated_input_file_regex(cls) -> str:
@@ -177,7 +184,8 @@ class AsciiDataFileReader(DataFileReader):
         # Append custom fields to the dataframe, if needed
         cls.append_derived_fields(df)
 
-        df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
+        if 'timestamp' not in df.columns:
+            df['timestamp'] = df.apply(cls.populate_timestamp, axis=1)
 
         # Drop extraneous columns
         df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
