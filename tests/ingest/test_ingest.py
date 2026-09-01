@@ -24,7 +24,7 @@ class DataOverwriteIngestTestCase(IngestTestCaseBase):
     def setUp(self):
         self.dataset = DatasetFactory.create(self.product, self.version, self.instrument_id)
 
-        self.input_filepaths = [os.path.join(self.input_dir, fn) for fn in os.listdir(self.input_dir)]
+        self.input_filepaths = sorted([os.path.join(self.input_dir, fn) for fn in os.listdir(self.input_dir)])
         super().__init__()
 
     def test_repeated_ingestion_does_not_accumulate_data(self):
