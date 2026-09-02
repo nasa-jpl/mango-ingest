@@ -22,6 +22,7 @@ class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        # must be present for setUpClass() to perform ingest
         os.environ['OFFRED_METADATA_FILEPATH'] = './tests/input_data/offred/fake_fields_metadata.json'
         super().setUpClass()
 

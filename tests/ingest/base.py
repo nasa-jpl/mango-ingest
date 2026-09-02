@@ -9,14 +9,11 @@ from masschange.db.ensure import ensure_all_db_state
 
 log = logging.getLogger()
 
-# Two databases are used - one for reader tests which are guaranteed not to interact with one another, and another for
-# tests which require an empty database to function correctly
-reader_tests_target_database = 'masschange_reader_functional_tests'
-isolated_tests_target_database = 'masschange_isolated_functional_tests'
-test_database_names = {reader_tests_target_database, isolated_tests_target_database}
+testing_database = 'masschange_functional_tests'
+test_database_names = {testing_database}
 
 
-def setUp(database_name: str):
+def initDb(database_name: str):
     # Ensure test database is used
     assert database_name in test_database_names
     os.environ['TSDB_DATABASE'] = database_name
@@ -36,7 +33,7 @@ def setUp(database_name: str):
     ensure_all_db_state(database_name, is_database_init=True)
 
 
-def tearDown(database_name: str):
+def destroyDb(database_name: str):
     # Ensure only test databases can be torn down
     assert database_name in test_database_names
 
@@ -51,11 +48,34 @@ def tearDown(database_name: str):
 
 
 #### FRESH DATABASE INITIALIZATION BEGIN ####
-for database_name in test_database_names:
-    tearDown(database_name)
-
-setUp(reader_tests_target_database)
+destroyDb(testing_database)
+initDb(testing_database)
 #### FRESH DATABASE INITIALIZATION END ####
+
+def _truncate_data_tables(prefix: str):
+    sql = """
+        DO $do$
+        DECLARE
+            tbl RECORD;
+        BEGIN
+            FOR tbl IN
+                SELECT schemaname, tablename
+                FROM pg_tables
+                WHERE starts_with(tablename, %(prefix)s)
+                  AND schemaname = 'public'
+            LOOP
+                EXECUTE format('TRUNCATE TABLE %%I.%%I CASCADE', tbl.schemaname, tbl.tablename);
+            END LOOP;
+        END
+        $do$;
+    """
+
+    with get_db_cursor(autocommit=True) as cur:
+        cur.execute(sql, {"prefix": prefix})
+
+def _truncate_all_data_tables():
+    _truncate_data_tables(prefix='_meta_')
+    _truncate_data_tables(prefix='gracefo_')
 
 
 class IngestTestCaseBase(unittest.TestCase):
@@ -65,15 +85,16 @@ class IngestTestCaseBase(unittest.TestCase):
     DataFileReader to ensure they parse the test input files correctly
     """
 
-    target_database = isolated_tests_target_database
+    target_database = testing_database
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        setUp(cls.target_database)
+    def setUp(self) -> None:
+        super().setUp()
+        _truncate_all_data_tables()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        tearDown(cls.target_database)
+        _truncate_all_data_tables()
+        super().tearDownClass()
 
 
 class ReaderTestCaseBase(unittest.TestCase):
@@ -83,5 +104,5 @@ class ReaderTestCaseBase(unittest.TestCase):
     time-consuming and not necessary for this specific type of test-case.
     """
 
-    target_database = reader_tests_target_database
+    target_database = testing_database
 
