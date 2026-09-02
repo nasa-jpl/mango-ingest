@@ -21,11 +21,13 @@ class OffredFileReaderTestCase(unittest.TestCase):
     data_file = './tests/input_data/offred_unzipped/GF1_CX_777777_YYY_4_777777777_7777_77777777777_77777777777.out'
     @classmethod
     def setUpClass(cls)-> None:
+        super().setUpClass()
         os.environ['OFFRED_METADATA_FILEPATH'] = './tests/input_data/offred/fake_fields_metadata.json'
 
     @classmethod
     def tearDownClass(cls):
         os.environ.pop('OFFRED_METADATA_FILEPATH', None)
+        super().tearDownClass()
 
     def test_get_field_names(self):
 

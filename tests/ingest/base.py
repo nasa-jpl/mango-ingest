@@ -1,61 +1,9 @@
-import logging
-import os
 import unittest
 
-import psycopg2.errors
+from tests.ingest.utils.db import initDb, destroyDb, truncate_all_data_tables, TEST_DATABASE_NAME
 
-from masschange.db.conn import get_db_cursor, get_db_connection
-from masschange.db.ensure import ensure_all_db_state
-
-log = logging.getLogger()
-
-# Two databases are used - one for reader tests which are guaranteed not to interact with one another, and another for
-# tests which require an empty database to function correctly
-reader_tests_target_database = 'masschange_reader_functional_tests'
-isolated_tests_target_database = 'masschange_isolated_functional_tests'
-test_database_names = {reader_tests_target_database, isolated_tests_target_database}
-
-
-def setUp(database_name: str):
-    # Ensure test database is used
-    assert database_name in test_database_names
-    os.environ['TSDB_DATABASE'] = database_name
-
-    log.info(f'Instantiating test database "{database_name}"')
-    conn = get_db_connection(without_db=True)
-    conn.autocommit = True
-    with conn.cursor() as cur:
-        cur.execute(f'DROP DATABASE IF EXISTS {database_name} WITH (FORCE);')
-        cur.execute(f'CREATE DATABASE {database_name}')
-    conn.close()
-
-    with get_db_cursor(autocommit=True) as cur:
-        cur.execute(f'CREATE EXTENSION IF NOT EXISTS postgis')
-        cur.execute(f'CREATE EXTENSION IF NOT EXISTS timescaledb')
-
-    ensure_all_db_state(database_name, is_database_init=True)
-
-
-def tearDown(database_name: str):
-    # Ensure only test databases can be torn down
-    assert database_name in test_database_names
-
-    conn = get_db_connection(without_db=True)
-    conn.autocommit = True
-    try:
-        with conn.cursor() as cur:
-            cur.execute(f'DROP DATABASE {database_name} WITH (FORCE);')
-    except (psycopg2.errors.ObjectInUse, psycopg2.errors.InvalidCatalogName):
-        pass
-    conn.close()
-
-
-#### FRESH DATABASE INITIALIZATION BEGIN ####
-for database_name in test_database_names:
-    tearDown(database_name)
-
-setUp(reader_tests_target_database)
-#### FRESH DATABASE INITIALIZATION END ####
+destroyDb(TEST_DATABASE_NAME)
+initDb(TEST_DATABASE_NAME)
 
 
 class IngestTestCaseBase(unittest.TestCase):
@@ -65,15 +13,16 @@ class IngestTestCaseBase(unittest.TestCase):
     DataFileReader to ensure they parse the test input files correctly
     """
 
-    target_database = isolated_tests_target_database
+    target_database = TEST_DATABASE_NAME
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        setUp(cls.target_database)
+    def setUp(self) -> None:
+        super().setUp()
+        truncate_all_data_tables()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        tearDown(cls.target_database)
+        truncate_all_data_tables()
+        super().tearDownClass()
 
 
 class ReaderTestCaseBase(unittest.TestCase):
@@ -83,5 +32,4 @@ class ReaderTestCaseBase(unittest.TestCase):
     time-consuming and not necessary for this specific type of test-case.
     """
 
-    target_database = reader_tests_target_database
-
+    target_database = TEST_DATABASE_NAME
