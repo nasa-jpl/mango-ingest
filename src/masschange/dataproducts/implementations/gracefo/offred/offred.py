@@ -16,7 +16,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     id_suffix = 'OFFRED'
     instrument_ids = {'GF1', 'GF2'}
     # TODO: frequency is different per type of data. Need to figure out optimal common frequency
-    time_series_interval = timedelta(seconds=30)
+    time_series_interval = timedelta(seconds=10)
     processing_level = '0' # TODO: confirm it. May be it is 'None'
 
     # testing hypothesis that aligned_bucket_span < time_series_interval is causing performance issues
@@ -28,10 +28,7 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
-            utc VARCHAR(21) not null,  
-            obt_integer bigint not null, 
-            obt_fraction int not null, 
-            obt_type VARCHAR(3),
+            obt_type VARCHAR(4),
             source_file_name VARCHAR(100),
             
             pcf_name VARCHAR(15),
@@ -39,7 +36,6 @@ class GraceFOOffredDataProduct(TimeSeriesDataProduct):
             value_int bigint ,
             value_float float,
             value_str VARCHAR(100),
-            
-            
+        
             timestamp timestamptz not null 
         """

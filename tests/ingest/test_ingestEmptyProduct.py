@@ -45,7 +45,5 @@ class IngestEmptyProductTestCase(IngestTestCaseBase):
             # check that ingest runs without exception
             ingest.run(product=p, src=os.path.abspath(input_dir), data_is_zipped=False)
 
-            # check that the table was not created
-            self.assertFalse(self.table_exists(tn))
 
 

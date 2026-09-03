@@ -5,7 +5,9 @@ version: '3'
 #  these workers use a common base configuration and are differentiated by an environment variable that controls whether
 #  they will pick up offred ingestion tasks or not
 x-mango-ingest-worker-common-env: &mango-ingest-worker-common-env
-  SOURCE_DATA_ROOT:
+  DATA_ROOT: /data
+  SOURCE_DATA_ROOT_SUBPATH: ${SOURCE_DATA_ROOT_SUBPATH}
+  STAGED_DATA_ROOT_SUBPATH: ${STAGED_DATA_ROOT_SUBPATH}
   TSDB_HOST:
   TSDB_PORT:
   TSDB_PASSWORD: ${DB_PASSWORD}
@@ -22,11 +24,10 @@ x-mango-ingest-worker-base: &mango-ingest-worker-base
     - mango-backend
   restart: 'always'
   volumes:
-    - $SOURCE_DATA_ROOT:/input
-    - $INGEST_STAGING_ROOT:/staging
+    - $DATA_ROOT:/data
     - ${OFFRED_METADATA_FILEPATH}:/sensitive/offred_fields_metadata.json:ro
   user: root
-  command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/executor/main.py --loop
+  command: python /app/masschange/src/masschange/ingest/executor/main.py --loop
 
 services:
   mango-api:
@@ -45,16 +46,16 @@ services:
       - API_PROXY_HOST
       - API_ROOT_PATH
       - API_ENABLE_SSL
-      - SOURCE_DATA_ROOT
+      - SOURCE_DATA_ROOT=${DATA_ROOT}/${SOURCE_DATA_ROOT_SUBPATH}
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $SOURCE_DATA_ROOT:/input
+      - ${DATA_ROOT}/${SOURCE_DATA_ROOT_SUBPATH}:/input
       - ${SSL_CERT_FILE:-/dev/null}:/certs/ssl.crt:ro
       - ${SSL_KEY_FILE:-/dev/null}:/certs/ssl.key:ro
     user: root
-    command: conda run --no-capture-output -n masschange /app/masschange/start_api.sh
+    command: /app/masschange/start_api.sh
   mango-db:
     user: "${MANGO_UID}:${MANGO_GID}"
     image: 'timescale/timescaledb-ha:pg16'
@@ -83,15 +84,16 @@ services:
       - mango-backend
     restart: 'always'
     environment:
-      - SOURCE_DATA_ROOT
+      - DATA_ROOT=/data
+      - SOURCE_DATA_ROOT_SUBPATH
+      - STAGED_DATA_ROOT_SUBPATH
       - TSDB_HOST
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - $SOURCE_DATA_ROOT:/input
-      - $INGEST_STAGING_ROOT:/staging
+      - $DATA_ROOT:/data
     user: root
-    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
+    command: python /app/masschange/src/masschange/ingest/crawler/main.py --src /input --dest /staging --remove-src-files --loop
   mango-ingest-worker:
     <<: *mango-ingest-worker-base
     environment:
@@ -120,7 +122,7 @@ services:
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     user: root
-    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/ensure.py
+    command: python /app/masschange/src/masschange/db/ensure.py
 
   mango-regenerate-metadata:
     profiles:
@@ -136,7 +138,7 @@ services:
       - TSDB_PORT
       - TSDB_PASSWORD=${DB_PASSWORD}
     user: root
-    command: conda run --no-capture-output -n masschange python /app/masschange/src/masschange/db/metadata/regenerate.py
+    command: python /app/masschange/src/masschange/db/metadata/regenerate.py
 
 networks:
   mango-backend:
