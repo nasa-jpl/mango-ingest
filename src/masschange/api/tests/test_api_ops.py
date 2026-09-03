@@ -44,7 +44,8 @@ channel_id_additional_parameters = {
     'LLT1A': '&filter=rcv_id=C&filter=trx_id=D',
     'PLT1A': '&filter=rcv_id=C&filter=trx_id=D',
     'QSA1B': '&filter=sca_id=1',
-    'USO1B': '&filter=uso_id=-1'
+    'USO1B': '&filter=uso_id=-1',
+    'OFFRED': '&filter=pcf_name=SSC01027.rn',
 }
 
 
