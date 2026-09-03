@@ -16,14 +16,14 @@ class GraceFOTim1PassDatasetReaderTestCase(DatasetReaderTestCaseBase):
                             int, int, int, int, int, int, int, int, int, datetime]
     expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
-        ('TIM1A_2018-06-01_C_NYA_581169413.pass', 581083200, 607671582, 581169413,
-         581180861, 1432, 8, 0, 8, 8,
-         8, 0, 0, 1432, 0, 0, 0, 0, 0,
-         datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc)),
-        ('TIM1A_2018-06-01_D_NYA_581163776.pass', 581083200, 607671635, 581163776, 581175168,
-         1425, 8, 0, 8, 8,
-         8, 0, 0, 1425, 0, 0, 0, 0, 0,
-         datetime(2018, 6, 1, 0, 0, tzinfo=timezone.utc))
+        ('TIM1A_2018-05-22_C_NYA_580300954.pass', 580219200, 607673386, 580300954.0,
+            580312282.0, 1417, 8.0, 0.0,
+            8.0, 8.0, 8, 0, 0, 0, 1417, 0, 0, 0,
+            0, datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc)),
+        ('TIM1A_2018-05-22_D_NYA_580282629.pass', 580219200, 607673509, 580282629.0,
+            580306589.0, 2996, 8.0, 0.0,
+            8.0, 8.0, 8, 0, 0, 0, 2996, 0, 0, 0,
+            0, datetime(2018, 5, 22, 0, 0, tzinfo=timezone.utc))
     ]
 if __name__ == '__main__':
     unittest.main()

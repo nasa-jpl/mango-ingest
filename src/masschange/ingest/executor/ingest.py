@@ -10,7 +10,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Iterable, Union, List
 
-import pandas
 import pandas as pd
 import psycopg2
 
@@ -21,9 +20,10 @@ from masschange.dataproducts.dataset import Dataset
 from masschange.dataproducts.timeseriesdataproduct import TimeSeriesDataProduct
 from masschange.dataproducts.datasetfactory import DatasetFactory
 from masschange.dataproducts.utils import resolve_dataset
-from masschange.db.conn import get_db_cursor, get_db_connection
+from masschange.db.conn import get_db_cursor, get_db_connection, get_conn_pool
 from masschange.ingest.executor.datafilereaders.filter import EqualsFilter, DataFilter
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
+from masschange.ingest.utils.offred_aggregation_strategy import OffredAggregationStrategy
 from masschange.utils.misc import get_human_readable_elapsed_since
 from masschange.db.data.caggs import refresh_continuous_aggregates
 from masschange.db.ensure import ensure_database_exists
@@ -64,7 +64,6 @@ def run(product: TimeSeriesDataProduct, src: str, data_is_zipped: bool = True):
             ingest_file_to_db(product, fp)
         except EmptyProductException as e:
             log.warning(f'{e} Skipping ingestion of the file...')
-
 
 def get_zipped_input_iterable(root_dir: str,
                               enclosing_filename_match_regex: str,
@@ -152,24 +151,29 @@ def delete_overlapping_data_by_source_fname(dataset: Dataset, source_file_name: 
 
     table_name = dataset.get_table_name()
 
+    source_file_name_id = dataset.product.get_reader().get_source_file_id(source_file_name)
+
     with get_db_cursor() as cur:
         sql = f"""
             DELETE 
             FROM {table_name}
-                WHERE   {source_file_column_name} = '{source_file_name}'
+                WHERE   {source_file_column_name} = '{source_file_name_id}'
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} >= %(from_dt)s
                     AND {dataset.product.TIMESTAMP_COLUMN_NAME} <= %(to_dt)s
                 """
         cur.execute(sql, {'from_dt': limit_to_temporal_span.begin, 'to_dt': limit_to_temporal_span.end})
         log.debug(f'purged data from {table_name} for source file name {source_file_name}')
 
-def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
+def ingest_df(df: pd.DataFrame, table_name: str) -> None:
     """
     see: https://naysan.ca/2020/05/09/pandas-to-postgresql-using-psycopg2-bulk-insert-performance-benchmark/
     """
     log.info(f'writing data to table {table_name}')
-
-    with get_db_connection() as conn:
+    start_time = time.perf_counter()
+    # TODO: switch this to a context-managed version of get_db_connection()
+    pool = get_conn_pool()
+    conn = get_db_connection()
+    try:
         buffer = StringIO()
         df.to_csv(buffer, header=False, index=False)
         buffer.seek(0)
@@ -178,7 +182,13 @@ def ingest_df(df: pandas.DataFrame, table_name: str) -> None:
                 cursor.copy_from(file=buffer, table=table_name, sep=",", null="")
                 conn.commit()
             except (Exception, psycopg2.DatabaseError) as error:
-                print("Error: %s" % error)
+                conn.rollback()
+                log.error(f"Error copying to {table_name}: {error}")
+                raise
+    finally:
+        pool.putconn(conn)
+    end_time = time.perf_counter()
+    log.debug(f"Execution time 'ingest_df()': {end_time - start_time:.4f} seconds")
 
 def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     """
@@ -200,7 +210,6 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
         if dataset.product.processing_level.upper() == '1B':
             filters = [EqualsFilter('time_ref', 'G')]
     return filters
-
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_start_time = time.time()
@@ -224,13 +233,26 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     channel_ids = {f: set(pd_df[f.name]) for f in dataset.product.get_available_fields() if f.is_channel_id_column}
 
     ensure_dataset_table_exists(dataset)
-    ensure_dataset_caggs_exist(dataset)
+
+    # special case for OFFRED: execute only if offred_resolve_do_aggregation is True
+    if "OFFRED" in product.get_full_id():
+        if offred_resolve_do_aggregation():
+            ensure_dataset_caggs_exist(dataset)
+    else:
+        ensure_dataset_caggs_exist(dataset)
 
     table_name = dataset.get_table_name()
     delete_overlapping_data(dataset, data_temporal_span, os.path.basename(src_filepath))
 
     ingest_df(pd_df, table_name)
-    refresh_continuous_aggregates(dataset, data_temporal_span)
+
+    # special case for OFFRED: execute only if offred_resolve_do_aggregation is True
+    if "OFFRED" in product.get_full_id():
+        if offred_resolve_do_aggregation():
+            refresh_continuous_aggregates(dataset, data_temporal_span)
+    else:
+        refresh_continuous_aggregates(dataset, data_temporal_span)
+
     update_metadata(dataset, data_span=data_temporal_span, channel_ids=channel_ids)
 
     if log.isEnabledFor(logging.DEBUG):
@@ -240,7 +262,6 @@ def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
     ingest_end_time = time.time()
     ingest_elapsed_time = ingest_end_time - ingest_start_time
     log.info(f"Ingest time: {ingest_elapsed_time} seconds")
-
 
 def get_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
@@ -257,6 +278,20 @@ def get_args() -> argparse.Namespace:
 
     return ap.parse_args()
 
+def offred_resolve_do_aggregation() -> bool:
+    """
+    Determines whether aggregation should be executed for the current file.
+    Evaluates the OFFRED_AGGREGATE environment variable. Defaults to False.
+    """
+    # Fetch the environment variable, default to "NONE", and force uppercase
+    strategy_str = os.getenv("OFFRED_AGGREGATE", "NONE").upper()
+
+    # Compare the environment string to the Enum's string value
+    if strategy_str == OffredAggregationStrategy.AFTER_EACH.value:
+        return True
+
+    # If OFFRED_AGGREGATE is NONE, missing, or invalid, do not aggregate
+    return False
 
 if __name__ == '__main__':
     args = get_args()

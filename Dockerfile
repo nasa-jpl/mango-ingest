@@ -64,8 +64,5 @@ RUN ["/home/root/miniconda/condabin/conda", "run", "-n", "masschange", "/bin/bas
 # Overridable as runtime env-var, used for reverse-proxying
 ENV API_ROOT_PATH ""
 
-# Entrypoint
-#USER root
-#WORKDIR /app/masschange
-#RUN chmod u+x /app/src/*.sh
-
+RUN ln -s $MASSCHANGE_REPO_ROOT/entrypoint.sh /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]

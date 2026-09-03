@@ -8,12 +8,15 @@ import os
 import zipfile
 import tempfile
 from pathlib import Path
+import ijson
+import re
 
 from masschange.ingest.executor.datafilereaders.base import AsciiDataFileReader
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn,\
     DerivedAsciiDataFileReaderColumn
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.overwritebehaviours import ReaderOverwriteBehavior
+
 
 class OffredFileReader(AsciiDataFileReader):
     """
@@ -31,7 +34,8 @@ class OffredFileReader(AsciiDataFileReader):
     col_name_float = 'value_float'  # column with float data
     col_name_str = 'value_str'  # column with string data
 
-    str_dtype = 'U100' # TODO: may me could be smaller
+    # TOdo: May be use Byte Strings (S instead of U): S dtypes use 1 byte per character instead of 4.
+    str_dtype = 'U23' # TODO: may be needs to be bigger
     float_dtype = np.float32 # np.float32 provides approximately 7 decimal digits of precision, should be enough
     int_dtype = pd.Int64Dtype # int type that supports None
 
@@ -91,6 +95,7 @@ class OffredFileReader(AsciiDataFileReader):
         field_names = cls._get_field_names(data_fpath)
 
         if check_time_col_names:
+            # TODO: check this code - presumably the first three should be removed or clarified? edunn 20260707
             # sanity check for assumption that first 4 column names are always the same
             static_field_names = ['UTC', 'OBT_Integer', 'OBT_Fraction', 'OBT_Type']
             if field_names[0:4] != static_field_names:
@@ -106,7 +111,14 @@ class OffredFileReader(AsciiDataFileReader):
             dyn_col_defs.append(AsciiDataFileReaderColumn(index=idx + 4, name=name, np_type=types[idx], unit=None))
 
         # combine time-related column definition with dynamic column definitions
-        return cls.get_input_column_defs()[0:4] + dyn_col_defs
+
+        time_columns = [
+            AsciiDataFileReaderColumn(index=0, name=field_names[0], np_type='U23', unit=None),
+            AsciiDataFileReaderColumn(index=1, name=field_names[1], np_type=np.ulonglong, unit='s'),
+            AsciiDataFileReaderColumn(index=2, name=field_names[2], np_type=np.uint, unit='millisecond')
+        ]
+
+        return time_columns + cls.get_input_column_defs()[0:1] + dyn_col_defs
 
     @classmethod
     def get_input_column_defs(cls) -> Collection[AsciiDataFileReaderColumn]:
@@ -114,54 +126,22 @@ class OffredFileReader(AsciiDataFileReader):
         So far, we have a single OFFFRED reader, so define the output columns here
         """
         return [
-            AsciiDataFileReaderColumn(index=0, name='utc', np_type='U21', unit=None),
-            AsciiDataFileReaderColumn(index=1, name='obt_integer', np_type=np.ulonglong, unit='s'),
-            AsciiDataFileReaderColumn(index=2, name='obt_fraction', np_type=np.uint, unit='millisecond'),
-            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U3', unit=None),
-            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U100', unit=None),
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U15', unit=None, is_channel_id_column=True),
+            AsciiDataFileReaderColumn(index=3, name='obt_type', np_type='U4', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.SOURCE_FILE_COLUMN_NAME, np_type='U19', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_pcf_name, np_type='U11', unit=None, is_channel_id_column=True),
 
-            DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U15', unit=None),
+            DerivedAsciiDataFileReaderColumn(name=cls.col_name_unit, np_type='U4', unit=None),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_int, np_type=cls.int_dtype, unit=None,
                                              aggregations=['min', 'max']),
 
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_float, np_type=cls.float_dtype, unit=None,
                                              aggregations=['min', 'max']),
             DerivedAsciiDataFileReaderColumn(name=cls.col_name_str, np_type=cls.str_dtype, unit=None),
-
         ]
 
     @classmethod
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
-
-        # 1. Initialize a list to hold the data chunks (much lighter than a growing array)
-        data_chunks = []
-        # unzip files to temp directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            print(f"Created temporary directory at: {temp_dir}")
-
-            # Open and extract the zip file
-            with zipfile.ZipFile(filename, 'r') as zip_ref:
-                zip_ref.extractall(temp_dir)
-                print(f"Successfully unzipped {filename} to temporary storage.")
-
-                # List files to verify
-                files = [str(f.absolute()) for f in Path(temp_dir).iterdir() if f.is_file()]
-                print(f"Files extracted: {files}")
-
-                for each_file in files:
-                    data_chunks.append(cls._load_raw_data_from_unzipped_file(each_file))
-
-            # 2. Perform ONE single concatenation
-            if data_chunks:
-                return np.concatenate(data_chunks).view(np.recarray)
-            else:
-                return None
-
-    @classmethod
-    def _load_raw_data_from_unzipped_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
-
 
         def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
             """
@@ -193,27 +173,29 @@ class OffredFileReader(AsciiDataFileReader):
 
         # create recaray to hold output data
         data_rec = np.recarray(nrows_out, dtype=np.dtype([(col.name, col.np_dtype)
-                                                          for col in cls.get_input_column_defs()]))
-        # repeat time-related fields for each data field
-        for name in [col.name for col in datafile_column_defs[:4]]:
-            data_rec[name] = np.tile(data[name], num_data_columns)
+                    for col in cls.get_input_column_defs()] + [(cls.TIMESTAMP_COLUMN_NAME,  'datetime64[ms]')]))
 
-        # add source file name to the  array
-        data_rec[cls.SOURCE_FILE_COLUMN_NAME] [:]= os.path.basename(filename)
+        # calculate timestamps
+        timestamp =cls._create_timestamp(data[datafile_column_defs[1].name], data[datafile_column_defs[2].name])
+
+        # repeat time-related fields for each data field
+        data_rec[datafile_column_defs[3].name] = np.tile(data[datafile_column_defs[3].name], num_data_columns)
+        data_rec[cls.TIMESTAMP_COLUMN_NAME] = np.tile(timestamp, num_data_columns)
+
         # init nullable columns to None or an empty string
         data_rec[cls.col_name_int] = None
         data_rec[cls.col_name_float] = None
         data_rec[cls.col_name_str] = ''
         data_rec[cls.col_name_unit] = ''
 
-        # read into memory metadata (unit and description) associated with the fields
-        met_dict = cls.get_fields_metadata_dict()
+        # extract units from the metadata file only for .en fields present in the file
+        en_fields = [(col.name).split('.')[0] for col in datafile_column_defs[4:] if '.en' in col.name]
+        unit_dict = cls.get_units_dict(en_fields)
 
         # populate nullable columns
         for idx, col_def in enumerate([col for col in datafile_column_defs[4:]]):
             start_row = idx * nrows_in
             end_row = (idx + 1) * nrows_in
-
             if col_def.np_dtype == cls.int_dtype:
                 out_col_name = cls.col_name_int
             elif col_def.np_dtype == cls.float_dtype:
@@ -227,25 +209,85 @@ class OffredFileReader(AsciiDataFileReader):
 
             # we don't use input_col_name directly for pcf_name because
             # AsciiDataFileReaderColumn constructor converts names to lower case
+
             # pcf_name prefix should be upper case
-            col_name_parts = col_def.name.split('.')
-            data_rec[cls.col_name_pcf_name][start_row:end_row] = '.'.join([col_name_parts[0].upper(), col_name_parts[1]])
+            pcf_prefix = col_def.name.split('.')[0]
+            pcf_ext = col_def.name.split('.')[1]
 
-            # units are only make sense for .en fields
-            if '.en' in col_def.name:
-                data_rec[cls.col_name_unit][start_row:end_row] = met_dict[col_name_parts[0].upper()]['UNIT']
+            data_rec[cls.col_name_pcf_name][start_row:end_row] = '.'.join([pcf_prefix.upper(), pcf_ext])
 
-        # # sorted_indices = data_rec[:, 0].argsort()
-        # # sorted_data_rec = data_rec[sorted_indices]
-        # #
-        # # #data_rec.sort(order=['utc'])
-        #
-        # primary = data_rec.obt_integer
-        # secondary = data_rec.obt_fraction
-        # sorted_indices = np.lexsort((secondary, primary))
-        # sorted_data_rec = data_rec[sorted_indices]
+            # units only make sense for .en fields
+            if pcf_prefix in en_fields:
+                data_rec[cls.col_name_unit][start_row:end_row] = unit_dict[pcf_prefix.upper()]
 
+        fname_id = cls.get_source_file_id(filename)
+        data_rec[cls.SOURCE_FILE_COLUMN_NAME][:] = fname_id
         return data_rec
+
+    @classmethod
+    def get_units_dict(cls, pcf_basenames:List[str]) -> dict:
+        '''
+        Parses OFFRED metadata file and extract units associated with fields present in
+        the current OFFRED input file, without loading the whole metadata file into memory
+
+        Parameters
+        ----------
+        pcf_basenames: List of pcf names (without extension)
+
+        Returns
+        -------
+        Dictionary of units associated with pcf names
+        '''
+
+        # Convert pcf names to a set of uppercase strings.
+        target_names = {name.upper() for name in pcf_basenames}
+        units_dict = {}
+
+        # Use 'rb' (read binary) as ijson prefers it over 'r'
+        with open(cls.get_field_met_file_location(), 'rb') as file:
+
+            # Stream the top-level keys and values ONE time
+            for key, value in ijson.kvitems(file, ''):
+
+                # If the current key is one we are looking for...
+                if key in target_names:
+                    units_dict[key.upper()] = value['UNIT']
+                    # If we have found every single unit we need, stop reading the file!
+                    if len(units_dict) == len(target_names):
+                        break
+        return units_dict
+
+    @classmethod
+    def _create_timestamp(cls, obt_integer_arr: np.array, obt_fraction_name: np.array) -> np.array:
+        '''
+        Normally, time stamp is calculated in load_data_from_file method, by calling the class's
+        cls.populate_timestamp() method.
+        To reduce memory footprint during the OFFRED ingestion, we don't pass  time-related columns to
+        load_data_from_file data frame. Because of this, we need to calculate time stamp earlier,
+        before we drop time-related data.
+
+        Parameters
+        ----------
+        obt_integer_arr: np.array of integer observation times from input OFFRED file
+        obt_fraction_name: np.array of fraction observation times from input OFFRED file
+
+        Returns: datetime array to use as timestamp
+        -------
+
+        '''
+
+        # use np.datetime64 that works with arrays
+        reference_epoch = np.datetime64(cls.get_reference_epoch())
+
+        # Mathematically combine into total milliseconds, because np.datetime64
+        # take only one uint at time
+        total_milliseconds = (obt_integer_arr * 1000) + obt_fraction_name
+
+        # Cast to a single timedelta array
+        td_array = np.array(total_milliseconds, dtype='timedelta64[ms]')
+
+        # Add to epoch and return
+        return reference_epoch + td_array
 
     @classmethod
     def get_reference_epoch(cls) -> datetime:
@@ -254,7 +296,9 @@ class OffredFileReader(AsciiDataFileReader):
 
     @classmethod
     def populate_timestamp(cls, row) -> datetime:
-        return cls.get_reference_epoch() + timedelta(seconds=row.obt_integer, milliseconds=row.obt_fraction)
+        raise NotImplementedError("populate_timestamp() method is not implemented for OFFRED;"
+                                  "timestamp is created and populated in _load_raw_data_from_unzipped_file() ")
+
 
     @classmethod
     def _get_data_column_types(cls, filename:str, num_rows:int):
@@ -335,3 +379,10 @@ class OffredFileReader(AsciiDataFileReader):
         # no versions for OFFREAD
         return DatasetVersion("00")
 
+    @classmethod
+    def get_source_file_id(cls, source_file_name: str) -> str:
+        """
+        Returns string to be stored in the DB table that identifies source file.
+        Child class could overwrite this method to make the string shorter to save space.
+        """
+        return os.path.basename(source_file_name)[7:29].replace('_','')
