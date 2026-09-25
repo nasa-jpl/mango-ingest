@@ -32,7 +32,7 @@ class GraceFOLhk1BDataProduct(TimeSeriesDataProduct):
             qualflg VARCHAR(8) not null,
             
             sensortype CHAR not null,
-            sensorvalue bigint not null,
+            sensorvalue double precision not null,
             sensorname VARCHAR(1000) not null,
             unit VARCHAR(4),
             
