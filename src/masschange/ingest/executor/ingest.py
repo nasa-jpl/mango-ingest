@@ -204,11 +204,8 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     List of data filters that implements DataFilter interface, or None
     """
     filters = None
-    # So far, only one filter was requested by sci team:
-    # for Level 1B products, remove rows where 'time_ref' is not equals 'G'
-    if dataset.product.processing_level:
-        if dataset.product.processing_level.upper() == '1B':
-            filters = [EqualsFilter('time_ref', 'G')]
+
+    # So far, no filter was requested by sci team
     return filters
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):

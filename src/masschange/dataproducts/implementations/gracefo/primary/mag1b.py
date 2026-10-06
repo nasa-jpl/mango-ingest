@@ -23,8 +23,8 @@ class GraceFOMag1BDataProduct(TimeSeriesDataProduct):
         return f"""
             time_intg bigint not null,
             time_frac int not null,
-            
             GRACEFO_id CHAR not null,
+            time_ref CHAR not null,
             MfvX_RAW double precision not null,
             MfvY_RAW double precision not null,
             MfvZ_RAW double precision not null,

@@ -23,6 +23,7 @@ class GraceFOAhk1BDataProduct(TimeSeriesDataProduct):
         return f"""
             rcvtime_intg bigint not null,
             rcvtime_frac int not null,
+            time_ref CHAR not null,
 
             GRACEFO_id CHAR not null,
             qualflg VARCHAR(8) not null,
