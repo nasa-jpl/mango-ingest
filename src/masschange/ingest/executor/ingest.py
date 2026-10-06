@@ -205,7 +205,7 @@ def get_data_filters(dataset: Dataset ) -> Union[List[DataFilter], None]:
     """
     filters = None
 
-    # So far, no filter was requested by sci team
+    # So far, no filters were requested by sci team
     return filters
 
 def ingest_file_to_db(product: DataProduct, src_filepath: Union[str, Path]):
