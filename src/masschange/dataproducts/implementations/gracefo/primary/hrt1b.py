@@ -24,6 +24,7 @@ class GraceFOHrt1BDataProduct(TimeSeriesDataProduct):
         
                 time_intg bigint not null,
                 time_frac int not null,
+                time_ref CHAR not null,
                 GRACEFO_id CHAR not null,
 
                 TEMP_MEP_neg_y double precision not null,

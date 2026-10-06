@@ -17,26 +17,25 @@ class GraceFOHrt1BDatasetReaderTestCase(DatasetReaderTestCaseBase):
 
     dataset_cls = GraceFOHrt1BDataProduct
     expected_table_names = ['gracefo_hrt1b_04_c', 'gracefo_hrt1b_04_d']
-    expected_field_types = [int, int, str,
+    expected_field_types = [int, int, str, str,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             float, float, float, float, float, float,
                             str, bool, bool, bool, bool, bool, bool, bool, bool, datetime]
-    expected_table_row_counts = [96, 100]
+    expected_table_row_counts = [100, 100]
     expected_table_first_rows = [
-        (632318456, 501580, 'C',
-        5.54562520980835, 16.39182090759277, 5.709863185882568,
-        12.76247024536133, 1.530385971069336, 0, 0, 0, 0, 0, 0 ,0, 0, 0 ,
-        1.583472967147827, 22.33643913269043, 25.78952026367188 ,
-        22.3588695526123, 25.89521980285645 ,32.31447982788086 ,
-        29.1464900970459, 32.23440170288086, 28.9991397857666 ,
-        22.21792030334473, 25.89521980285645, 0, 13.01688003540039,
-        12.2472095489502, 13.27451038360596, 12.16026020050049,
-         '00000000', False, False, False, False, False, False, False, False,
-         datetime(2020, 1, 15, 0, 0, 56, 501580, tzinfo=timezone.utc)),
-        (632318416, 502161, 'D',
+        (632318424, 501580, 'R', 'C', 5.542404174804688, 16.37571907043457,
+         5.716303825378418, 12.76568984985352, 1.526301980018616, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1.583472967147827, 22.3332405090332, 25.78310966491699,
+         22.36527061462402, 25.8984203338623,
+        32.33049011230469, 29.25219917297363, 32.23759841918945, 29.11125946044922,
+         22.21792030334473, 25.89521980285645, 0,
+        13.01688003540039, 12.25364971160889, 13.27128982543945, 12.16026020050049,
+        '00000000',  False, False, False, False, False, False, False, False,
+         datetime(2020, 1, 15, 0, 0, 24, 501580, tzinfo=timezone.utc)),
+        (632318416, 502161, 'G', 'D',
          1.469131946563721, 0.8933441042900085, 10.11532974243164,
          6.118850231170654, 6.20580005645752, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          6.16393518447876, 25.99131965637207, 21.86236953735352,
