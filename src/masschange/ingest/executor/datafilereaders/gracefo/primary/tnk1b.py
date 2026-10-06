@@ -27,7 +27,7 @@ class GraceFOTnk1BDataFileReader(DataFileWithProdFlagReader):
         return [
             AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='microsecond'),
-            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None, const_value='G'),
+            AsciiDataFileReaderColumn(index=2, name='time_ref', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=3, name='GRACEFO_id', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='tank_id', np_type=np.uint, unit=None, is_channel_id_column=True),
             ArrayLikeAsciiDataFileReaderColumn(index=5, name='qualflg', np_type='U8', array_size=8),

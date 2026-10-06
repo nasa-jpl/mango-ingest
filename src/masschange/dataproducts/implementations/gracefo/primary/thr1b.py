@@ -25,6 +25,7 @@ class GraceFOThr1BDataProduct(DataProduct):
         return f"""
             time_intg bigint not null,
             time_frac int not null,
+            time_ref CHAR not null,
             GRACEFO_id CHAR not null,
             
             thrust_count_att_ctrl_1_1 int not null,
