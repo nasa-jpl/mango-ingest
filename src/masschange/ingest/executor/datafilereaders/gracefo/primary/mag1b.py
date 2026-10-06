@@ -29,7 +29,7 @@ class GraceFOMag1BDataFileReader(AsciiDataFileReader):
             AsciiDataFileReaderColumn(index=0, name='time_intg', np_type=np.ulonglong, unit='s'),
             AsciiDataFileReaderColumn(index=1, name='time_frac', np_type=np.uint, unit='ns'),
             AsciiDataFileReaderColumn(index=2, name='GRACEFO_id', np_type='U1', unit=None),
-            AsciiDataFileReaderColumn(index=3, name='time_ref', np_type='U1', unit=None, const_value='G'),
+            AsciiDataFileReaderColumn(index=3, name='time_ref', np_type='U1', unit=None),
             AsciiDataFileReaderColumn(index=4, name='MfvX_RAW', np_type=np.double, unit='microTesla',
                                       aggregations=['min', 'max']),
             AsciiDataFileReaderColumn(index=5, name='MfvY_RAW', np_type=np.double, unit='microTesla',

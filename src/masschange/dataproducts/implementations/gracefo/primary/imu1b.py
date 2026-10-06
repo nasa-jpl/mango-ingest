@@ -26,7 +26,7 @@ class GraceFOImu1BDataProduct(TimeSeriesDataProduct):
         return f"""
             rcvtime_intg bigint not null,
             rcvtime_frac int not null,
-            
+            time_ref CHAR not null,
             GRACEFO_id CHAR not null,
             gyro_id smallint not null,
             FiltAng double precision not null,
