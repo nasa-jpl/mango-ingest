@@ -22,7 +22,7 @@ PublishPort=5432:5432
 # If it is not 1000, change both numbers below to match.
 UserNS=keep-id:uid=1000,gid=1000
 
-Volume=/soft/mango/tsdb-persist:/home/postgres/pgdata/data:rw
+Volume=/soft/mango/newgravity/tsdb-persist:/home/postgres/pgdata/data:rw
 
 Secret=mango-db-password,type=env,target=POSTGRES_PASSWORD
 

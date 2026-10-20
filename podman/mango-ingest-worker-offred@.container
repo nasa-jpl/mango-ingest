@@ -15,8 +15,8 @@ EnvironmentFile=%h/.config/mango/mango.env
 Environment=MAY_INGEST_OFFRED=1
 Secret=mango-db-password,type=env,target=TSDB_PASSWORD
 
-Volume=/soft/mango:/data:rw
-Volume=/mango/offred_fields_metadata.json:/sensitive/offred_fields_metadata.json:ro
+Volume=/soft/mango/newgravity:/data:rw
+Volume=/soft/mango/newgravity/offred_fields_metadata.json:/sensitive/offred_fields_metadata.json:ro
 
 Exec=python /app/masschange/src/masschange/ingest/executor/main.py --loop
 

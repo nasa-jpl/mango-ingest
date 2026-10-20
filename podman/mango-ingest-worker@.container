@@ -15,7 +15,7 @@ Network=mango-backend.network
 EnvironmentFile=%h/.config/mango/mango.env
 Secret=mango-db-password,type=env,target=TSDB_PASSWORD
 
-Volume=/soft/mango:/data:rw
+Volume=/soft/mango/newgravity:/data:rw
 # Host path on the left, container path on the right. The container path is
 # supplied separately via OFFRED_METADATA_FILEPATH in mango.env - the compose
 # file used one variable for both, which Quadlet cannot disambiguate.
