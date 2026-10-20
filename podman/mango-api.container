@@ -17,7 +17,7 @@ PublishPort=8000:8000
 
 EnvironmentFile=%h/.config/mango/mango.env
 # API-specific. Now expressed in container-space (/data/...), not host-space.
-# The old value resolved to the HOST path /soft/mango/input-data-dropbox, which
+# The old value resolved to the HOST path /soft/mango/newgravity/input-data-dropbox, which
 # did not exist inside the container.
 Environment=SOURCE_DATA_ROOT=/data/input-data-dropbox
 Secret=mango-db-password,type=env,target=TSDB_PASSWORD
@@ -25,7 +25,7 @@ Secret=mango-db-password,type=env,target=TSDB_PASSWORD
 # Only the input subdirectory is mounted, at its position under /data.
 # entrypoint.sh then creates the /input symlink. Change :rw to :ro if the API
 # genuinely only reads (it did have write access under compose).
-Volume=/soft/mango/input-data-dropbox:/data/input-data-dropbox:rw
+Volume=/soft/mango/newgravity/input-data-dropbox:/data/input-data-dropbox:rw
 
 # PLACEHOLDER PATHS - replace both. The compose default-to-/dev/null trick
 # (${SSL_CERT_FILE:-/dev/null}) has no Quadlet equivalent; if you ever set

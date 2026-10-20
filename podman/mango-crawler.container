@@ -16,10 +16,10 @@ Secret=mango-db-password,type=env,target=TSDB_PASSWORD
 # The whole data root as a SINGLE bind mount. This is deliberate: input and
 # staging must share one mount so the crawler's os.rename() does not fail with
 # EXDEV. Mounting the two subdirectories separately would break it.
-# CAVEAT: this also exposes /soft/mango/tsdb-persist inside the container as
+# CAVEAT: this also exposes /soft/mango/newgravity/tsdb-persist inside the container as
 # /data/tsdb-persist, writable, to a process running --remove-src-files.
 # Recommended fix: move tsdb-persist and logs OUT of DATA_ROOT.
-Volume=/soft/mango:/data:rw
+Volume=/soft/mango/newgravity:/data:rw
 
 # /input and /staging are symlinks created by entrypoint.sh from
 # DATA_ROOT + the *_SUBPATH variables.
