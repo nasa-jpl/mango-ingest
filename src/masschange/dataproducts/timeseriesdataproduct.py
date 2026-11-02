@@ -9,6 +9,7 @@ from masschange.dataproducts.dataproduct import DataProduct
 
 class TimeSeriesDataProduct(DataProduct):
 
+    query_result_limit: int = 36000
     time_series_interval: timedelta
     aggregation_step_factor: int = 5  # the factor which is applied at each level of downsampling aggregation
 
