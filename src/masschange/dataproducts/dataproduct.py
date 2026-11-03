@@ -27,7 +27,7 @@ class DataProduct(ABC):
     instrument_ids: Set[str]
     processing_level: Union[str, None]
 
-    query_result_limit = 36000
+    query_result_limit: [int|None] = None
 
     TIMESTAMP_COLUMN_NAME = 'timestamp'  # must be considered reserved
     LOCATION_COLUMN_NAME = 'location'  # must be considered reserved, and is treated differently when selecting/formatting
@@ -263,9 +263,12 @@ class DataProduct(ABC):
                 f'{cls.__name__} is a non-timeseries dataset and so get_downsampling_factor() does not accept a nonzero argument - argument "{aggregation_level}" indicates a code error')
         return 1
 
-    @staticmethod
-    def get_max_query_temporal_span(downsampling_factor: int) -> timedelta:
-        return timedelta(days=365)  # TODO: set to 1 year now
+    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
+        if self.query_result_limit is not None \
+                or downsampling_factor > 1:
+            raise NotImplementedError(f'get_max_query_temporal_span must be overridden in subclass if query result limit is expected')
+
+        return timedelta(weeks=52 * 1000) # default to 1000 years - thirty times total project lifespan
 
     @classmethod
     def get_available_aggregation_levels(cls) -> Sequence[int]:
