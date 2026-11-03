@@ -20,6 +20,9 @@ class GraceFOThr1ADataProduct(DataProduct):
     instrument_ids = {'C', 'D'}
     processing_level = '1A'
 
+    def get_max_query_temporal_span(self, downsampling_factor: int) -> timedelta:
+        return timedelta(days=75) * downsampling_factor # extrapolated from existing data to yield ~36000 rows
+
     @classmethod
     def get_sql_table_schema(cls) -> str:
         return f"""
