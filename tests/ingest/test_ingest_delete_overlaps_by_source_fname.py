@@ -29,7 +29,7 @@ class DataOverwriteByFileNameIngestTestCase(IngestTestCaseBase):
     version = DatasetVersion('04')
     data_file1 = './tests/input_data/offred_unzipped/GF1_CX_777777_YYY_4_777777777_7777_77777777777_77777777777.out'
     data_file2 = './tests/input_data/offred_unzipped/GF1_CX_777777_ZZZ_4_777777777_7777_77777777777_77777777777.out'
-    expected_record_count = 84 # 6 lines, 7 variables, 2 files
+    expected_record_count = 132 # 6 lines, 11 variables, 2 files
     def setUp(self):
         super().setUp()
         self.dataset = DatasetFactory.create(self.product, DatasetVersion('00'), 'GF1' )
