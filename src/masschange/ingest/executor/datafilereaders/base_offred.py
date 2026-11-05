@@ -143,6 +143,13 @@ class OffredFileReader(AsciiDataFileReader):
     def _load_raw_data_from_file(cls, filename: str) -> np.ndarray:
         datafile_column_defs = cls._get_current_input_file_column_def(filename)
 
+        # a float column may hold empty strings for missing values, which np.loadtxt can't parse.
+        # Read them as nan, which is stored as NULL.
+        # Int columns don't need a converter because cls.int_dtype resolves to the object dtype,
+        # so their values are read as strings ("") and converted to NULL below
+        float_converters = {col.index: lambda val: np.nan if val == '' else float(val)
+                            for col in datafile_column_defs if col.np_dtype == cls.float_dtype}
+
         def _loadtxt_wrapper(encoding='utf-8') -> np.ndarray:
             """
             Wrapper for np.loadtxt call, to pass encoding and to avoid repeating all other arguments
@@ -153,6 +160,7 @@ class OffredFileReader(AsciiDataFileReader):
                 delimiter='\t',  # split rows by tab
                 usecols=([col.index for col in datafile_column_defs]),
                 dtype=[(col.name, col.np_dtype) for col in datafile_column_defs],
+                converters=float_converters or None,
                 encoding = encoding,
                 ndmin=1  # set to 1 to prevent returning a single row as a list instead of array
             )
@@ -205,7 +213,14 @@ class OffredFileReader(AsciiDataFileReader):
             else:
                 raise RuntimeError(f"Unsupported dtype {col_def.np_dtype}")
 
-            data_rec[out_col_name][start_row:end_row] = np.array(data[col_def.name])
+            col_values = np.array(data[col_def.name])
+            if out_col_name == cls.col_name_int:
+                # an int column may hold empty strings for missing values,
+                # which must be stored as NULL rather than as an empty string
+                # (float columns are already handled by float_converters)
+                col_values = np.where(col_values == '', None, col_values)
+
+            data_rec[out_col_name][start_row:end_row] = col_values
 
             # we don't use input_col_name directly for pcf_name because
             # AsciiDataFileReaderColumn constructor converts names to lower case
@@ -350,26 +365,34 @@ class OffredFileReader(AsciiDataFileReader):
 
         for val in arr:
             try:
-                num = float(val)
+                float(val)
             except ValueError:
                 # if can't convert to a number, assume it is a string
                 n_str += 1
+                if val != '':
+                    # a column which contains at least one non-empty string is a string column.
+                    # If a string is empty(""), it could be a missing value, so continue the evaluation
+                    return cls.str_dtype
                 continue
             if '.' in val:  # check for '.' in the number
                 n_float += 1
             else:
+                if len(val) > 1 and val.startswith('0'):
+                    # a zero-padded int ('000', '0001' etc) is a code rather than a number,
+                    # so the whole column is a string column.
+                    # Storing such a value as a number would lose the leading zeros
+                    return cls.str_dtype
                 n_int += 1
 
-        # check that all values in the array are assigned to the same type
-        expected_cnt = arr.shape[0]
-        if max(n_int, n_float, n_str) != arr.shape[0]:
-            raise RuntimeError("Can't figure out data type for array: {}".format(arr))
-
-        if n_int == expected_cnt:
-            return cls.int_dtype # int type that supports None
-        elif n_float == expected_cnt:
+        # at this point the column only holds numbers and/or empty strings,
+        # the empty strings being missing values which are stored as NULL
+        if n_float > 0:
+            # a mix of ints and floats is evaluated as float
             return cls.float_dtype
-        elif n_str == expected_cnt:
+        elif n_int > 0:
+            return cls.int_dtype # int type that supports None
+        elif n_str == arr.shape[0]:
+            # nothing but empty strings
             return cls.str_dtype
         else:
             raise RuntimeError("Can't figure out data type for array: {}".format(arr))
