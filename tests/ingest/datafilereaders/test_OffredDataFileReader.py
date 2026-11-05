@@ -33,7 +33,7 @@ class OffredFileReaderTestCase(unittest.TestCase):
 
         field_names = GraceFOOffredDataFileReader._get_field_names(self.data_file)
         self.assertEqual(field_names[1], 'XXX2')
-        self.assertEqual(field_names[-2], 'EEE.en')
+        self.assertEqual(field_names[-6], 'EEE.en')
 
     def test_load_raw_data_from_file(self):
         data = StubGraceFOOffredDataFileReader._load_raw_data_from_file(self.data_file)
@@ -55,3 +55,6 @@ class OffredFileReaderTestCase(unittest.TestCase):
         self.assertEqual(types[4], 'U23')
         self.assertEqual(types[5], pd.Int64Dtype)
         self.assertEqual(types[6], 'U23')
+        self.assertEqual(types[7], 'U23')
+        self.assertEqual(types[8], 'U23')
+        self.assertEqual(types[9], np.float32)
