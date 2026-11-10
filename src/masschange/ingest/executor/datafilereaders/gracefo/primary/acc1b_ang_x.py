@@ -14,7 +14,7 @@ class GraceFOAcc1bAngXDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ACC1B_ANG_X_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])\.txt$'
+        return '^ACC1B_ANG_X_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})_(?P<instrument_id>[CD])\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:

@@ -16,11 +16,11 @@ class GraceFOLri1ADataFileReader(DataFileWithProdFlagReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^LRI1A_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
+        return '^LRI1A_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:
-        return 'gracefo_1A_\d{4}-\d{2}-\d{2}_RL(?P<dataset_version>\d{2})\.ascii\.LRI\.tgz'
+        return 'gracefo_1A_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})_RL(?P<dataset_version>\d{2})\.ascii\.LRI\.tgz'
 
     @classmethod
     # Use for reading row data

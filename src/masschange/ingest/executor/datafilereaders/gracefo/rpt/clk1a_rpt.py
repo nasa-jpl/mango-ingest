@@ -13,7 +13,7 @@ class GraceFOClk1ARptDataFileReader(ReportFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^CLK1A_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.rpt$'
+        return '^CLK1A_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})_(?P<instrument_id>[CD])_(?P<dataset_version>\d{2})\.rpt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:

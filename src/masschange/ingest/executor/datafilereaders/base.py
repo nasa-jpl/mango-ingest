@@ -13,7 +13,7 @@ import pandas as pd
 
 from masschange.ingest.executor.datafilereaders.base_columns import AsciiDataFileReaderColumn, \
     VariableSchemaAsciiDataFileReaderColumn, DerivedAsciiDataFileReaderColumn, ArrayLikeAsciiDataFileReaderColumn
-from masschange.ingest.executor.errors import EmptyProductException
+from masschange.ingest.executor.errors import EmptyProductException, TimestampOutliersException
 from masschange.dataproducts.dataproductfield import DataProductField
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.ingest.utils.arraylikefields import append_flag_fields
@@ -107,6 +107,48 @@ class DataFileReader(ABC):
         return DatasetVersion(dataset_version_id)
 
     @classmethod
+    def extract_nominal_time_range(cls, filepath: str) -> tuple[datetime | None, datetime | None]:
+        """Extract nominal start and end time from the file name"""
+        filename = os.path.basename(filepath)
+        pattern = cls.get_applicable_regex_pattern(filename)
+
+        # 1. Search once and check if a match was found
+        match = re.search(pattern, filename)
+        if not match:
+            return None, None
+
+        # 2. Get the groups using a dictionary
+        groups = match.groupdict()
+
+        year = groups.get('year')
+        month = groups.get('month')
+        day = groups.get('day')
+
+        # if the file name is for a daily file:
+        if year and month and day:
+            # 3. Use timedelta to add one day
+            start_time = datetime(int(year), int(month), int(day))
+            end_t = start_time + timedelta(days=1)
+            return start_time, end_t
+
+        start_time_str = groups.get('start_time')
+        end_time_str = groups.get('end_time')
+
+        if start_time_str and end_time_str:
+            # The format code:
+            # %y = 2-digit year
+            # %j = Day of the year (DDD)
+            # %H = Hour (24-hour clock)
+            # %M = Minute
+            # %S = Second
+            date_format = "%y%j%H%M%S"
+            start_time = datetime.strptime(start_time_str, date_format)
+            end_time = datetime.strptime(end_time_str, date_format)
+            return start_time, end_time
+
+        return None, None
+
+    @classmethod
     @abstractmethod
     def load_data_from_file(cls, filepath: str, filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         """Given a path to a source file, return a pandas dataframe containing fully-prepared/transformed data, ready
@@ -158,6 +200,41 @@ class AsciiDataFileReader(DataFileReader):
         raise ValueError(f'Can not find the end of header in {filename}')
 
     @classmethod
+    def validate_timestamp(cls, filepath: str, timestamps: pd.Series) -> bool:
+        """
+        Validates whether all timestamps in a series fall within the
+        nominal time range extracted from a filename, allowing for a dynamic buffer
+        equal to 20% of the nominal time range.
+
+        Args:
+            filepath (str): The filepath of the file containing the nominal time range.
+            timestamps (pd.Series): A pandas Series of datetime objects.
+
+        Returns:
+            bool: True if the earliest and latest timestamps in the series fall
+            within the buffered time range, False otherwise.
+        """
+        start_time, end_time = cls.extract_nominal_time_range(filepath)
+        if start_time and end_time:
+            # Calculate the buffer as 20% of the nominal time range
+            nominal_duration = end_time - start_time
+            buffer_delta = nominal_duration * 0.20
+
+            # Define the acceptable bounds
+            min_allowed = start_time - buffer_delta
+            max_allowed = end_time + buffer_delta
+
+            # Find the actual earliest and latest timestamps in a single pass
+            extrema = timestamps.agg(['min', 'max'])
+            first_ts = extrema['min']
+            last_ts = extrema['max']
+
+            return (first_ts >= min_allowed) and (last_ts <= max_allowed)
+
+        # if can't calculate nominal time from file name, accept the file without validation
+        return True
+
+    @classmethod
     def load_data_from_file(cls, filepath: str,  filters:Union[list[DataFilter],None] = None) -> pd.DataFrame:
         # It is currently assumed that rcvtime_intg and rcvtime_frac are common across most dataproducts.
         # If this is not the case, refactoring will be necessary.
@@ -191,6 +268,11 @@ class AsciiDataFileReader(DataFileReader):
         df = df.drop([col.name for col in cls.get_input_column_defs() if col.is_constant], axis=1)
 
         sorted_df = df.sort_values(by=[cls.TIMESTAMP_COLUMN_NAME])
+
+        # check for timestamp outliers
+        if not cls.validate_timestamp(filepath,  sorted_df[cls.TIMESTAMP_COLUMN_NAME]):
+            raise TimestampOutliersException(f"Timestamps in file {filepath} are outside the expected range...")
+
         return sorted_df
 
     @classmethod
@@ -290,6 +372,10 @@ class DataFileWithProdFlagReader(AsciiDataFileReader):
 
         # add timestamp
         df[cls.TIMESTAMP_COLUMN_NAME] = df.apply(cls.populate_timestamp, axis=1)
+
+        # check for timestamp outliers
+        if not cls.validate_timestamp(filepath, df[cls.TIMESTAMP_COLUMN_NAME]):
+            raise TimestampOutliersException(f"Timestamps in file {filepath} are outside the expected range...")
 
         # append variable schema data at the end of the frame
         cls.append_variable_schema_data(raw_data_as_str, df)

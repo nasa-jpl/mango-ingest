@@ -10,6 +10,23 @@ class DataFilter(ABC):
         """Apply the filter logic to the given dataframe."""
         pass
 
+class TimestempOutliersFilter(DataFilter):
+    """
+    Filters a dataframe to keep only rows where
+    the column value exactly matches the expected value.
+    """
+    def __init__(self, column: str, time_buffer_minutes: float):
+        self.column = column
+        self.time_buffer_seconds = time_buffer_minutes
+
+    def apply(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.column not in df.columns:
+            return df
+        # Returns only rows where the condition is True
+        # reset the index to avoid gaps in row numbering
+        return df[df[self.column] == self.expected_value].reset_index(drop=True)
+
+
 class EqualsFilter(DataFilter):
     """
     Filters a dataframe to keep only rows where
