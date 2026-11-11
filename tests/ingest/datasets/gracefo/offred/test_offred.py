@@ -14,6 +14,11 @@ class StubGraceFOOffredDataFileReader(GraceFOOffredDataFileReader):
     def _get_current_input_file_column_def(cls, data_fpath: str):
         return super()._get_current_input_file_column_def(data_fpath, check_time_col_names = False)
 
+    @classmethod
+    def validate_timestamp(cls, filepath: str, timestamps) -> bool:
+        # OFFRED unit tests uses mock input data, so skip the check for timestamp outliers
+        return True
+
 class GraceFOOffredDatasetReaderTestCase(DatasetReaderTestCaseBase):
     class StubGraceFOOffredDataProduct(GraceFOOffredDataProduct):
         @classmethod

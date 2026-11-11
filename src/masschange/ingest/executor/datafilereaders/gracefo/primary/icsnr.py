@@ -24,7 +24,7 @@ class GraceFOIcsnrDataFileReader(AsciiDataFileReader):
 
     @classmethod
     def get_input_file_default_regex(cls) -> str:
-        return '^ICSNR_\d{4}-\d{2}-\d{2}_(?P<instrument_id>[CD])_(?P<subset_version>\d{3})\.txt$'
+        return '^ICSNR_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})_(?P<instrument_id>[CD])_(?P<subset_version>\d{3})\.txt$'
 
     @classmethod
     def get_zipped_input_file_default_regex(cls) -> str:

@@ -8,14 +8,17 @@ from masschange.ingest.executor.datafilereaders.gracefo.offred.offred import Gra
 from masschange.ingest.executor.ingest import ingest_file_to_db
 from masschange.dataproducts.datasetversion import DatasetVersion
 from masschange.dataproducts.datasetfactory import DatasetFactory
-from masschange.utils.timespan import TimeSpan
-
 
 class StubGraceFOOffredDataFileReader(GraceFOOffredDataFileReader):
 
     @classmethod
     def _get_current_input_file_column_def(cls, data_fpath: str):
         return super()._get_current_input_file_column_def(data_fpath, check_time_col_names=False)
+
+    @classmethod
+    def validate_timestamp(cls, filepath: str, timestamps) -> bool:
+            #OFFRED unit tests uses mock input data, so skip the check for timestamp outliers
+            return True
 
 class StabGraceFOOffredDataProduct(GraceFOOffredDataProduct):
     @classmethod
